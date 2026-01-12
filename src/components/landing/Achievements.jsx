@@ -17,7 +17,7 @@ export default function Achievements({ achievements }) {
         <div className="text-center mb-16">
           <h2 className="text-3xl md:text-4xl font-black text-zinc-900 dark:text-white mb-4">Nuestros Logros</h2>
           <div className="w-20 h-1 bg-red-600 mx-auto"></div>
-          <p className="mt-4 text-zinc-500 dark:text-zinc-400 text-sm">Mostrando los {displayData.length} más recientes</p>
+          <p className="mt-4 text-zinc-500 dark:text-zinc-400 text-sm">Mostrando los {displayData.length} más significativos de la Escuela Milan</p>
         </div>
         <div className="grid md:grid-cols-3 gap-8">
           {displayData.map((item, idx) => (

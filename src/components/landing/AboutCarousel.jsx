@@ -57,7 +57,7 @@ export default function AboutCarousel() {
             <h2 className="text-red-600 font-bold tracking-widest uppercase mb-2">Sobre Nosotros</h2>
             <h3 className="text-4xl font-black text-zinc-900 dark:text-white mb-6">Más que una escuela,<br/>una familia deportiva.</h3>
             <p className="text-zinc-600 dark:text-zinc-400 text-lg mb-6 leading-relaxed">
-              La <strong className="text-zinc-900 dark:text-white">Escuela Deportiva Milan</strong> es un espacio formativo en San Juan de Miraflores donde niños y niñas aprenden, crecen y desarrollan su talento futbolístico.
+              La <strong className="text-zinc-900 dark:text-white">Escuela Deportiva Milan</strong> es un espacio formativo en Villa Maria del Triunfo donde niños y niñas aprenden, crecen y desarrollan su talento futbolístico.
             </p>
             <ul className="space-y-4">
               <li className="flex items-start">

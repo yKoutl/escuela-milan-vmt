@@ -30,10 +30,17 @@ export default function SiteImagesView({ showNotification }) {
       const docSnap = await getDoc(docRef);
       
       if (docSnap.exists()) {
-        setSiteImages(docSnap.data());
+        const data = docSnap.data();
+        setSiteImages({
+          heroImage: data.heroImage || '',
+          carouselImages: data.carouselImages || [],
+          announcementImage: data.announcementImage || '',
+          announcementEnabled: data.announcementEnabled || false
+        });
       }
     } catch (error) {
       console.error('Error al cargar imágenes:', error);
+      showNotification?.('Error al cargar imágenes', 'error');
     } finally {
       setLoading(false);
     }
@@ -283,6 +290,7 @@ export default function SiteImagesView({ showNotification }) {
                 <img
                   src={imageUrl}
                   alt={`Carrusel ${index + 1}`}
+                  loading="lazy"
                   className="w-full h-40 object-cover rounded-lg shadow-md"
                   onError={(e) => {
                     e.target.src = 'https://placehold.co/400x300/red/white?text=Error';
@@ -313,31 +321,29 @@ export default function SiteImagesView({ showNotification }) {
 
       {/* Imagen de Anuncio/Bienvenida */}
       <div className="bg-gradient-to-br from-yellow-50 to-orange-50 dark:from-yellow-900/20 dark:to-orange-900/20 rounded-lg shadow-md p-6 border-2 border-yellow-300 dark:border-yellow-700">
-        <div className="flex items-center justify-between mb-4">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-4">
           <h3 className="text-lg font-bold text-zinc-900 dark:text-white flex items-center">
             <ImageIcon className="mr-2 text-yellow-600" />
             Modal de Anuncio/Bienvenida
           </h3>
-          <label className="flex items-center space-x-2 cursor-pointer">
-            <span className="text-sm font-medium text-zinc-700 dark:text-zinc-300">
-              {siteImages.announcementEnabled ? 'Habilitado' : 'Deshabilitado'}
-            </span>
-            <div className="relative">
-              <input
-                type="checkbox"
-                checked={siteImages.announcementEnabled || false}
-                onChange={async (e) => {
-                  const newData = { ...siteImages, announcementEnabled: e.target.checked };
-                  const docRef = doc(db, 'artifacts', appId, 'public', 'data', 'siteConfig', 'images');
-                  await setDoc(docRef, newData, { merge: true });
-                  setSiteImages(newData);
-                  showNotification(e.target.checked ? 'Modal de anuncio habilitado' : 'Modal de anuncio deshabilitado');
-                }}
-                className="sr-only peer"
-              />
-              <div className="w-11 h-6 bg-zinc-300 dark:bg-zinc-600 rounded-full peer peer-checked:after:translate-x-full peer-checked:bg-green-600 after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all"></div>
-            </div>
-          </label>
+          <button
+            onClick={async () => {
+              const newEnabled = !siteImages.announcementEnabled;
+              const docRef = doc(db, 'artifacts', appId, 'public', 'data', 'siteConfig', 'images');
+              const newData = { ...siteImages, announcementEnabled: newEnabled };
+              await setDoc(docRef, newData, { merge: true });
+              setSiteImages(newData);
+              showNotification(newEnabled ? 'Modal de anuncio habilitado' : 'Modal de anuncio deshabilitado');
+            }}
+            className={`px-4 py-2 rounded-lg font-bold transition flex items-center gap-2 ${
+              siteImages.announcementEnabled 
+                ? 'bg-green-600 hover:bg-green-700 text-white' 
+                : 'bg-zinc-300 hover:bg-zinc-400 dark:bg-zinc-700 dark:hover:bg-zinc-600 text-zinc-900 dark:text-white'
+            }`}
+          >
+            <Eye className="h-4 w-4" />
+            {siteImages.announcementEnabled ? 'Visible' : 'Oculto'}
+          </button>
         </div>
         
         <p className="text-sm text-zinc-600 dark:text-zinc-400 mb-4">

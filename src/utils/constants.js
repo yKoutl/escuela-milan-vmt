@@ -8,8 +8,31 @@ export const DEFAULT_NEWS = [
 ];
 
 export const DEFAULT_ACHIEVEMENTS = [
-  { id: '1', title: "Campeones Copa SJM", year: "2025", desc: "Categoría Sub-12 invictos.", img: "https://images.unsplash.com/photo-1561917443-6c5a9a4fca6e?auto=format&fit=crop&w=600&q=80", visible: true },
-  { id: '2', title: "Subcampeones Liga", year: "2024", desc: "Gran desempeño del equipo titular.", img: "https://images.unsplash.com/photo-1518605348399-52319b027d72?auto=format&fit=crop&w=600&q=80", visible: true }
+  { 
+    id: '1', 
+    title: "Campeones internacionales", 
+    year: "2025", 
+    desc: "Escuela Milan se consagró campeon del Torneo Internacional Salinas - Ecuador 2025 Categoría 2018 - 2016.", 
+    img: "https://i.postimg.cc/xdh5G1d7/campeon-ecuador.png", 
+    visible: true 
+  },
+
+  { 
+    id: '2', 
+    title: "Campeones Liga SJM", 
+    year: "2019", 
+    desc: "La Escuela Milan se coronó campeona de la Liga de San Juan de Miraflores en 2019.", 
+    img: "https://i.postimg.cc/VLXHgnQj/Campeon-2019.jpg", 
+    visible: true 
+  },
+  { 
+    id: '3', 
+    title: "Campeones Liga SJM", 
+    year: "2017", 
+    desc: "La Escuela Milan logró el campeonato de la Liga de San Juan de Miraflores en 2017.", 
+    img: "https://i.postimg.cc/RCkDwG84/Campeon-2017.jpg", 
+    visible: true 
+  }
 ];
 export const DEFAULT_SCHEDULE = [
   { id: '1', cat: "Categoría 2023-2022-2021", time: "17:00 - 18:15", days: "Lun a Vie", visible: true },

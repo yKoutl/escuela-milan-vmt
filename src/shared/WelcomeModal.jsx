@@ -33,10 +33,30 @@ export default function WelcomeModal() {
             enabled: data.announcementEnabled
           });
           setIsOpen(true);
+        } else if (data.announcementEnabled && !data.announcementImage) {
+          // Si está habilitado pero no hay imagen, usar imagen por defecto
+          setAnnouncementData({
+            image: 'https://i.postimg.cc/RFvr2M9p/aviso-miln.jpg',
+            enabled: true
+          });
+          setIsOpen(true);
         }
+      } else {
+        // Si no existe el documento, usar imagen por defecto
+        setAnnouncementData({
+          image: 'https://i.postimg.cc/RFvr2M9p/aviso-miln.jpg',
+          enabled: true
+        });
+        setIsOpen(true);
       }
     } catch (error) {
       console.error('Error al cargar anuncio:', error);
+      // En caso de error, mostrar imagen por defecto
+      setAnnouncementData({
+        image: 'https://i.postimg.cc/RFvr2M9p/aviso-miln.jpg',
+        enabled: true
+      });
+      setIsOpen(true);
     }
   };
 
@@ -69,7 +89,7 @@ export default function WelcomeModal() {
             alt="Anuncio importante"
             className="w-full h-auto max-h-[80vh] object-contain"
             onError={(e) => {
-              e.target.src = 'https://placehold.co/800x600/dc2626/ffffff?text=Anuncio+Importante';
+              e.target.src = 'https://i.postimg.cc/RFvr2M9p/aviso-miln.jpg';
             }}
           />
         </div>
