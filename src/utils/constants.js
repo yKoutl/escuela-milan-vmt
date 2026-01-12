@@ -67,5 +67,93 @@ export const PACKAGES = [
   { months: '3 MESES', price: '349.90', discount: true, featured: true }
 ];
 
+export const MEMBERSHIP_OPTIONS = [
+  {
+    id: '1',
+    title: 'Socio Básico',
+    price: '20',
+    period: 'Mensual',
+    color: 'blue',
+    benefits: [
+      'Descuento 10% en mensualidades',
+      'Acceso a eventos especiales',
+      'Carnet de socio digital'
+    ]
+  },
+  {
+    id: '2',
+    title: 'Socio Premium',
+    price: '50',
+    period: 'Mensual',
+    color: 'red',
+    featured: true,
+    benefits: [
+      'Descuento 20% en mensualidades',
+      'Prioridad en inscripciones',
+      'Kit deportivo de regalo',
+      'Acceso VIP a torneos'
+    ]
+  },
+  {
+    id: '3',
+    title: 'Socio Corporativo',
+    price: 'Contactar',
+    period: '',
+    color: 'green',
+    benefits: [
+      'Publicidad en uniformes',
+      'Logo en instalaciones',
+      'Menciones en redes sociales',
+      'Espacios de marca en eventos'
+    ]
+  }
+];
+
+export const DEFAULT_SPONSORS = [
+  {
+    id: '1',
+    name: 'Sponsor Principal',
+    logo: 'https://i.postimg.cc/SRXT91CV/auspiciadores.jpg',
+    tier: 'gold',
+    description: '',
+    visible: true
+  },
+  {
+    id: '2',
+    name: 'Sponsor Oficial',
+    logo: 'https://i.postimg.cc/SRXT91CV/auspiciadores.jpg',
+    tier: 'silver',
+    description: '',
+    visible: true
+  },
+  {
+    id: '3',
+    name: 'Aliado Estratégico',
+    logo: 'https://i.postimg.cc/SRXT91CV/auspiciadores.jpg',
+    tier: 'bronze',
+    description: '',
+    visible: true
+  }
+];
+
+export const DONATION_METHODS = [
+  {
+    id: 'yape',
+    name: 'Yape',
+    logo: 'https://i.postimg.cc/XqYfBsB5/yape.png',
+    color: 'from-purple-600 to-purple-700',
+    phone: '987654321',
+    qrImage: 'https://i.postimg.cc/MpqQnPkM/QRYAPE.png'
+  },
+  {
+    id: 'plin',
+    name: 'Plin',
+    logo: 'https://i.postimg.cc/4y2z6ppB/plin.png',
+    color: 'from-blue-600 to-blue-700',
+    phone: '987654321',
+    qrImage: 'https://i.postimg.cc/MpqQnPkx/QRPLIN.png'
+  }
+];
+
 export const WHATSAPP_NUMBER = '989281819';
 export const WHATSAPP_MESSAGE = 'Hola, quiero más información sobre la Escuela de Fútbol Milan';

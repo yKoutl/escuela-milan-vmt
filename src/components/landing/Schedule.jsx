@@ -72,11 +72,21 @@ export default function Schedule({ schedules = [] }) {
           </div>
         </div>
 
-        {/* Banner promocional */}
+        {/* Banner promocional animado */}
         <div className="mt-12 text-center">
-          <div className="inline-block bg-yellow-400 text-zinc-900 px-8 py-4 rounded-full font-black text-lg shadow-lg border-4 border-yellow-500">
-            🎉 ¡Residentes de Virgen de Lourdes - Primera clase GRATIS! 🎉
+          <div className="inline-block bg-gradient-to-r from-yellow-400 via-yellow-300 to-yellow-400 text-zinc-900 px-8 py-5 rounded-2xl font-black text-lg md:text-xl shadow-2xl border-4 border-yellow-500 animate-pulse hover:animate-none hover:scale-110 transition-transform duration-300">
+            <div className="relative">
+              <span className="animate-bounce inline-block">🎉</span>
+              <span className="mx-2">¡Residentes de Virgen de Lourdes - Primera clase GRATIS!</span>
+              <span className="animate-bounce inline-block">🎉</span>
+              <div className="absolute -top-6 -right-6 bg-red-600 text-white text-xs px-3 py-1 rounded-full font-bold rotate-12 shadow-lg">
+                ¡NUEVO!
+              </div>
+            </div>
           </div>
+          <p className="mt-4 text-zinc-600 dark:text-zinc-400 text-sm font-medium">
+            Presenta tu DNI con dirección en Virgen de Lourdes
+          </p>
         </div>
       </div>
     </section>

@@ -1,11 +1,38 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Banknote, Sparkles } from 'lucide-react';
 import { PACKAGES } from '../../utils/constants';
+import { doc, getDoc } from 'firebase/firestore';
+import { db, appId } from '../../firebase';
 
 export default function PricingSection() {
+  const [pricing, setPricing] = useState({
+    inscriptionPrice: 30,
+    monthlyPrice: 150,
+    packages: PACKAGES
+  });
+
+  useEffect(() => {
+    const loadPricing = async () => {
+      try {
+        const docRef = doc(db, `artifacts/${appId}/public/data/config`, 'pricing');
+        const docSnap = await getDoc(docRef);
+        if (docSnap.exists()) {
+          const data = docSnap.data();
+          setPricing({
+            inscriptionPrice: data.inscriptionPrice || 30,
+            monthlyPrice: data.monthlyPrice || 150,
+            packages: data.packages || PACKAGES
+          });
+        }
+      } catch (error) {
+        console.error('Error loading pricing:', error);
+      }
+    };
+    loadPricing();
+  }, []);
 
   return (
-    <section className="py-20 bg-white dark:bg-zinc-950 transition-colors duration-300">
+    <section id="mensualidad" className="py-20 bg-white dark:bg-zinc-950 transition-colors duration-300">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-12">
           <h2 className="text-3xl md:text-4xl font-black text-zinc-900 dark:text-white mb-4 flex items-center justify-center">
@@ -22,13 +49,13 @@ export default function PricingSection() {
         <div className="grid md:grid-cols-2 gap-6 mb-12 max-w-3xl mx-auto">
           <div className="bg-gradient-to-br from-red-50 to-red-100 dark:from-red-900/20 dark:to-red-800/20 border-2 border-red-200 dark:border-red-800 rounded-xl p-8 text-center shadow-lg">
             <div className="text-red-600 text-sm font-bold uppercase mb-2">Único pago</div>
-            <h3 className="text-4xl font-black text-zinc-900 dark:text-white mb-2">S/ 30</h3>
+            <h3 className="text-4xl font-black text-zinc-900 dark:text-white mb-2">S/ {pricing.inscriptionPrice}</h3>
             <p className="text-zinc-700 dark:text-zinc-300 font-medium">Inscripción</p>
           </div>
           
           <div className="bg-gradient-to-br from-zinc-50 to-zinc-100 dark:from-zinc-800 dark:to-zinc-900 border-2 border-zinc-200 dark:border-zinc-700 rounded-xl p-8 text-center shadow-lg">
             <div className="text-zinc-600 dark:text-zinc-400 text-sm font-bold uppercase mb-2">Mensual</div>
-            <h3 className="text-4xl font-black text-zinc-900 dark:text-white mb-2">S/ 150</h3>
+            <h3 className="text-4xl font-black text-zinc-900 dark:text-white mb-2">S/ {pricing.monthlyPrice}</h3>
             <p className="text-zinc-700 dark:text-zinc-300 font-medium">Mensualidad</p>
           </div>
         </div>
@@ -42,7 +69,7 @@ export default function PricingSection() {
         </div>
 
         <div className="grid md:grid-cols-3 gap-6 max-w-5xl mx-auto">
-          {PACKAGES.map((pkg, idx) => (
+          {pricing.packages.map((pkg, idx) => (
             <div
               key={idx}
               className={`relative rounded-2xl p-8 transition-all duration-300 hover:scale-105 ${

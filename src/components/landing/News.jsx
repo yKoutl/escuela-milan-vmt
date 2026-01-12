@@ -1,25 +1,17 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { ChevronRight, Newspaper, Heart } from 'lucide-react';
 import { DEFAULT_NEWS } from '../../utils/constants';
-import NewsModal from '../shared/NewsModal';
+import NewsModal from '../../shared/NewsModal';
+
+const FALLBACK_IMAGE = 'https://images.unsplash.com/photo-1504711434969-e33886168f5c?w=800&h=600&fit=crop';
 
 export default function News({ news }) {
   const [selectedNews, setSelectedNews] = useState(null);
-  const [newsWithLikes, setNewsWithLikes] = useState([]);
   
   const sourceData = news.length > 0 ? news : DEFAULT_NEWS;
   const displayData = sourceData
     .filter(item => item.visible !== false)
     .slice(0, 3);
-
-  // Sincronizar likes con localStorage
-  useEffect(() => {
-    const updatedNews = displayData.map(item => ({
-      ...item,
-      likes: item.likes || 0
-    }));
-    setNewsWithLikes(updatedNews);
-  }, [news]);
 
   return (
     <>
@@ -35,25 +27,31 @@ export default function News({ news }) {
                 key={item.id || i} 
                 className="bg-gradient-to-br from-zinc-50 to-zinc-100 dark:from-zinc-900 dark:to-zinc-800 border-2 border-zinc-200 dark:border-zinc-700 rounded-2xl overflow-hidden hover:shadow-2xl hover:border-red-600 transition-all duration-300 flex flex-col group"
               >
-                {/* Imagen de la noticia */}
-                {item.img && (
-                  <div className="h-56 overflow-hidden bg-zinc-200 dark:bg-zinc-700 relative">
+                {/* Imagen de la noticia - Siempre visible */}
+                <div className="relative w-full h-48 bg-gray-100 dark:bg-gray-800 overflow-hidden">
+                  {item.img ? (
                     <img 
                       src={item.img} 
                       alt={item.title}
                       className="w-full h-full object-cover group-hover:scale-110 transition duration-500"
                       onError={(e) => {
-                        e.target.style.display = 'none';
+                        e.target.src = FALLBACK_IMAGE;
                       }}
                     />
-                    {/* Tag sobre la imagen */}
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center">
+                      <Newspaper className="w-16 h-16 text-gray-400" />
+                    </div>
+                  )}
+                  {/* Tag sobre la imagen - solo si existe */}
+                  {item.tag && (
                     <div className="absolute top-4 left-4">
                       <span className="text-xs font-bold text-white uppercase bg-red-600 px-3 py-1.5 rounded-full shadow-lg">
                         {item.tag}
                       </span>
                     </div>
-                  </div>
-                )}
+                  )}
+                </div>
                 
                 <div className="p-6 flex flex-col flex-1">
                   <div className="mb-3 flex justify-between items-center">

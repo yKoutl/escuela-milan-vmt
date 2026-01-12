@@ -12,6 +12,15 @@ export default function AboutCarousel() {
     loadCarouselImages();
   }, []);
 
+  // Auto-play del carrusel
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setIdx((prev) => (prev + 1) % carouselImages.length);
+    }, 5000); // Cambia cada 5 segundos
+    
+    return () => clearInterval(interval);
+  }, [carouselImages.length]);
+
   const loadCarouselImages = async () => {
     try {
       const docRef = doc(db, 'artifacts', appId, 'public', 'data', 'siteConfig', 'images');

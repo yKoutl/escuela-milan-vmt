@@ -1,16 +1,17 @@
 import React, { useState } from 'react';
-import { ArrowLeft, Lock } from 'lucide-react';
+import { ArrowLeft, Lock, Eye, EyeOff } from 'lucide-react';
 // Solo importamos lo necesario para Email/Password
 import { signInWithEmailAndPassword } from 'firebase/auth'; 
 import { auth } from '../firebase';
 import { LOGO_URL } from '../utils/constants';
-import RippleBackground from '../components/shared/RippleBackground';
+import RippleBackground from '../shared/RippleBackground';
 
 export default function LoginScreen({ setView }) {
   const [email, setEmail] = useState('');
   const [pass, setPass] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
   const handleLogin = async (e) => {
     e.preventDefault();
@@ -65,15 +66,24 @@ export default function LoginScreen({ setView }) {
             autoComplete="username"
             required
           />
-          <input
-            type="password"
-            className="w-full border-2 border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 p-3 rounded-lg text-zinc-900 dark:text-white focus:border-red-600 dark:focus:border-red-600 outline-none transition"
-            value={pass}
-            onChange={e => setPass(e.target.value)}
-            placeholder="Contraseña"
-            autoComplete="current-password"
-            required
-          />
+          <div className="relative">
+            <input
+              type={showPassword ? "text" : "password"}
+              className="w-full border-2 border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 p-3 rounded-lg text-zinc-900 dark:text-white focus:border-red-600 dark:focus:border-red-600 outline-none transition pr-12"
+              value={pass}
+              onChange={e => setPass(e.target.value)}
+              placeholder="Contraseña"
+              autoComplete="current-password"
+              required
+            />
+            <button
+              type="button"
+              onClick={() => setShowPassword(!showPassword)}
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-500 hover:text-zinc-700 dark:text-zinc-400 dark:hover:text-zinc-200 transition"
+            >
+              {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+            </button>
+          </div>
           {error && <p className="text-red-600 text-xs text-center font-bold">{error}</p>}
           
           <button 

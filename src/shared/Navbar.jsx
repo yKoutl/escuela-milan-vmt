@@ -25,11 +25,15 @@ export default function Navbar({
           </div>
          
           <div className="hidden md:flex space-x-6 items-center">
-            {['Historia', 'Logros', 'Horarios'].map((item) => (
+            {['Historia', 'Logros', 'Horarios', 'Mensualidad', 'Hazte Socio', 'Auspiciadores'].map((item) => (
               <button
                 key={item}
-                onClick={() => { setView('landing'); setTimeout(() => document.getElementById(item.toLowerCase())?.scrollIntoView({behavior: 'smooth'}), 100); }}
-                className="text-zinc-600 dark:text-zinc-300 hover:text-red-600 font-medium transition"
+                onClick={() => { 
+                  setView('landing'); 
+                  const sectionId = item.toLowerCase().replace(' ', '-');
+                  setTimeout(() => document.getElementById(sectionId)?.scrollIntoView({behavior: 'smooth'}), 100); 
+                }}
+                className="text-zinc-600 dark:text-zinc-300 hover:text-red-600 font-medium transition text-sm"
               >
                 {item}
               </button>
@@ -62,9 +66,13 @@ export default function Navbar({
       {isMobileMenuOpen && (
         <div className="md:hidden bg-white dark:bg-zinc-900 pb-4 px-4 pt-2 border-t border-zinc-200 dark:border-zinc-800 shadow-xl">
           <button onClick={() => { setView('landing'); setIsMobileMenuOpen(false); }} className="block py-3 w-full text-left font-medium text-zinc-800 dark:text-zinc-200 border-b border-zinc-100 dark:border-zinc-800">Inicio</button>
-          <button onClick={() => { document.getElementById('matricula')?.scrollIntoView(); setIsMobileMenuOpen(false); }} className="block py-3 w-full text-left font-bold text-red-600">Matrícula</button>
-          <button onClick={() => { setView('admin-login'); setIsMobileMenuOpen(false); }} className="block py-3 w-full text-left font-medium text-zinc-500 text-sm flex items-center">
-            <Lock className="h-4 w-4 mr-2"/> Acceso Admin
+          <button onClick={() => { setView('landing'); setTimeout(() => document.getElementById('historia')?.scrollIntoView({behavior: 'smooth'}), 100); setIsMobileMenuOpen(false); }} className="block py-3 w-full text-left font-medium text-zinc-800 dark:text-zinc-200 border-b border-zinc-100 dark:border-zinc-800">Historia</button>
+          <button onClick={() => { setView('landing'); setTimeout(() => document.getElementById('horarios')?.scrollIntoView({behavior: 'smooth'}), 100); setIsMobileMenuOpen(false); }} className="block py-3 w-full text-left font-medium text-zinc-800 dark:text-zinc-200 border-b border-zinc-100 dark:border-zinc-800">Horarios</button>
+          <button onClick={() => { setView('landing'); setTimeout(() => document.getElementById('mensualidad')?.scrollIntoView({behavior: 'smooth'}), 100); setIsMobileMenuOpen(false); }} className="block py-3 w-full text-left font-medium text-zinc-800 dark:text-zinc-200 border-b border-zinc-100 dark:border-zinc-800">Mensualidad</button>
+          <button onClick={() => { setView('landing'); setTimeout(() => document.getElementById('hazte-socio')?.scrollIntoView({behavior: 'smooth'}), 100); setIsMobileMenuOpen(false); }} className="block py-3 w-full text-left font-medium text-zinc-800 dark:text-zinc-200 border-b border-zinc-100 dark:border-zinc-800">Hazte Socio</button>
+          <button onClick={() => { setView('landing'); setTimeout(() => document.getElementById('auspiciadores')?.scrollIntoView({behavior: 'smooth'}), 100); setIsMobileMenuOpen(false); }} className="block py-3 w-full text-left font-medium text-zinc-800 dark:text-zinc-200 border-b border-zinc-100 dark:border-zinc-800">Auspiciadores</button>
+          <button onClick={() => { setView('admin-login'); setIsMobileMenuOpen(false); }} className="block py-3 w-full text-left font-bold text-red-600 uppercase flex items-center">
+            <Lock className="h-4 w-4 mr-2"/> ADMIN
           </button>
         </div>
       )}

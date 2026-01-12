@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Menu, LayoutDashboard, Users, Settings, LogOut, Image, Sun, Moon, BookOpen, Trophy, CalendarDays, FileText, Inbox } from 'lucide-react';
+import { Menu, LayoutDashboard, Users, Settings, LogOut, Image, Sun, Moon, BookOpen, Trophy, CalendarDays, FileText, Inbox, DollarSign, CreditCard, Heart } from 'lucide-react';
 import { addDoc, collection, serverTimestamp, deleteDoc, doc, updateDoc } from 'firebase/firestore';
 import { db, appId } from "../firebase";
 import { LOGO_URL } from "../utils/constants";
@@ -10,6 +10,10 @@ import PaymentsView from '../components/admin/PaymentsView';
 import WebConfigView from '../components/admin/WebConfigView';
 import RequestsView from '../components/admin/RequestsView';
 import SiteImagesView from '../components/admin/SiteImagesView';
+import PricingConfigView from '../components/admin/PricingConfigView';
+import MembershipsView from '../components/admin/MembershipsView';
+import SponsorsView from '../components/admin/SponsorsView';
+import DonationConfigView from '../components/admin/DonationConfigView';
 
 export default function AdminDashboard({
   setView,
@@ -66,6 +70,10 @@ export default function AdminDashboard({
       subItems: [
         { text: 'Contenidos (Noticias/Logros)', id: 'config-web', icon: FileText },
         { text: 'Imágenes del Sitio', id: 'config-images', icon: Image },
+        { text: 'Costos e Inscripciones', id: 'config-pricing', icon: DollarSign },
+        { text: 'Membresías', id: 'config-memberships', icon: CreditCard },
+        { text: 'Auspiciadores', id: 'config-sponsors', icon: Trophy },
+        { text: 'Donaciones (QR)', id: 'config-donations', icon: Heart },
         { text: 'Solicitudes Web', id: 'requests', icon: Inbox }
       ]
     }
@@ -153,6 +161,10 @@ export default function AdminDashboard({
            {adminTab === 'students-pay' && <PaymentsView categories={categories} students={students} payments={payments} handleAdd={handleAdd} handleDelete={handleDelete} showNotification={showNotification} />}
            {adminTab === 'config-web' && <WebConfigView news={news} achievements={achievements} schedules={schedules} handleAdd={handleAdd} handleDelete={handleDelete} toggleVisibility={toggleVisibility} showNotification={showNotification} />}
            {adminTab === 'config-images' && <SiteImagesView showNotification={showNotification} />}
+           {adminTab === 'config-pricing' && <PricingConfigView showNotification={showNotification} />}
+           {adminTab === 'config-memberships' && <MembershipsView showNotification={showNotification} />}
+           {adminTab === 'config-sponsors' && <SponsorsView showNotification={showNotification} />}
+           {adminTab === 'config-donations' && <DonationConfigView showNotification={showNotification} />}
            {adminTab === 'requests' && <RequestsView handleDelete={handleDelete} showNotification={showNotification} />}
         </main>
       </div>
