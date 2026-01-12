@@ -4,7 +4,7 @@ import { doc, getDoc } from 'firebase/firestore';
 import { db, appId } from '../../firebase';
 
 export default function Hero() {
-  const [heroImage, setHeroImage] = useState('https://images.unsplash.com/photo-1517466787929-bc90951d0974');
+  const [heroImage, setHeroImage] = useState('https://i.postimg.cc/J4R4Hyc0/imagen-milan-fondo-principal.png');
 
   useEffect(() => {
     loadHeroImage();

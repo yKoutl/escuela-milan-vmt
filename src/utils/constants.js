@@ -12,9 +12,16 @@ export const DEFAULT_ACHIEVEMENTS = [
   { id: '2', title: "Subcampeones Liga", year: "2024", desc: "Gran desempeño del equipo titular.", img: "https://images.unsplash.com/photo-1518605348399-52319b027d72?auto=format&fit=crop&w=600&q=80", visible: true }
 ];
 export const DEFAULT_SCHEDULE = [
-  { id: '1', cat: "Categoría 2017-2019 (Sub-6/8)", time: "4:00 PM - 5:30 PM", days: "Lun, Mié, Vie", visible: true },
-  { id: '2', cat: "Categoría 2014-2016 (Sub-10/12)", time: "5:30 PM - 7:00 PM", days: "Lun, Mié, Vie", visible: true },
+  { id: '1', cat: "Categoría 2023-2022-2021", time: "17:00 - 18:15", days: "Lun a Vie", visible: true },
+  { id: '2', cat: "Categoría 2020-2019", time: "17:00 - 18:15", days: "Lun a Vie", visible: true },
+  { id: '3', cat: "Categoría 2018-2017", time: "17:45 - 19:00", days: "Lun a Vie", visible: true },
+  { id: '4', cat: "Categoría 2016-2015", time: "17:45 - 19:00", days: "Lun a Vie", visible: true },
+  { id: '5', cat: "Categoría 2014-2013", time: "18:45 - 20:00", days: "Lun a Vie", visible: true },
+  { id: '6', cat: "Categoría 2012-2011", time: "18:45 - 20:00", days: "Lun a Vie", visible: true },
+  { id: '7', cat: "Categoría 2010-2009", time: "19:45 - 21:00", days: "Lun a Vie", visible: true },
+  { id: '8', cat: "Categoría 2008 y Mayores", time: "19:45 - 21:00", days: "Lun a Vie", visible: true },
 ];
+
 
 export const FIELD_LOCATION = {
   name: "Campo Deportivo Asoc. Virgen de Lourdes",
@@ -23,10 +30,11 @@ export const FIELD_LOCATION = {
 };
 
 export const CAROUSEL_IMAGES = [
-  "https://images.unsplash.com/photo-1526232761682-d26e03ac148e?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
-  "https://images.unsplash.com/photo-1511886929837-354d827aae26?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
-  "https://images.unsplash.com/photo-1575361204480-aadea25e6e68?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"
-];
+  "https://i.postimg.cc/nzHTpgN0/sobre-nosotros-1.png",
+
+      "https://i.postimg.cc/WzqZv7p9/sobre-nosotros-3.png",
+
+      "https://i.postimg.cc/pdkzYT1q/sobre-nosotros-2.png"];
 
 export const MONTHS = ['Enero','Febrero','Marzo','Abril','Mayo','Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
 
