@@ -11,11 +11,16 @@ export const DEFAULT_ACHIEVEMENTS = [
   { id: '1', title: "Campeones Copa SJM", year: "2025", desc: "Categoría Sub-12 invictos.", img: "https://images.unsplash.com/photo-1561917443-6c5a9a4fca6e?auto=format&fit=crop&w=600&q=80", visible: true },
   { id: '2', title: "Subcampeones Liga", year: "2024", desc: "Gran desempeño del equipo titular.", img: "https://images.unsplash.com/photo-1518605348399-52319b027d72?auto=format&fit=crop&w=600&q=80", visible: true }
 ];
-
 export const DEFAULT_SCHEDULE = [
-  { id: '1', cat: "Categoría 2017-2019 (Sub-6/8)", time: "Lun, Mié, Vie: 4:00 PM - 5:30 PM", visible: true },
-  { id: '2', cat: "Categoría 2014-2016 (Sub-10/12)", time: "Lun, Mié, Vie: 5:30 PM - 7:00 PM", visible: true },
+  { id: '1', cat: "Categoría 2017-2019 (Sub-6/8)", time: "4:00 PM - 5:30 PM", days: "Lun, Mié, Vie", visible: true },
+  { id: '2', cat: "Categoría 2014-2016 (Sub-10/12)", time: "5:30 PM - 7:00 PM", days: "Lun, Mié, Vie", visible: true },
 ];
+
+export const FIELD_LOCATION = {
+  name: "Campo Deportivo Asoc. Virgen de Lourdes",
+  address: "Paradero 11, Nueva Esperanza",
+  district: "Virgen de Lourdes"
+};
 
 export const CAROUSEL_IMAGES = [
   "https://images.unsplash.com/photo-1526232761682-d26e03ac148e?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
@@ -24,3 +29,12 @@ export const CAROUSEL_IMAGES = [
 ];
 
 export const MONTHS = ['Enero','Febrero','Marzo','Abril','Mayo','Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
+
+export const PACKAGES = [
+  { months: '1 MES', price: '149.90', discount: false },
+  { months: '2 MESES', price: '249.90', discount: true },
+  { months: '3 MESES', price: '349.90', discount: true, featured: true }
+];
+
+export const WHATSAPP_NUMBER = '989281819';
+export const WHATSAPP_MESSAGE = 'Hola, quiero más información sobre la Escuela de Fútbol Milan';

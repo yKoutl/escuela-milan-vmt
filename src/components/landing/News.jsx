@@ -17,14 +17,30 @@ export default function News({ news }) {
         </h2>
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
           {displayData.map((item, i) => (
-            <div key={i} className="bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl p-6 hover:shadow-lg transition flex flex-col">
-              <div className="mb-3 flex justify-between items-start">
-                <span className="text-xs font-bold text-red-600 uppercase bg-red-50 dark:bg-red-900/20 px-2 py-1 rounded">{item.tag}</span>
-                <span className="text-xs text-zinc-400">{item.createdAt?.seconds ? new Date(item.createdAt.seconds * 1000).toLocaleDateString() : 'Hoy'}</span>
+            <div key={item.id || i} className="bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl overflow-hidden hover:shadow-lg transition flex flex-col">
+              {/* Imagen de la noticia */}
+              {item.img && (
+                <div className="h-48 overflow-hidden bg-zinc-200 dark:bg-zinc-700">
+                  <img 
+                    src={item.img} 
+                    alt={item.title}
+                    className="w-full h-full object-cover hover:scale-105 transition duration-300"
+                    onError={(e) => {
+                      e.target.style.display = 'none';
+                    }}
+                  />
+                </div>
+              )}
+              
+              <div className="p-6 flex flex-col flex-1">
+                <div className="mb-3 flex justify-between items-start">
+                  <span className="text-xs font-bold text-red-600 uppercase bg-red-50 dark:bg-red-900/20 px-2 py-1 rounded">{item.tag}</span>
+                  <span className="text-xs text-zinc-400">{item.createdAt?.seconds ? new Date(item.createdAt.seconds * 1000).toLocaleDateString() : 'Hoy'}</span>
+                </div>
+                <h3 className="text-xl font-bold mt-2 mb-3 text-zinc-900 dark:text-white line-clamp-2">{item.title}</h3>
+                <p className="text-zinc-600 dark:text-zinc-400 text-sm mb-4 line-clamp-3 flex-1">{item.desc}</p>
+                <button className="text-red-600 font-bold text-sm hover:underline flex items-center mt-auto">Leer más <ChevronRight className="h-4 w-4" /></button>
               </div>
-              <h3 className="text-xl font-bold mt-2 mb-3 text-zinc-900 dark:text-white line-clamp-2">{item.title}</h3>
-              <p className="text-zinc-600 dark:text-zinc-400 text-sm mb-4 line-clamp-3 flex-1">{item.desc}</p>
-              <button className="text-red-600 font-bold text-sm hover:underline flex items-center mt-auto">Leer más <ChevronRight className="h-4 w-4" /></button>
             </div>
           ))}
         </div>

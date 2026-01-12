@@ -1,13 +1,15 @@
 import React, { useState } from 'react';
-import { Menu, LayoutDashboard, Users, Settings, LogOut } from 'lucide-react';
+import { Menu, LayoutDashboard, Users, Settings, LogOut, Image, Sun, Moon, BookOpen, Trophy, CalendarDays, FileText, Inbox } from 'lucide-react';
 import { addDoc, collection, serverTimestamp, deleteDoc, doc, updateDoc } from 'firebase/firestore';
 import { db, appId } from "../firebase";
 import { LOGO_URL } from "../utils/constants";
+import { useTheme } from '../contexts/ThemeContext';
 import StudentsView from '../components/admin/StudentsView';
 import CategoriesView from '../components/admin/CategoriesView';
 import PaymentsView from '../components/admin/PaymentsView';
 import WebConfigView from '../components/admin/WebConfigView';
 import RequestsView from '../components/admin/RequestsView';
+import SiteImagesView from '../components/admin/SiteImagesView';
 
 export default function AdminDashboard({
   setView,
@@ -21,6 +23,7 @@ export default function AdminDashboard({
 }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [adminTab, setAdminTab] = useState('overview');
+  const { isDarkMode, toggleTheme } = useTheme();
 
   // Generic handlers
   const handleAdd = async (collectionName, data) => {
@@ -53,16 +56,17 @@ export default function AdminDashboard({
     {
       text: 'Gestión Alumnos', icon: Users,
       subItems: [
-        { text: 'Directorio', id: 'students-list' },
-        { text: 'Categorías', id: 'students-cats' },
-        { text: 'Pagos y Mensualidades', id: 'students-pay' },
+        { text: 'Directorio', id: 'students-list', icon: Users },
+        { text: 'Categorías', id: 'students-cats', icon: BookOpen },
+        { text: 'Pagos y Mensualidades', id: 'students-pay', icon: CalendarDays },
       ]
     },
     {
       text: 'Configuración Web', icon: Settings,
       subItems: [
-        { text: 'Contenidos (Noticias/Logros)', id: 'config-web' },
-        { text: 'Solicitudes Web', id: 'requests' }
+        { text: 'Contenidos (Noticias/Logros)', id: 'config-web', icon: FileText },
+        { text: 'Imágenes del Sitio', id: 'config-images', icon: Image },
+        { text: 'Solicitudes Web', id: 'requests', icon: Inbox }
       ]
     }
   ];
@@ -83,11 +87,15 @@ export default function AdminDashboard({
                {item.subItems ? (
                  <div className="mb-2">
                    <div className="px-3 py-2 text-xs font-bold text-zinc-400 uppercase tracking-wider flex items-center gap-2"><item.icon className="h-4 w-4"/> {item.text}</div>
-                   {item.subItems.map(sub => (
-                     <button key={sub.id} onClick={() => { setAdminTab(sub.id); setSidebarOpen(false); }} className={`w-full text-left px-3 py-2 rounded-lg text-sm mb-1 transition-colors ${adminTab === sub.id ? 'bg-red-50 text-red-600 font-bold dark:bg-red-900/20' : 'text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800'}`}>
-                       {sub.text}
-                     </button>
-                   ))}
+                   {item.subItems.map(sub => {
+                     const SubIcon = sub.icon;
+                     return (
+                       <button key={sub.id} onClick={() => { setAdminTab(sub.id); setSidebarOpen(false); }} className={`w-full text-left px-3 py-2 rounded-lg text-sm mb-1 transition-colors flex items-center gap-2 ${adminTab === sub.id ? 'bg-red-50 text-red-600 font-bold dark:bg-red-900/20' : 'text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800'}`}>
+                         {SubIcon && <SubIcon className="h-4 w-4" />}
+                         {sub.text}
+                       </button>
+                     );
+                   })}
                  </div>
                ) : (
                  <button onClick={() => { setAdminTab(item.id); setSidebarOpen(false); }} className={`flex items-center gap-3 w-full px-3 py-2 rounded-lg text-sm font-medium transition-colors ${adminTab === item.id ? 'bg-red-600 text-white shadow-lg shadow-red-600/30' : 'text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800'}`}>
@@ -96,7 +104,29 @@ export default function AdminDashboard({
                )}
              </div>
            ))}
-           <button onClick={() => setView('landing')} className="flex items-center gap-3 w-full px-3 py-2 rounded-lg text-sm font-medium text-zinc-500 hover:text-red-600 mt-8">
+           
+           {/* Separador */}
+           <div className="border-t border-zinc-200 dark:border-zinc-700 my-4"></div>
+           
+           {/* Botón de tema */}
+           <button 
+             onClick={toggleTheme}
+             className="flex items-center gap-3 w-full px-3 py-2 rounded-lg text-sm font-medium text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
+           >
+             {isDarkMode ? (
+               <>
+                 <Sun className="h-5 w-5 text-yellow-500" />
+                 <span>Modo Claro</span>
+               </>
+             ) : (
+               <>
+                 <Moon className="h-5 w-5 text-indigo-500" />
+                 <span>Modo Oscuro</span>
+               </>
+             )}
+           </button>
+           
+           <button onClick={() => setView('landing')} className="flex items-center gap-3 w-full px-3 py-2 rounded-lg text-sm font-medium text-zinc-500 hover:text-red-600 transition-colors">
              <LogOut className="h-5 w-5" /> Salir
            </button>
         </div>
@@ -121,7 +151,8 @@ export default function AdminDashboard({
            {adminTab === 'students-list' && <StudentsView students={students} categories={categories} handleAdd={handleAdd} handleDelete={handleDelete} />}
            {adminTab === 'students-cats' && <CategoriesView categories={categories} handleAdd={handleAdd} handleDelete={handleDelete} />}
            {adminTab === 'students-pay' && <PaymentsView categories={categories} students={students} payments={payments} handleAdd={handleAdd} handleDelete={handleDelete} showNotification={showNotification} />}
-           {adminTab === 'config-web' && <WebConfigView news={news} achievements={achievements} schedules={schedules} handleAdd={handleAdd} handleDelete={handleDelete} toggleVisibility={toggleVisibility} />}
+           {adminTab === 'config-web' && <WebConfigView news={news} achievements={achievements} schedules={schedules} handleAdd={handleAdd} handleDelete={handleDelete} toggleVisibility={toggleVisibility} showNotification={showNotification} />}
+           {adminTab === 'config-images' && <SiteImagesView showNotification={showNotification} />}
            {adminTab === 'requests' && <RequestsView handleDelete={handleDelete} showNotification={showNotification} />}
         </main>
       </div>

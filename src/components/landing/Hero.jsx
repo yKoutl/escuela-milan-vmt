@@ -1,11 +1,38 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { ArrowRight } from 'lucide-react';
+import { doc, getDoc } from 'firebase/firestore';
+import { db, appId } from '../../firebase';
 
 export default function Hero() {
+  const [heroImage, setHeroImage] = useState('https://images.unsplash.com/photo-1517466787929-bc90951d0974');
+
+  useEffect(() => {
+    loadHeroImage();
+  }, []);
+
+  const loadHeroImage = async () => {
+    try {
+      const docRef = doc(db, 'artifacts', appId, 'public', 'data', 'siteConfig', 'images');
+      const docSnap = await getDoc(docRef);
+      if (docSnap.exists() && docSnap.data().heroImage) {
+        setHeroImage(docSnap.data().heroImage);
+      }
+    } catch (error) {
+      console.error('Error al cargar imagen del hero:', error);
+    }
+  };
+
   return (
     <div className="relative bg-zinc-900 h-[600px] flex items-center overflow-hidden">
       <div className="absolute inset-0 opacity-40">
-        <img src="https://images.unsplash.com/photo-1517466787929-bc90951d0974" className="w-full h-full object-cover" alt="Soccer background"/>
+        <img 
+          src={heroImage} 
+          className="w-full h-full object-cover" 
+          alt="Soccer background"
+          onError={(e) => {
+            e.target.src = 'https://images.unsplash.com/photo-1517466787929-bc90951d0974';
+          }}
+        />
       </div>
       <div className="absolute inset-0 bg-gradient-to-r from-black via-black/70 to-transparent"></div>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 w-full">

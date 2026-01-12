@@ -1,6 +1,9 @@
 import React, { useState } from 'react';
+import { Upload, X, Eye } from 'lucide-react';
 import GenericTable from './GenericTable';
 import Modal from '../../shared/Modal';
+import { uploadImage, deleteImage } from '../../utils/imageUpload';
+import ImagePreviewModal from '../../shared/ImagePreviewModal';
 
 export default function WebConfigView({ 
   news, 
@@ -8,13 +11,44 @@ export default function WebConfigView({
   schedules, 
   handleAdd, 
   handleDelete, 
-  toggleVisibility 
+  toggleVisibility,
+  showNotification
 }) {
   const [modalOpen, setModalOpen] = useState(false);
   const [modalType, setModalType] = useState('');
   const [formData, setFormData] = useState({});
+  const [uploadingImage, setUploadingImage] = useState(false);
+  const [previewImage, setPreviewImage] = useState(null);
 
   const openModal = (type) => { setModalType(type); setFormData({}); setModalOpen(true); };
+
+  // Manejar subida de imagen
+  const handleImageUpload = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    setUploadingImage(true);
+    try {
+      const folder = modalType === 'achievements' ? 'achievements' : 'news';
+      const imageUrl = await uploadImage(file, folder);
+      setFormData({ ...formData, img: imageUrl });
+      showNotification?.('Imagen subida correctamente');
+    } catch (error) {
+      console.error('Error al subir imagen:', error);
+      showNotification?.('Error al subir imagen: ' + error.message, 'error');
+    } finally {
+      setUploadingImage(false);
+      e.target.value = '';
+    }
+  };
+
+  // Eliminar imagen temporal antes de guardar
+  const handleRemoveImage = async () => {
+    if (formData.img) {
+      await deleteImage(formData.img);
+      setFormData({ ...formData, img: '' });
+    }
+  };
 
   const handleSave = () => {
     const collectionMap = {
@@ -30,6 +64,7 @@ export default function WebConfigView({
    
     handleAdd(col, dataToSave);
     setModalOpen(false);
+    setFormData({});
   };
 
   return (
@@ -111,27 +146,134 @@ export default function WebConfigView({
          <div className="space-y-4">
            {(modalType === 'news' || modalType === 'events') && (
              <>
-               <input className="w-full p-2 border rounded dark:bg-zinc-800" placeholder="Título" value={formData.title || ''} onChange={e => setFormData({...formData, title: e.target.value})} />
-               <textarea className="w-full p-2 border rounded dark:bg-zinc-800" placeholder="Descripción" rows="3" value={formData.desc || ''} onChange={e => setFormData({...formData, desc: e.target.value})} />
-               {modalType === 'news' && <input className="w-full p-2 border rounded dark:bg-zinc-800" placeholder="Etiqueta (Ej: Social, Torneo)" value={formData.tag || ''} onChange={e => setFormData({...formData, tag: e.target.value})} />}
+               <input className="w-full p-2 border rounded dark:bg-zinc-800 dark:border-zinc-700" placeholder="Título" value={formData.title || ''} onChange={e => setFormData({...formData, title: e.target.value})} />
+               <textarea className="w-full p-2 border rounded dark:bg-zinc-800 dark:border-zinc-700" placeholder="Descripción" rows="3" value={formData.desc || ''} onChange={e => setFormData({...formData, desc: e.target.value})} />
+               {modalType === 'news' && <input className="w-full p-2 border rounded dark:bg-zinc-800 dark:border-zinc-700" placeholder="Etiqueta (Ej: Social, Torneo)" value={formData.tag || ''} onChange={e => setFormData({...formData, tag: e.target.value})} />}
+               
+               {/* Subida de imagen */}
+               <div className="border-2 border-dashed border-zinc-300 dark:border-zinc-600 rounded-lg p-4">
+                 <label className="block text-sm font-bold mb-2 text-zinc-700 dark:text-zinc-300">Imagen (Opcional)</label>
+                 {formData.img ? (
+                   <div className="relative">
+                     <img src={formData.img} alt="Preview" className="w-full h-48 object-cover rounded-lg" />
+                     <div className="absolute top-2 right-2 flex gap-2">
+                       <button
+                         type="button"
+                         onClick={() => setPreviewImage(formData.img)}
+                         className="p-2 bg-white dark:bg-zinc-800 rounded-full shadow-md hover:bg-zinc-100 dark:hover:bg-zinc-700"
+                       >
+                         <Eye className="h-4 w-4 text-zinc-700 dark:text-zinc-300" />
+                       </button>
+                       <button
+                         type="button"
+                         onClick={handleRemoveImage}
+                         className="p-2 bg-red-600 rounded-full shadow-md hover:bg-red-700"
+                       >
+                         <X className="h-4 w-4 text-white" />
+                       </button>
+                     </div>
+                   </div>
+                 ) : (
+                   <label className="cursor-pointer block">
+                     <input
+                       type="file"
+                       accept="image/*"
+                       onChange={handleImageUpload}
+                       disabled={uploadingImage}
+                       className="hidden"
+                     />
+                     <div className="flex flex-col items-center py-6 hover:bg-zinc-50 dark:hover:bg-zinc-800 rounded transition">
+                       {uploadingImage ? (
+                         <>
+                           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-red-600 mb-2"></div>
+                           <span className="text-sm text-zinc-500">Subiendo...</span>
+                         </>
+                       ) : (
+                         <>
+                           <Upload className="h-8 w-8 text-zinc-400 mb-2" />
+                           <span className="text-sm font-bold text-zinc-700 dark:text-zinc-300">Subir imagen</span>
+                           <span className="text-xs text-zinc-500">JPG, PNG (máx. 5MB)</span>
+                         </>
+                       )}
+                     </div>
+                   </label>
+                 )}
+               </div>
              </>
            )}
            {modalType === 'achievements' && (
              <>
-               <input className="w-full p-2 border rounded dark:bg-zinc-800" placeholder="Título del Logro" value={formData.title || ''} onChange={e => setFormData({...formData, title: e.target.value})} />
-               <input className="w-full p-2 border rounded dark:bg-zinc-800" type="number" placeholder="Año" value={formData.year || ''} onChange={e => setFormData({...formData, year: e.target.value})} />
-               <input className="w-full p-2 border rounded dark:bg-zinc-800" placeholder="Descripción corta" value={formData.desc || ''} onChange={e => setFormData({...formData, desc: e.target.value})} />
+               <input className="w-full p-2 border rounded dark:bg-zinc-800 dark:border-zinc-700" placeholder="Título del Logro" value={formData.title || ''} onChange={e => setFormData({...formData, title: e.target.value})} />
+               <input className="w-full p-2 border rounded dark:bg-zinc-800 dark:border-zinc-700" type="number" placeholder="Año" value={formData.year || ''} onChange={e => setFormData({...formData, year: e.target.value})} />
+               <input className="w-full p-2 border rounded dark:bg-zinc-800 dark:border-zinc-700" placeholder="Descripción corta" value={formData.desc || ''} onChange={e => setFormData({...formData, desc: e.target.value})} />
+               
+               {/* Subida de imagen para logros */}
+               <div className="border-2 border-dashed border-zinc-300 dark:border-zinc-600 rounded-lg p-4">
+                 <label className="block text-sm font-bold mb-2 text-zinc-700 dark:text-zinc-300">Imagen (Opcional)</label>
+                 {formData.img ? (
+                   <div className="relative">
+                     <img src={formData.img} alt="Preview" className="w-full h-48 object-cover rounded-lg" />
+                     <div className="absolute top-2 right-2 flex gap-2">
+                       <button
+                         type="button"
+                         onClick={() => setPreviewImage(formData.img)}
+                         className="p-2 bg-white dark:bg-zinc-800 rounded-full shadow-md hover:bg-zinc-100 dark:hover:bg-zinc-700"
+                       >
+                         <Eye className="h-4 w-4 text-zinc-700 dark:text-zinc-300" />
+                       </button>
+                       <button
+                         type="button"
+                         onClick={handleRemoveImage}
+                         className="p-2 bg-red-600 rounded-full shadow-md hover:bg-red-700"
+                       >
+                         <X className="h-4 w-4 text-white" />
+                       </button>
+                     </div>
+                   </div>
+                 ) : (
+                   <label className="cursor-pointer block">
+                     <input
+                       type="file"
+                       accept="image/*"
+                       onChange={handleImageUpload}
+                       disabled={uploadingImage}
+                       className="hidden"
+                     />
+                     <div className="flex flex-col items-center py-6 hover:bg-zinc-50 dark:hover:bg-zinc-800 rounded transition">
+                       {uploadingImage ? (
+                         <>
+                           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-red-600 mb-2"></div>
+                           <span className="text-sm text-zinc-500">Subiendo...</span>
+                         </>
+                       ) : (
+                         <>
+                           <Upload className="h-8 w-8 text-zinc-400 mb-2" />
+                           <span className="text-sm font-bold text-zinc-700 dark:text-zinc-300">Subir imagen</span>
+                           <span className="text-xs text-zinc-500">JPG, PNG (máx. 5MB)</span>
+                         </>
+                       )}
+                     </div>
+                   </label>
+                 )}
+               </div>
              </>
            )}
            {modalType === 'schedules' && (
              <>
-               <input className="w-full p-2 border rounded dark:bg-zinc-800" placeholder="Categoría (Ej: Sub-12)" value={formData.cat || ''} onChange={e => setFormData({...formData, cat: e.target.value})} />
-               <input className="w-full p-2 border rounded dark:bg-zinc-800" placeholder="Horario (Ej: Lun-Vie 4pm)" value={formData.time || ''} onChange={e => setFormData({...formData, time: e.target.value})} />
+               <input className="w-full p-2 border rounded dark:bg-zinc-800 dark:border-zinc-700" placeholder="Categoría (Ej: Sub-12)" value={formData.cat || ''} onChange={e => setFormData({...formData, cat: e.target.value})} />
+               <input className="w-full p-2 border rounded dark:bg-zinc-800 dark:border-zinc-700" placeholder="Horario (Ej: Lun-Vie 4pm)" value={formData.time || ''} onChange={e => setFormData({...formData, time: e.target.value})} />
              </>
            )}
            <button onClick={handleSave} className="w-full bg-red-600 text-white font-bold py-2 rounded hover:bg-red-700">Guardar</button>
          </div>
       </Modal>
+
+      {/* Modal de vista previa de imagen */}
+      <ImagePreviewModal
+        isOpen={previewImage !== null}
+        imageUrl={previewImage}
+        onClose={() => setPreviewImage(null)}
+      />
     </div>
   );
 }

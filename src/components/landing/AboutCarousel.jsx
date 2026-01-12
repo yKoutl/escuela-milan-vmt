@@ -1,12 +1,31 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { CheckCircle, ChevronLeft, ChevronRight } from 'lucide-react';
+import { doc, getDoc } from 'firebase/firestore';
+import { db, appId } from '../../firebase';
 import { CAROUSEL_IMAGES } from '../../utils/constants';
 
 export default function AboutCarousel() {
   const [idx, setIdx] = useState(0);
+  const [carouselImages, setCarouselImages] = useState(CAROUSEL_IMAGES);
 
-  const next = () => setIdx((prev) => (prev + 1) % CAROUSEL_IMAGES.length);
-  const prev = () => setIdx((prev) => (prev - 1 + CAROUSEL_IMAGES.length) % CAROUSEL_IMAGES.length);
+  useEffect(() => {
+    loadCarouselImages();
+  }, []);
+
+  const loadCarouselImages = async () => {
+    try {
+      const docRef = doc(db, 'artifacts', appId, 'public', 'data', 'siteConfig', 'images');
+      const docSnap = await getDoc(docRef);
+      if (docSnap.exists() && docSnap.data().carouselImages?.length > 0) {
+        setCarouselImages(docSnap.data().carouselImages);
+      }
+    } catch (error) {
+      console.error('Error al cargar imágenes del carrusel:', error);
+    }
+  };
+
+  const next = () => setIdx((prev) => (prev + 1) % carouselImages.length);
+  const prev = () => setIdx((prev) => (prev - 1 + carouselImages.length) % carouselImages.length);
 
   return (
     <section id="historia" className="py-20 bg-white dark:bg-zinc-950 transition-colors duration-300">
@@ -16,16 +35,19 @@ export default function AboutCarousel() {
             <div className="absolute -top-4 -left-4 w-24 h-24 bg-red-100 dark:bg-red-900/30 rounded-full z-0"></div>
             <div className="relative z-10 rounded-2xl shadow-2xl overflow-hidden h-[400px]">
               <img
-                src={CAROUSEL_IMAGES[idx]}
+                src={carouselImages[idx]}
                 alt={`Coach talking to kids ${idx + 1}`}
                 className="w-full h-full object-cover transition duration-500"
+                onError={(e) => {
+                  e.target.src = CAROUSEL_IMAGES[idx % CAROUSEL_IMAGES.length];
+                }}
               />
               <div className="absolute inset-0 flex items-center justify-between p-4 opacity-0 group-hover:opacity-100 transition-opacity">
                 <button onClick={prev} className="bg-black/50 text-white p-2 rounded-full hover:bg-black/80"><ChevronLeft className="h-6 w-6"/></button>
                 <button onClick={next} className="bg-black/50 text-white p-2 rounded-full hover:bg-black/80"><ChevronRight className="h-6 w-6"/></button>
               </div>
               <div className="absolute bottom-4 left-0 right-0 flex justify-center space-x-2">
-                {CAROUSEL_IMAGES.map((_, i) => (
+                {carouselImages.map((_, i) => (
                   <div key={i} className={`h-2 w-2 rounded-full ${i === idx ? 'bg-red-600' : 'bg-white/50'}`}></div>
                 ))}
               </div>

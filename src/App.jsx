@@ -2,20 +2,18 @@ import React, { useState, useEffect } from 'react';
 import { onAuthStateChanged, signInAnonymously } from 'firebase/auth';
 import { collection, onSnapshot, query } from 'firebase/firestore';
 import { auth, db, appId } from './firebase';
+import { ThemeProvider } from './contexts/ThemeContext';
 import LandingScreen from './screens/LandingScreen';
 import LoginScreen from './screens/LoginScreen';
 import AdminDashboard from './screens/AdminDashboard';
 import Notification from './shared/Notification';
+import WelcomeModal from './shared/WelcomeModal';
 
-export default function App() {
+function AppContent() {
   const [user, setUser] = useState(null);
   const [view, setView] = useState('landing');
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [notification, setNotification] = useState(null);
-  const [isDarkMode, setIsDarkMode] = useState(() => {
-    const saved = localStorage.getItem('darkMode');
-    return saved ? JSON.parse(saved) : false;
-  });
 
   // --- Dynamic Data State ---
   const [news, setNews] = useState([]);
@@ -34,16 +32,6 @@ export default function App() {
     const unsubscribe = onAuthStateChanged(auth, setUser);
     return () => unsubscribe();
   }, []);
-
-  // Theme Management - Persistente
-  useEffect(() => {
-    localStorage.setItem('darkMode', JSON.stringify(isDarkMode));
-    if (isDarkMode) {
-      document.documentElement.classList.add('dark');
-    } else {
-      document.documentElement.classList.remove('dark');
-    }
-  }, [isDarkMode]);
 
   // --- Data Fetching ---
   useEffect(() => {
@@ -76,14 +64,13 @@ export default function App() {
   };
 
   return (
-    <div className={`font-sans min-h-screen ${isDarkMode ? 'dark' : ''}`}>
+    <div className="font-sans min-h-screen">
       <Notification notification={notification} />
+      <WelcomeModal />
      
       {view === 'landing' && (
         <LandingScreen
           setView={setView}
-          isDarkMode={isDarkMode}
-          setIsDarkMode={setIsDarkMode}
           isMobileMenuOpen={isMobileMenuOpen}
           setIsMobileMenuOpen={setIsMobileMenuOpen}
           achievements={achievements}
@@ -109,5 +96,13 @@ export default function App() {
         />
       )}
     </div>
+  );
+}
+
+export default function App() {
+  return (
+    <ThemeProvider>
+      <AppContent />
+    </ThemeProvider>
   );
 }

@@ -1,14 +1,15 @@
 import React from 'react';
 import { ArrowRight, Lock, Menu, Moon, Sun } from 'lucide-react';
 import { LOGO_URL } from '../utils/constants';
+import { useTheme } from '../contexts/ThemeContext';
 
 export default function Navbar({ 
   setView, 
-  isDarkMode, 
-  setIsDarkMode, 
   isMobileMenuOpen, 
   setIsMobileMenuOpen 
 }) {
+  const { isDarkMode, toggleTheme } = useTheme();
+  
   return (
     <nav className="bg-white dark:bg-black sticky top-0 z-50 shadow-md border-b-4 border-red-600 transition-colors duration-300">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -40,7 +41,7 @@ export default function Navbar({
               Matrícula 2026 <ArrowRight className="ml-2 h-4 w-4" />
             </button>
             <div className="flex items-center space-x-2 border-l border-zinc-200 dark:border-zinc-700 pl-4 ml-2">
-              <button onClick={() => setIsDarkMode(!isDarkMode)} className="p-2 rounded-full hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-500 dark:text-zinc-400 transition">
+              <button onClick={toggleTheme} className="p-2 rounded-full hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-500 dark:text-zinc-400 transition">
                 {isDarkMode ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
               </button>
               <button onClick={() => setView('admin-login')} className="p-2 rounded-full hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-500 dark:text-zinc-400 transition">
@@ -49,7 +50,7 @@ export default function Navbar({
             </div>
           </div>
           <div className="md:hidden flex items-center gap-4">
-             <button onClick={() => setIsDarkMode(!isDarkMode)} className="text-zinc-500 dark:text-zinc-400">
+             <button onClick={toggleTheme} className="text-zinc-500 dark:text-zinc-400">
                 {isDarkMode ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
              </button>
             <button onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)} className="text-zinc-900 dark:text-white hover:text-red-500">
