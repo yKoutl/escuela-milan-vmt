@@ -3,9 +3,24 @@ export const LOGO_URL = 'https://i.postimg.cc/43L0J04m/logo-milan.png';
 
 // Data Fallbacks
 export const DEFAULT_NEWS = [
-  { id: '1', tag: "Torneo", title: "Inicio del Torneo Apertura SJM", desc: "Nuestras categorías Sub-12 y Sub-14 debutan este fin de semana.", visible: true },
-  { id: '2', tag: "Convocatoria", title: "Pruebas masivas 2026", desc: "Buscamos nuevos talentos nacidos entre 2010 y 2018.", visible: true },
+  { 
+    id: '1',
+    tag: "Torneo",
+    title: "Inicio del Torneo Apertura SJM",
+    desc: "Nuestras categorías Sub-12 y Sub-14 debutan este fin de semana.",
+    visible: true,
+    img: "https://i.postimg.cc/J4R4Hyc0/imagen_milan_fondo_principal.png"
+  },
+  { 
+    id: '2',
+    tag: "Convocatoria",
+    title: "Pruebas masivas 2026",
+    desc: "Buscamos nuevos talentos nacidos entre 2010 y 2018.",
+      visible: true,
+      img: "https://i.postimg.cc/J4R4Hyc0/imagen_milan_fondo_principal.png"
+  }
 ];
+
 
 export const DEFAULT_ACHIEVEMENTS = [
   { 
@@ -108,14 +123,21 @@ export const MEMBERSHIP_OPTIONS = [
     ]
   }
 ];
-
+// ✅ AQUÍ ESTÁ EL CAMBIO PRINCIPAL: Textos actualizados para los sponsors
 export const DEFAULT_SPONSORS = [
   {
     id: '1',
     name: 'Sponsor Principal',
     logo: 'https://i.postimg.cc/SRXT91CV/auspiciadores.jpg',
     tier: 'gold',
-    description: '',
+    description: `Máxima visibilidad y exclusividad
+
+• Logo destacado en uniformes oficiales
+• Espacios publicitarios en instalaciones
+• Menciones en redes sociales (posts semanales)
+• Stand exclusivo en eventos deportivos
+• Entradas VIP para todos los partidos
+• Acceso a base de datos de familias socias`,
     visible: true
   },
   {
@@ -123,7 +145,13 @@ export const DEFAULT_SPONSORS = [
     name: 'Sponsor Oficial',
     logo: 'https://i.postimg.cc/SRXT91CV/auspiciadores.jpg',
     tier: 'silver',
-    description: '',
+    description: `Excelente presencia y alcance
+
+• Logo en uniformes de entrenamiento
+• Banners en instalaciones deportivas
+• Menciones en redes sociales (mensuales)
+• Stand en eventos principales
+• Entradas preferenciales a partidos`,
     visible: true
   },
   {
@@ -131,7 +159,12 @@ export const DEFAULT_SPONSORS = [
     name: 'Aliado Estratégico',
     logo: 'https://i.postimg.cc/SRXT91CV/auspiciadores.jpg',
     tier: 'bronze',
-    description: '',
+    description: `Visibilidad estratégica y valor
+
+• Logo en página web oficial
+• Mención en comunicados institucionales
+• Banner en eventos especiales
+• Descuentos en productos/servicios para socios`,
     visible: true
   }
 ];
@@ -142,7 +175,7 @@ export const DONATION_METHODS = [
     name: 'Yape',
     logo: 'https://i.postimg.cc/XqYfBsB5/yape.png',
     color: 'from-purple-600 to-purple-700',
-    phone: '987654321',
+    phone: '999999999',
     qrImage: 'https://i.postimg.cc/MpqQnPkM/QRYAPE.png'
   },
   {
@@ -150,7 +183,7 @@ export const DONATION_METHODS = [
     name: 'Plin',
     logo: 'https://i.postimg.cc/4y2z6ppB/plin.png',
     color: 'from-blue-600 to-blue-700',
-    phone: '987654321',
+    phone: '999999999',
     qrImage: 'https://i.postimg.cc/MpqQnPkx/QRPLIN.png'
   }
 ];

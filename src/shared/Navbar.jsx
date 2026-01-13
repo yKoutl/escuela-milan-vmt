@@ -15,12 +15,12 @@ export default function Navbar({
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between h-20 items-center">
           <div className="flex items-center cursor-pointer" onClick={() => setView('landing')}>
-            <div className="bg-white rounded-full p-1 mr-3 border-2 border-red-600 overflow-hidden">
+            <div className="bg-white rounded-full p-1 mr-3 border-2 border-primary overflow-hidden">
               <img src={LOGO_URL} alt="Milan Logo" className="h-12 w-12 object-contain" />
             </div>
             <div>
-              <span className="font-bold text-xl tracking-tighter uppercase block leading-none text-zinc-900 dark:text-white">Escuela Deportiva</span>
-              <span className="font-black text-2xl text-red-600 tracking-widest block leading-none">MILAN</span>
+              <span className="font-bold text-xl tracking-tighter uppercase block leading-none text-txt-main">Escuela Deportiva</span>
+              <span className="font-black text-2xl text-primary tracking-widest block leading-none">MILAN</span>
             </div>
           </div>
          

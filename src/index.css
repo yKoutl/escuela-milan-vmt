@@ -1,9 +1,101 @@
 @import "tailwindcss";
 
-@keyframes spin-slow {
-  from { transform: rotate(0deg); }
+/* 1. CONFIGURACIÓN DE COLORES (Conectado con ThemeContext) */
+:root {
+  /* --- MODO CLARO (Default) --- */
+  --color-primary: #dc2626;    /* red-600 */
+  --color-secondary: #18181b;  /* zinc-900 */
+  
+  --bg-main: #ffffff;          /* Fondo principal */
+  --bg-surface: #f4f4f5;       /* Fondo de tarjetas/paneles (zinc-100) */
+  
+  --text-main: #18181b;        /* Texto principal (zinc-900) */
+  --text-muted: #52525b;       /* Texto secundario (zinc-600) */
+  
+  --border-color: #e4e4e7;     /* Bordes (zinc-200) */
+}
+
+/* --- MODO OSCURO (Se activa cuando ThemeContext pone la clase 'dark') --- */
+.dark {
+  --color-primary: #dc2626;    /* Se mantiene rojo */
+  --color-secondary: #ffffff;  /* El secundario pasa a blanco */
+  
+  --bg-main: #09090b;          /* Fondo principal oscuro (zinc-950) */
+  --bg-surface: #18181b;       /* Fondo tarjetas oscuro (zinc-900) */
+  
+  --text-main: #ffffff;        /* Texto principal blanco */
+  --text-muted: #a1a1aa;       /* Texto secundario gris claro (zinc-400) */
+  
+  --border-color: #27272a;     /* Bordes oscuros (zinc-800) */
+}
+
+/* 2. ESTILOS GLOBALES BASE */
+body {
+  background-color: var(--bg-main);
+  color: var(--text-main);
+  transition: background-color 0.3s, color 0.3s;
+}
+
+/* 3. ANIMACIONES PERSONALIZADAS (Usadas en tu AdminDashboard y Modales) */
+
+/* Fade In */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+.animate-fade-in {
+  animation: fadeIn 0.3s ease-in-out;
+}
+
+/* Fade In Up (Aparición hacia arriba) */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+.animate-fade-in-up {
+  animation: fadeInUp 0.5s ease-out forwards;
+}
+
+/* Slide Up (Para modales) */
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: scale(0.95) translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+.animate-slide-up {
+  animation: slideUp 0.3s ease-out forwards;
+}
+
+/* Spin Slow (Para el logo o cargas) */
+@keyframes spin {
   to { transform: rotate(360deg); }
 }
 .animate-spin-slow {
-  animation: spin-slow 3s linear infinite;
+  animation: spin 3s linear infinite;
+}
+
+/* Bounce (Para flechas o notificaciones) */
+@keyframes bounce-slow {
+  0%, 100% {
+    transform: translateY(-5%);
+    animation-timing-function: cubic-bezier(0.8, 0, 1, 1);
+  }
+  50% {
+    transform: translateY(0);
+    animation-timing-function: cubic-bezier(0, 0, 0.2, 1);
+  }
+}
+.animate-bounce-slow {
+  animation: bounce-slow 2s infinite;
 }

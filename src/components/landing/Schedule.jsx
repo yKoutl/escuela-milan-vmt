@@ -1,11 +1,16 @@
 import React from 'react';
 import { Calendar, MapPin } from 'lucide-react';
-import { DEFAULT_SCHEDULE, FIELD_LOCATION, WHATSAPP_NUMBER } from '../../utils/constants';
+import { DEFAULT_SCHEDULE, FIELD_LOCATION } from '../../utils/constants';
 
 export default function Schedule({ schedules = [] }) {
   const sourceData = schedules.length > 0 ? schedules : DEFAULT_SCHEDULE;
   const displayData = sourceData.filter(item => item.visible !== false);
   
+  // ✅ URL ACTUALIZADA: Esta es la que me acabas de pasar (embed validado)
+const mapUrl = "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d1515.6241225783288!2d-76.92127418037695!3d-12.16674316048036!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x9105b9162043cf0b%3A0x204d5e60288830b2!2sAsode%20Proliga%20de%20Deportes%20Virgen%20de%20Lourdes!5e0!3m2!1ses-419!2spe!4v1768260473010!5m2!1ses-419!2spe";
+  // Enlace para el botón "Abrir en Google Maps" (abre la app externa)
+  const externalMapLink = "https://www.google.com/maps/place/Asode+Proliga+de+Deportes+Virgen+de+Lourdes/@-12.1627992,-76.9275069,17z";
+
   return (
     <section id="horarios" className="py-20 bg-zinc-50 dark:bg-zinc-900 transition-colors duration-300">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -20,8 +25,8 @@ export default function Schedule({ schedules = [] }) {
           </p>
         </div>
 
-        {/* Layout principal */}
-        <div className="grid md:grid-cols-2 gap-8">
+        {/* Layout principal (Grid) */}
+        <div className="grid md:grid-cols-2 gap-8 mb-12">
           {/* Columna izquierda - Cards de horarios */}
           <div className="space-y-6">
             {displayData.map((sch) => (
@@ -30,7 +35,6 @@ export default function Schedule({ schedules = [] }) {
                 className="bg-white dark:bg-zinc-800 rounded-xl shadow-lg overflow-hidden border-2 border-zinc-200 dark:border-zinc-700 hover:shadow-2xl transition-all duration-300 hover:-translate-y-1"
               >
                 <div className="flex">
-                  {/* Hora destacada a la izquierda */}
                   <div className="w-28 bg-gradient-to-br from-red-600 to-red-700 text-white flex items-center justify-center p-3">
                     <div className="text-center">
                       <div className="text-lg font-black leading-tight">
@@ -38,8 +42,6 @@ export default function Schedule({ schedules = [] }) {
                       </div>
                     </div>
                   </div>
-
-                  {/* Contenido */}
                   <div className="flex-1 p-5">
                     <h3 className="text-lg font-black text-zinc-900 dark:text-white mb-2">
                       {sch.cat}
@@ -54,7 +56,7 @@ export default function Schedule({ schedules = [] }) {
             ))}
           </div>
 
-          {/* Columna derecha - Imagen del campo con información */}
+          {/* Columna derecha - Imagen del campo */}
           <div className="relative h-full min-h-[400px] rounded-2xl overflow-hidden shadow-2xl border-4 border-zinc-800">
             <img 
               src="https://i.postimg.cc/q7BCRrMw/CAMPO-DEPORTIVO-VIRGEN-DE-LOURDES-PARADERO-11.jpg" 
@@ -72,8 +74,8 @@ export default function Schedule({ schedules = [] }) {
           </div>
         </div>
 
-        {/* Banner promocional animado */}
-        <div className="mt-12 text-center">
+        {/* Banner Promocional */}
+        <div className="mb-16 text-center">
           <div className="inline-block bg-gradient-to-r from-yellow-400 via-yellow-300 to-yellow-400 text-zinc-900 px-8 py-5 rounded-2xl font-black text-lg md:text-xl shadow-2xl border-4 border-yellow-500 animate-pulse hover:animate-none hover:scale-110 transition-transform duration-300">
             <div className="relative">
               <span className="animate-bounce inline-block">🎉</span>
@@ -88,6 +90,45 @@ export default function Schedule({ schedules = [] }) {
             Presenta tu DNI con dirección en Virgen de Lourdes
           </p>
         </div>
+
+        {/* --- SECCIÓN DEL MAPA (Aquí implementé tu iframe) --- */}
+        <div className="w-full">
+            <div className="flex items-center justify-center mb-6">
+                <MapPin className="text-red-600 mr-2 h-6 w-6" />
+                <h3 className="text-2xl font-black text-zinc-900 dark:text-white">
+                    Ubicación Exacta
+                </h3>
+            </div>
+            
+            {/* Contenedor del Mapa */}
+            <div className="w-full h-[400px] md:h-[500px] rounded-2xl overflow-hidden shadow-2xl border-4 border-zinc-200 dark:border-zinc-700 bg-zinc-200 dark:bg-zinc-800 group relative">
+                <iframe 
+                    src={mapUrl}
+                    width="100%" 
+                    height="100%" 
+                    style={{ border: 0 }} 
+                    allowFullScreen="" 
+                    loading="lazy" 
+                    referrerPolicy="no-referrer-when-downgrade"
+                    title="Ubicación Asode Proliga"
+                    className="w-full h-full grayscale-[0.2] hover:grayscale-0 transition-all duration-500"
+                ></iframe>
+            </div>
+            
+            {/* Botón para abrir en app externa */}
+            <div className="mt-6 text-center">
+                <a 
+                    href={externalMapLink}
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center justify-center px-8 py-3 border border-transparent text-base font-bold rounded-full text-white bg-red-600 hover:bg-red-700 hover:shadow-lg transform hover:-translate-y-1 transition-all duration-300"
+                >
+                    <MapPin className="mr-2 h-5 w-5" />
+                    Abrir en Google Maps
+                </a>
+            </div>
+        </div>
+
       </div>
     </section>
   );
