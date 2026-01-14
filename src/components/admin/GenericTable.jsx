@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
-import { Eye, EyeOff, Trash2, X } from 'lucide-react';
+import { Eye, EyeOff, Trash2, X, Edit, FileText, MessageCircle } from 'lucide-react';
 
-export default function GenericTable({ title, data, columns, onDelete, collectionName, toggleVisibility }) {
+export default function GenericTable({ title, data, columns, onDelete, collectionName, toggleVisibility, customActions }) {
   const [confirmId, setConfirmId] = useState(null);
 
   return (
@@ -32,14 +32,19 @@ export default function GenericTable({ title, data, columns, onDelete, collectio
                   </td>
                 )}
                 <td className="px-6 py-4">
-                  {confirmId === row.id ? (
-                    <div className="flex gap-2">
-                      <button onClick={() => { onDelete(row.id); setConfirmId(null); }} className="text-red-600 font-bold text-xs">Confirmar</button>
-                      <button onClick={() => setConfirmId(null)} className="text-zinc-400"><X className="h-4 w-4"/></button>
-                    </div>
-                  ) : (
-                    <button onClick={() => setConfirmId(row.id)} className="text-red-600 hover:bg-red-50 p-2 rounded"><Trash2 className="h-4 w-4"/></button>
-                  )}
+                  <div className="flex gap-2">
+                    {customActions && customActions(row)}
+                    {onDelete && (
+                      confirmId === row.id ? (
+                        <div className="flex gap-2">
+                          <button onClick={() => { onDelete(row.id); setConfirmId(null); }} className="text-red-600 font-bold text-xs">Confirmar</button>
+                          <button onClick={() => setConfirmId(null)} className="text-zinc-400"><X className="h-4 w-4"/></button>
+                        </div>
+                      ) : (
+                        <button onClick={() => setConfirmId(row.id)} className="text-red-600 hover:bg-red-50 dark:hover:bg-red-950 p-2 rounded"><Trash2 className="h-4 w-4"/></button>
+                      )
+                    )}
+                  </div>
                 </td>
               </tr>
             ))}

@@ -3,6 +3,7 @@ import { onAuthStateChanged, signInAnonymously } from 'firebase/auth';
 import { collection, onSnapshot, query } from 'firebase/firestore';
 import { auth, db, appId } from './firebase';
 import { ThemeProvider } from './contexts/ThemeContext';
+import { THEME_CLASSES } from './utils/theme';
 import LandingScreen from './screens/LandingScreen';
 import LoginScreen from './screens/LoginScreen';
 import AdminDashboard from './screens/AdminDashboard';

@@ -55,4 +55,14 @@ export const THEME_CLASSES = {
   }
 };
 
+// Horarios de entrenamiento predeterminados
+export const DEFAULT_SCHEDULE = [
+  { day: 'Lunes', time: '16:00 - 18:00', category: 'Sub-10', color: 'bg-blue-500' },
+  { day: 'Lunes', time: '18:00 - 20:00', category: 'Sub-14', color: 'bg-green-500' },
+  { day: 'Miércoles', time: '16:00 - 18:00', category: 'Sub-12', color: 'bg-purple-500' },
+  { day: 'Miércoles', time: '18:00 - 20:00', category: 'Sub-16', color: 'bg-orange-500' },
+  { day: 'Viernes', time: '16:00 - 18:00', category: 'Sub-10', color: 'bg-blue-500' },
+  { day: 'Viernes', time: '18:00 - 20:00', category: 'Sub-14', color: 'bg-green-500' },
+];
+
 export default THEME_CONFIG;

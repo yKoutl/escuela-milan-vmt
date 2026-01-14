@@ -7,7 +7,7 @@ export default function Schedule({ schedules = [] }) {
   const displayData = sourceData.filter(item => item.visible !== false);
   
   // ✅ URL ACTUALIZADA: Esta es la que me acabas de pasar (embed validado)
-const mapUrl = "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d1515.6241225783288!2d-76.92127418037695!3d-12.16674316048036!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x9105b9162043cf0b%3A0x204d5e60288830b2!2sAsode%20Proliga%20de%20Deportes%20Virgen%20de%20Lourdes!5e0!3m2!1ses-419!2spe!4v1768260473010!5m2!1ses-419!2spe";
+  const mapUrl = "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d1560.036721834213!2d-76.92058307824934!3d-12.16652644691537!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x9105b90061c263ef%3A0xe3f82450a7eabc19!2sLa%20Once!5e0!3m2!1ses-419!2spe!4v1768415942975!5m2!1ses-419!2spe";
   // Enlace para el botón "Abrir en Google Maps" (abre la app externa)
   const externalMapLink = "https://www.google.com/maps/place/Asode+Proliga+de+Deportes+Virgen+de+Lourdes/@-12.1627992,-76.9275069,17z";
 

@@ -62,7 +62,7 @@ export const DEFAULT_SCHEDULE = [
 
 
 export const FIELD_LOCATION = {
-  name: "Campo Deportivo Asoc. Virgen de Lourdes",
+  name: "La Once Campo Deportivo Asoc. Virgen de Lourdes",
   address: "Paradero 11, Nueva Esperanza",
   district: "Virgen de Lourdes"
 };
