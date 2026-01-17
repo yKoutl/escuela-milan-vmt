@@ -8,6 +8,22 @@ export default function CategoriesView({ categories, handleAdd, handleDelete, ha
   const [editModalOpen, setEditModalOpen] = useState(false);
   const [editingCategory, setEditingCategory] = useState(null);
 
+  // LOGICA AGREGADA: Detecta cambios en el input "Categoría"
+  const handleNameChange = (e) => {
+    const val = e.target.value;
+    let computedRange = newCat.range; // Mantiene lo que ya estaba por defecto
+
+    // Si escribes exactamente 4 números (Ej: 2010)
+    if (val.length === 4 && !isNaN(val)) {
+      const year = parseInt(val);
+      const currentYear = new Date().getFullYear();
+      const age = currentYear - year;
+      computedRange = `Sub-${age}`; // Actualiza el rango automáticamente
+    }
+
+    setNewCat({ name: val, range: computedRange });
+  };
+
   const handleEdit = (category) => {
     setEditingCategory({ ...category });
     setEditModalOpen(true);
@@ -27,8 +43,22 @@ export default function CategoriesView({ categories, handleAdd, handleDelete, ha
     <div className="space-y-6">
       <h2 className="text-2xl font-bold text-zinc-800 dark:text-white">Gestión de Categorías</h2>
       <div className="bg-zinc-100 dark:bg-zinc-800 p-4 rounded flex flex-col md:flex-row gap-2 border border-zinc-200 dark:border-zinc-700">
-        <input placeholder="Nombre (Ej: Sub-12)" className="flex-1 p-2 rounded dark:bg-zinc-900 dark:border-zinc-700 dark:text-white border" value={newCat.name} onChange={e => setNewCat({...newCat, name: e.target.value})} />
-        <input placeholder="Rango Edad (Ej: 2014-2016)" className="flex-1 p-2 rounded dark:bg-zinc-900 dark:border-zinc-700 dark:text-white border" value={newCat.range} onChange={e => setNewCat({...newCat, range: e.target.value})} />
+        
+        {/* MODIFICADO: Ahora usa handleNameChange en lugar del inline onChange */}
+        <input 
+            placeholder="Categoria" 
+            className="flex-1 p-2 rounded dark:bg-zinc-900 dark:border-zinc-700 dark:text-white border" 
+            value={newCat.name} 
+            onChange={handleNameChange} 
+        />
+
+        <input 
+            placeholder="Sub-Edad" 
+            className="flex-1 p-2 rounded dark:bg-zinc-900 dark:border-zinc-700 dark:text-white border" 
+            value={newCat.range} 
+            onChange={e => setNewCat({...newCat, range: e.target.value})} 
+        />
+        
         <button onClick={() => { handleAdd('categories', newCat); setNewCat({name:'', range:''}) }} className="bg-red-600 text-white px-4 py-2 rounded font-bold hover:bg-red-700">Crear Categoría</button>
       </div>
       <GenericTable
@@ -45,7 +75,7 @@ export default function CategoriesView({ categories, handleAdd, handleDelete, ha
           </button>
         )}
         columns={[
-          { header: 'Nombre', field: 'name', render: r => <span className="font-bold text-zinc-800 dark:text-white">{r.name}</span> },
+          { header: 'Categoria', field: 'name', render: r => <span className="font-bold text-zinc-800 dark:text-white">{r.name}</span> },
           { header: 'Rango de Edad', field: 'range' }
         ]}
       />

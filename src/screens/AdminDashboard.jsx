@@ -103,6 +103,49 @@ export default function AdminDashboard({
     } catch (_e) { showNotification('Error al actualizar', 'error'); }
   };
 
+  // ... código anterior (toggleVisibility) ...
+
+  // --- NUEVA FUNCIÓN: EL "CEREBRO" DEL REORDENAMIENTO ---
+  const handleReorder = async (collectionName, index, direction) => {
+    // 1. Identificar qué lista vamos a mover
+    let items = [];
+    
+    // Mapeamos el nombre de la colección al estado correcto
+    if (collectionName === 'news') items = news;
+    else if (collectionName === 'achievements') items = achievements;
+    else if (collectionName === 'schedules') items = schedules;
+
+    // Si la lista está vacía o el movimiento es inválido, no hacemos nada
+    if (!items || items.length === 0) return;
+    const newIndex = direction === 'up' ? index - 1 : index + 1;
+    if (newIndex < 0 || newIndex >= items.length) return;
+
+    // 2. Obtener los dos ítems que vamos a intercambiar
+    const itemA = items[index];      // El que movemos
+    const itemB = items[newIndex];   // El que estaba en el lugar destino
+
+    try {
+      // 3. Actualizar en Firebase (Intercambiamos sus campos 'order')
+      // NOTA: Si tus documentos no tienen campo 'order', usamos el índice como respaldo
+      const orderA = itemA.order !== undefined ? itemA.order : index;
+      const orderB = itemB.order !== undefined ? itemB.order : newIndex;
+
+      // Referencias a los documentos en TU ruta de artifacts
+      const docRefA = doc(db, 'artifacts', appId, 'public', 'data', collectionName, itemA.id);
+      const docRefB = doc(db, 'artifacts', appId, 'public', 'data', collectionName, itemB.id);
+
+      // Cruzamos los valores: A toma el orden de B, y B toma el de A
+      await updateDoc(docRefA, { order: orderB });
+      await updateDoc(docRefB, { order: orderA });
+
+      // No necesitamos actualizar el estado manual (setNews, etc.) porque 
+      // si tienes un onSnapshot en App.jsx, Firebase avisará del cambio automáticamente.
+      
+    } catch (error) {
+      console.error("Error al reordenar:", error);
+      showNotification('Error al mover el elemento', 'error');
+    }
+  };
   const menuItems = [
     { text: 'Dashboard', icon: LayoutDashboard, id: 'overview' },
     {
@@ -125,6 +168,7 @@ export default function AdminDashboard({
         { text: 'Solicitudes Web', id: 'requests', icon: Inbox }
       ]
     }
+    
   ];
 
   return (
@@ -273,7 +317,7 @@ export default function AdminDashboard({
            {adminTab === 'students-list' && <StudentsView students={students} categories={categories} handleAdd={handleAdd} handleDelete={handleDelete} />}
            {adminTab === 'students-cats' && <CategoriesView categories={categories} handleAdd={handleAdd} handleDelete={handleDelete} handleUpdate={handleUpdate} />}
            {adminTab === 'students-pay' && <PaymentsView categories={categories} students={students} payments={payments} handleAdd={handleAdd} handleDelete={handleDelete} handleUpdate={handleUpdate} showNotification={showNotification} />}
-           {adminTab === 'config-web' && <WebConfigView news={news} achievements={achievements} schedules={schedules} handleAdd={handleAdd} handleDelete={handleDelete} toggleVisibility={toggleVisibility} showNotification={showNotification} />}
+           {adminTab === 'config-web' && <WebConfigView news={news} achievements={achievements} schedules={schedules} handleAdd={handleAdd} handleDelete={handleDelete} toggleVisibility={toggleVisibility} showNotification={showNotification} handleReorder={handleReorder}/>}
            {adminTab === 'config-images' && <SiteImagesView showNotification={showNotification} />}
            {adminTab === 'config-pricing' && <PricingConfigView showNotification={showNotification} />}
            {adminTab === 'config-memberships' && <MembershipsView showNotification={showNotification} />}

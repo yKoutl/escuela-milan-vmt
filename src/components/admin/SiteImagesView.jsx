@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { Image as ImageIcon, Upload, Trash2, Eye, X } from 'lucide-react';
+import { Image as ImageIcon, Upload, Trash2, Eye, ArrowLeft, ArrowRight } from 'lucide-react';
 import { doc, setDoc, getDoc } from 'firebase/firestore';
-import { db, appId } from '../../firebase';
-import { uploadImage, deleteImage } from '../../utils/imageUpload';
+import { db, appId } from '../../firebase'; // Ajusta la ruta a tu firebase.js si es diferente
+import { uploadImage, deleteImage } from '../../utils/imageUpload'; // Ajusta la ruta a tu servicio
 import ImagePreviewModal from '../../shared/ImagePreviewModal';
 
 export default function SiteImagesView({ showNotification }) {
@@ -14,11 +14,16 @@ export default function SiteImagesView({ showNotification }) {
     announcementEnabled: false
   });
   const [previewImage, setPreviewImage] = useState(null);
+  
+  // Estados de carga independientes
   const [uploadingHero, setUploadingHero] = useState(false);
   const [uploadingCarousel, setUploadingCarousel] = useState(false);
   const [uploadingAnnouncement, setUploadingAnnouncement] = useState(false);
+  
+  // Estado para bloquear botones mientras se reordena
+  const [reordering, setReordering] = useState(false);
 
-  // Cargar imágenes del sitio desde Firestore
+  // Cargar imágenes al iniciar
   useEffect(() => {
     loadSiteImages();
   }, []);
@@ -33,7 +38,8 @@ export default function SiteImagesView({ showNotification }) {
         const data = docSnap.data();
         setSiteImages({
           heroImage: data.heroImage || '',
-          carouselImages: data.carouselImages || [],
+          // Aseguramos que siempre sea un array
+          carouselImages: Array.isArray(data.carouselImages) ? data.carouselImages : [],
           announcementImage: data.announcementImage || '',
           announcementEnabled: data.announcementEnabled || false
         });
@@ -46,28 +52,60 @@ export default function SiteImagesView({ showNotification }) {
     }
   };
 
-  // Subir imagen del Hero
+  // --- FUNCIÓN DE REORDENAMIENTO ---
+  const handleMoveImage = async (index, direction) => {
+    if (reordering) return;
+    
+    const newImages = [...siteImages.carouselImages];
+    
+    // Lógica de intercambio (Swap)
+    if (direction === 'left' && index > 0) {
+      [newImages[index], newImages[index - 1]] = [newImages[index - 1], newImages[index]];
+    } else if (direction === 'right' && index < newImages.length - 1) {
+      [newImages[index], newImages[index + 1]] = [newImages[index + 1], newImages[index]];
+    } else {
+      return;
+    }
+
+    setReordering(true);
+    try {
+      // Actualización optimista (UI primero)
+      setSiteImages(prev => ({ ...prev, carouselImages: newImages }));
+
+      // Guardar solo el array en Firestore
+      const docRef = doc(db, 'artifacts', appId, 'public', 'data', 'siteConfig', 'images');
+      await setDoc(docRef, { carouselImages: newImages }, { merge: true });
+      
+    } catch (error) {
+      console.error("Error al mover:", error);
+      showNotification("Error al reordenar imagen", "error");
+      // Revertir cambios si falla (recargando datos)
+      loadSiteImages();
+    } finally {
+      setReordering(false);
+    }
+  };
+
+  // --- SUBIDA HERO ---
   const handleHeroUpload = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
 
     setUploadingHero(true);
     try {
-      // Si ya existe una imagen, eliminarla
       if (siteImages.heroImage) {
         await deleteImage(siteImages.heroImage);
       }
 
-      // Subir nueva imagen
       const imageUrl = await uploadImage(file, 'hero');
-      
-      // Guardar en Firestore
+      if (!imageUrl) throw new Error("Error al subir la imagen");
+
       const docRef = doc(db, 'artifacts', appId, 'public', 'data', 'siteConfig', 'images');
       const newData = { ...siteImages, heroImage: imageUrl };
       await setDoc(docRef, newData, { merge: true });
       
       setSiteImages(newData);
-      showNotification('Imagen del Hero actualizada correctamente');
+      showNotification('Imagen del Hero actualizada');
     } catch (error) {
       console.error('Error:', error);
       showNotification(error.message, 'error');
@@ -77,27 +115,33 @@ export default function SiteImagesView({ showNotification }) {
     }
   };
 
-  // Subir imágenes del carrusel
+  // --- SUBIDA CARRUSEL (MÚLTIPLE) ---
   const handleCarouselUpload = async (e) => {
     const files = Array.from(e.target.files);
     if (files.length === 0) return;
 
     setUploadingCarousel(true);
     try {
-      // Subir todas las imágenes
       const uploadPromises = files.map(file => uploadImage(file, 'carousel'));
-      const uploadedUrls = await Promise.all(uploadPromises);
+      const rawUrls = await Promise.all(uploadPromises);
       
-      // Agregar a las existentes
-      const newCarouselImages = [...siteImages.carouselImages, ...uploadedUrls];
+      // Filtrar errores (nulls)
+      const validUrls = rawUrls.filter(url => url !== null);
+
+      if (validUrls.length === 0) throw new Error("No se pudo subir ninguna imagen.");
       
-      // Guardar en Firestore
+      const newCarouselImages = [...siteImages.carouselImages, ...validUrls];
+      
       const docRef = doc(db, 'artifacts', appId, 'public', 'data', 'siteConfig', 'images');
       const newData = { ...siteImages, carouselImages: newCarouselImages };
       await setDoc(docRef, newData, { merge: true });
       
       setSiteImages(newData);
-      showNotification(`${files.length} imagen(es) agregada(s) al carrusel`);
+      showNotification(`${validUrls.length} imagen(es) agregada(s)`);
+
+      if (validUrls.length < files.length) {
+         showNotification(`${files.length - validUrls.length} imágenes fallaron`, 'warning');
+      }
     } catch (error) {
       console.error('Error:', error);
       showNotification(error.message, 'error');
@@ -107,31 +151,28 @@ export default function SiteImagesView({ showNotification }) {
     }
   };
 
-  // Eliminar imagen del carrusel
+  // --- BORRAR IMAGEN CARRUSEL ---
   const handleDeleteCarouselImage = async (imageUrl, index) => {
     if (!confirm('¿Eliminar esta imagen del carrusel?')) return;
 
     try {
-      // Eliminar de Storage
       await deleteImage(imageUrl);
       
-      // Actualizar array
       const newCarouselImages = siteImages.carouselImages.filter((_, i) => i !== index);
       
-      // Guardar en Firestore
       const docRef = doc(db, 'artifacts', appId, 'public', 'data', 'siteConfig', 'images');
       const newData = { ...siteImages, carouselImages: newCarouselImages };
       await setDoc(docRef, newData, { merge: true });
       
       setSiteImages(newData);
-      showNotification('Imagen eliminada correctamente');
+      showNotification('Imagen eliminada');
     } catch (error) {
       console.error('Error:', error);
       showNotification('Error al eliminar imagen', 'error');
     }
   };
 
-  // Eliminar imagen del Hero
+  // --- BORRAR HERO ---
   const handleDeleteHero = async () => {
     if (!confirm('¿Eliminar la imagen del Hero?')) return;
 
@@ -167,14 +208,14 @@ export default function SiteImagesView({ showNotification }) {
         </h2>
       </div>
 
-      {/* Imagen del Hero */}
+      {/* --- SECCIÓN 1: HERO IMAGE --- */}
       <div className="bg-white dark:bg-zinc-800 rounded-lg shadow-md p-6 border border-zinc-200 dark:border-zinc-700">
         <h3 className="text-lg font-bold text-zinc-900 dark:text-white mb-4">
           Imagen Principal (Hero)
         </h3>
         
         <div className="grid md:grid-cols-2 gap-6">
-          {/* Preview */}
+          {/* Preview Hero */}
           <div>
             {siteImages.heroImage ? (
               <div className="relative group">
@@ -182,21 +223,13 @@ export default function SiteImagesView({ showNotification }) {
                   src={siteImages.heroImage}
                   alt="Hero"
                   className="w-full h-64 object-cover rounded-lg shadow-md"
-                  onError={(e) => {
-                    e.target.src = 'https://placehold.co/800x400/red/white?text=Error+al+cargar';
-                  }}
+                  onError={(e) => { e.target.src = 'https://placehold.co/800x400/red/white?text=Error'; }}
                 />
                 <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity rounded-lg flex items-center justify-center gap-3">
-                  <button
-                    onClick={() => setPreviewImage(siteImages.heroImage)}
-                    className="p-2 bg-white rounded-full hover:bg-zinc-100 transition"
-                  >
+                  <button onClick={() => setPreviewImage(siteImages.heroImage)} className="p-2 bg-white rounded-full hover:bg-zinc-100 transition">
                     <Eye className="h-5 w-5 text-zinc-900" />
                   </button>
-                  <button
-                    onClick={handleDeleteHero}
-                    className="p-2 bg-red-600 rounded-full hover:bg-red-700 transition"
-                  >
+                  <button onClick={handleDeleteHero} className="p-2 bg-red-600 rounded-full hover:bg-red-700 transition">
                     <Trash2 className="h-5 w-5 text-white" />
                   </button>
                 </div>
@@ -211,16 +244,10 @@ export default function SiteImagesView({ showNotification }) {
             )}
           </div>
 
-          {/* Upload */}
+          {/* Upload Hero */}
           <div className="flex flex-col justify-center">
             <label className="cursor-pointer">
-              <input
-                type="file"
-                accept="image/*"
-                onChange={handleHeroUpload}
-                disabled={uploadingHero}
-                className="hidden"
-              />
+              <input type="file" accept="image/*" onChange={handleHeroUpload} disabled={uploadingHero} className="hidden" />
               <div className="border-2 border-dashed border-zinc-300 dark:border-zinc-600 rounded-lg p-8 hover:border-red-600 transition text-center">
                 {uploadingHero ? (
                   <div className="flex flex-col items-center">
@@ -233,7 +260,7 @@ export default function SiteImagesView({ showNotification }) {
                     <p className="font-bold text-zinc-900 dark:text-white mb-1">
                       {siteImages.heroImage ? 'Cambiar imagen' : 'Subir imagen'}
                     </p>
-                    <p className="text-xs text-zinc-500">JPG, PNG, WEBP (máx. 5MB)</p>
+                    <p className="text-xs text-zinc-500">JPG, PNG, WEBP (máx. 10MB)</p>
                   </>
                 )}
               </div>
@@ -242,25 +269,15 @@ export default function SiteImagesView({ showNotification }) {
         </div>
       </div>
 
-      {/* Carrusel "Sobre Nosotros" */}
+      {/* --- SECCIÓN 2: CARRUSEL (CON REORDENAMIENTO) --- */}
       <div className="bg-white dark:bg-zinc-800 rounded-lg shadow-md p-6 border border-zinc-200 dark:border-zinc-700">
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-lg font-bold text-zinc-900 dark:text-white">
             Carrusel "Sobre Nosotros"
           </h3>
           <label className="cursor-pointer">
-            <input
-              type="file"
-              accept="image/*"
-              multiple
-              onChange={handleCarouselUpload}
-              disabled={uploadingCarousel}
-              className="hidden"
-            />
-            <button
-              disabled={uploadingCarousel}
-              className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg font-bold transition flex items-center disabled:opacity-50"
-            >
+            <input type="file" accept="image/*" multiple onChange={handleCarouselUpload} disabled={uploadingCarousel} className="hidden" />
+            <span className={`bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg font-bold transition flex items-center cursor-pointer ${uploadingCarousel ? 'opacity-50' : ''}`}>
               {uploadingCarousel ? (
                 <>
                   <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
@@ -272,12 +289,12 @@ export default function SiteImagesView({ showNotification }) {
                   Agregar Imágenes
                 </>
               )}
-            </button>
+            </span>
           </label>
         </div>
 
-        {/* Grid de imágenes */}
-        {siteImages.carouselImages.length === 0 ? (
+        {/* GRID DE IMÁGENES */}
+        {(!siteImages.carouselImages || siteImages.carouselImages.length === 0) ? (
           <div className="text-center py-12 text-zinc-500 dark:text-zinc-400">
             <ImageIcon className="h-12 w-12 mx-auto mb-3 opacity-50" />
             <p>No hay imágenes en el carrusel</p>
@@ -286,40 +303,57 @@ export default function SiteImagesView({ showNotification }) {
         ) : (
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
             {siteImages.carouselImages.map((imageUrl, index) => (
-              <div key={index} className="relative group">
-                <img
-                  src={imageUrl}
-                  alt={`Carrusel ${index + 1}`}
-                  loading="lazy"
-                  className="w-full h-40 object-cover rounded-lg shadow-md"
-                  onError={(e) => {
-                    e.target.src = 'https://placehold.co/400x300/red/white?text=Error';
-                  }}
-                />
-                <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity rounded-lg flex items-center justify-center gap-2">
-                  <button
-                    onClick={() => setPreviewImage(imageUrl)}
-                    className="p-2 bg-white rounded-full hover:bg-zinc-100 transition"
-                  >
-                    <Eye className="h-4 w-4 text-zinc-900" />
-                  </button>
-                  <button
-                    onClick={() => handleDeleteCarouselImage(imageUrl, index)}
-                    className="p-2 bg-red-600 rounded-full hover:bg-red-700 transition"
-                  >
-                    <Trash2 className="h-4 w-4 text-white" />
-                  </button>
+              <div key={index} className="flex flex-col bg-zinc-50 dark:bg-zinc-900 rounded-lg p-2 shadow-sm">
+                
+                {/* Imagen con Overlay */}
+                <div className="relative group overflow-hidden rounded-md aspect-video mb-2">
+                  <img
+                    src={imageUrl}
+                    alt={`Carrusel ${index + 1}`}
+                    className="w-full h-full object-cover"
+                    onError={(e) => { e.target.src = 'https://placehold.co/400x300/red/white?text=Error'; }}
+                  />
+                  <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
+                    <button onClick={() => setPreviewImage(imageUrl)} className="p-2 bg-white rounded-full hover:bg-zinc-100 text-zinc-900">
+                      <Eye size={16} />
+                    </button>
+                    <button onClick={() => handleDeleteCarouselImage(imageUrl, index)} className="p-2 bg-red-600 rounded-full hover:bg-red-700 text-white">
+                      <Trash2 size={16} />
+                    </button>
+                  </div>
                 </div>
-                <span className="absolute top-2 left-2 bg-black/70 text-white text-xs px-2 py-1 rounded">
-                  {index + 1}
-                </span>
+
+                {/* Barra de Ordenamiento */}
+                <div className="flex justify-between items-center bg-zinc-200 dark:bg-zinc-800 rounded px-2 py-1">
+                   <button 
+                      onClick={() => handleMoveImage(index, 'left')}
+                      disabled={index === 0 || reordering}
+                      className={`p-1 hover:bg-zinc-300 dark:hover:bg-zinc-700 rounded transition ${index === 0 ? 'opacity-30 cursor-not-allowed' : ''}`}
+                      title="Mover antes"
+                   >
+                      <ArrowLeft size={16} className="text-zinc-700 dark:text-zinc-300"/>
+                   </button>
+
+                   <span className="text-xs font-mono font-bold text-zinc-500 dark:text-zinc-400">
+                      {index + 1}
+                   </span>
+
+                   <button 
+                      onClick={() => handleMoveImage(index, 'right')}
+                      disabled={index === siteImages.carouselImages.length - 1 || reordering}
+                      className={`p-1 hover:bg-zinc-300 dark:hover:bg-zinc-700 rounded transition ${index === siteImages.carouselImages.length - 1 ? 'opacity-30 cursor-not-allowed' : ''}`}
+                      title="Mover después"
+                   >
+                      <ArrowRight size={16} className="text-zinc-700 dark:text-zinc-300"/>
+                   </button>
+                </div>
               </div>
             ))}
           </div>
         )}
       </div>
 
-      {/* Imagen de Anuncio/Bienvenida */}
+      {/* --- SECCIÓN 3: ANUNCIO / BIENVENIDA --- */}
       <div className="bg-gradient-to-br from-yellow-50 to-orange-50 dark:from-yellow-900/20 dark:to-orange-900/20 rounded-lg shadow-md p-6 border-2 border-yellow-300 dark:border-yellow-700">
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-4">
           <h3 className="text-lg font-bold text-zinc-900 dark:text-white flex items-center">
@@ -333,7 +367,7 @@ export default function SiteImagesView({ showNotification }) {
               const newData = { ...siteImages, announcementEnabled: newEnabled };
               await setDoc(docRef, newData, { merge: true });
               setSiteImages(newData);
-              showNotification(newEnabled ? 'Modal de anuncio habilitado' : 'Modal de anuncio deshabilitado');
+              showNotification(newEnabled ? 'Modal habilitado' : 'Modal deshabilitado');
             }}
             className={`px-4 py-2 rounded-lg font-bold transition flex items-center gap-2 ${
               siteImages.announcementEnabled 
@@ -347,11 +381,11 @@ export default function SiteImagesView({ showNotification }) {
         </div>
         
         <p className="text-sm text-zinc-600 dark:text-zinc-400 mb-4">
-          Este modal aparecerá automáticamente cuando los usuarios entren a la página (una vez por sesión).
+          Este modal aparecerá automáticamente cuando los usuarios entren a la página.
         </p>
 
         <div className="grid md:grid-cols-2 gap-6">
-          {/* Preview */}
+          {/* Preview Anuncio */}
           <div>
             {siteImages.announcementImage ? (
               <div className="relative group">
@@ -359,15 +393,10 @@ export default function SiteImagesView({ showNotification }) {
                   src={siteImages.announcementImage}
                   alt="Anuncio"
                   className="w-full h-64 object-cover rounded-lg shadow-md"
-                  onError={(e) => {
-                    e.target.src = 'https://placehold.co/800x400/yellow/white?text=Anuncio';
-                  }}
+                  onError={(e) => { e.target.src = 'https://placehold.co/800x400/yellow/white?text=Anuncio'; }}
                 />
                 <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity rounded-lg flex items-center justify-center gap-3">
-                  <button
-                    onClick={() => setPreviewImage(siteImages.announcementImage)}
-                    className="p-2 bg-white rounded-full hover:bg-zinc-100 transition"
-                  >
+                  <button onClick={() => setPreviewImage(siteImages.announcementImage)} className="p-2 bg-white rounded-full hover:bg-zinc-100 transition">
                     <Eye className="h-5 w-5 text-zinc-900" />
                   </button>
                   <button
@@ -396,34 +425,24 @@ export default function SiteImagesView({ showNotification }) {
             )}
           </div>
 
-          {/* Upload */}
+          {/* Upload Anuncio */}
           <div className="flex flex-col justify-center">
             <label className="cursor-pointer">
-              <input
-                type="file"
-                accept="image/*"
-                onChange={async (e) => {
+              <input type="file" accept="image/*" onChange={async (e) => {
                   const file = e.target.files[0];
                   if (!file) return;
-                  
                   setUploadingAnnouncement(true);
                   try {
-                    if (siteImages.announcementImage) {
-                      await deleteImage(siteImages.announcementImage);
-                    }
+                    if (siteImages.announcementImage) await deleteImage(siteImages.announcementImage);
                     const imageUrl = await uploadImage(file, 'announcements');
+                    if(!imageUrl) throw new Error("Fallo al subir anuncio");
+
                     const docRef = doc(db, 'artifacts', appId, 'public', 'data', 'siteConfig', 'images');
                     const newData = { ...siteImages, announcementImage: imageUrl };
                     await setDoc(docRef, newData, { merge: true });
                     setSiteImages(newData);
-                    showNotification('Imagen de anuncio actualizada');
-                  } catch (error) {
-                    console.error('Error:', error);
-                    showNotification(error.message, 'error');
-                  } finally {
-                    setUploadingAnnouncement(false);
-                    e.target.value = '';
-                  }
+                    showNotification('Anuncio actualizado');
+                  } catch (error) { showNotification(error.message, 'error'); } finally { setUploadingAnnouncement(false); e.target.value = ''; }
                 }}
                 disabled={uploadingAnnouncement}
                 className="hidden"
@@ -438,9 +457,9 @@ export default function SiteImagesView({ showNotification }) {
                   <>
                     <Upload className="h-10 w-10 text-yellow-600 mx-auto mb-3" />
                     <p className="font-bold text-zinc-900 dark:text-white mb-1">
-                      {siteImages.announcementImage ? 'Cambiar imagen' : 'Subir imagen de anuncio'}
+                      {siteImages.announcementImage ? 'Cambiar imagen' : 'Subir anuncio'}
                     </p>
-                    <p className="text-xs text-zinc-500">JPG, PNG, WEBP (máx. 5MB)</p>
+                    <p className="text-xs text-zinc-500">JPG, PNG, WEBP</p>
                   </>
                 )}
               </div>
@@ -449,7 +468,6 @@ export default function SiteImagesView({ showNotification }) {
         </div>
       </div>
 
-      {/* Modal de vista previa */}
       <ImagePreviewModal
         isOpen={previewImage !== null}
         imageUrl={previewImage}

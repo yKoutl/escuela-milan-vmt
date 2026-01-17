@@ -4,11 +4,13 @@ import { doc, getDoc, setDoc } from 'firebase/firestore';
 import { db, appId } from '../../firebase';
 import { DONATION_METHODS } from '../../utils/constants';
 import { uploadImage, deleteImage } from '../../utils/imageUpload';
+import LoadingModal from '../../shared/LoadingModal';
 
 export default function DonationConfigView({ showNotification }) {
   const [methods, setMethods] = useState(DONATION_METHODS);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
 
   useEffect(() => {
     loadDonationConfig();
@@ -51,18 +53,22 @@ export default function DonationConfigView({ showNotification }) {
   };
 
   const handleImageUpload = async (methodId, file) => {
+    setIsUploading(true);
     try {
       const path = `donations/${methodId}_qr`;
       const url = await uploadImage(file, path);
       
-      setMethods(methods.map(m => 
-        m.id === methodId ? { ...m, qrImage: url } : m
-      ));
-      
-      showNotification?.('Imagen QR actualizada', 'success');
+      if (url) {
+        setMethods(methods.map(m => 
+          m.id === methodId ? { ...m, qrImage: url } : m
+        ));
+        showNotification?.('Imagen QR actualizada', 'success');
+      }
     } catch (error) {
       console.error('Error uploading QR:', error);
       showNotification?.('Error al subir imagen', 'error');
+    } finally {
+      setIsUploading(false);
     }
   };
 
@@ -97,6 +103,9 @@ export default function DonationConfigView({ showNotification }) {
 
   return (
     <div className="space-y-6">
+      {/* Modal de carga - bloquea toda la pantalla */}
+      <LoadingModal isOpen={isUploading} />
+      
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
           <Heart className="h-6 w-6 text-red-600" />
@@ -142,11 +151,17 @@ export default function DonationConfigView({ showNotification }) {
               </div>
             </div>
 
+            {/* SECCIÓN CORREGIDA: Input con ID y Label asociado */}
             <div>
-              <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-2">
+              <label 
+                htmlFor={`phone-${method.id}`}
+                className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-2"
+              >
                 Número de Teléfono
               </label>
               <input
+                id={`phone-${method.id}`}
+                name="phone"
                 type="text"
                 value={method.phone}
                 onChange={(e) => updateMethod(method.id, 'phone', e.target.value)}
