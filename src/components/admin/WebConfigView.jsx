@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
-import { Upload, X, Eye, EyeOff, Pencil, Trash2, ArrowUp, ArrowDown } from 'lucide-react';
+import { Upload, X, Eye, EyeOff, Pencil, Trash2, ArrowUp, ArrowDown, Share2 } from 'lucide-react';
 import Modal from '../../shared/Modal';
-import { uploadImage, deleteImage } from '../../utils/imageUpload';
+import { uploadImage } from '../../utils/imageUpload'; // Asegúrate de que la ruta sea correcta
 import ImagePreviewModal from '../../shared/ImagePreviewModal';
 
 export default function WebConfigView({ 
@@ -12,7 +12,7 @@ export default function WebConfigView({
   handleDelete, 
   handleUpdate, 
   toggleVisibility,
-  handleReorder, // Función para reordenar desde el padre
+  handleReorder, 
   showNotification
 }) {
   const [modalOpen, setModalOpen] = useState(false);
@@ -60,6 +60,28 @@ export default function WebConfigView({
     }
   };
 
+  // --- COMPARTIR EN WHATSAPP ---
+  const handleShare = (item) => {
+    // 1. Construimos el mensaje con formato de WhatsApp (*negrita*)
+    let message = `📢 *${item.title.toUpperCase()}*\n\n`; 
+    message += `${item.desc}\n\n`;
+    
+    // Agregamos etiqueta si existe
+    if(item.tag) message += `🏷️ *Etiqueta:* ${item.tag}\n\n`;
+
+    // Agregamos link de imagen si existe
+    if (item.img) {
+      message += `📷 *Ver imagen:* ${item.img}`;
+    }
+
+    // 2. Codificamos para URL
+    const encodedMessage = encodeURIComponent(message);
+    
+    // 3. Abrimos WhatsApp (Web o App)
+    // Esto abrirá la lista de chats para que el admin elija el grupo o difusión
+    window.open(`https://wa.me/?text=${encodedMessage}`, '_blank');
+  };
+
   // --- GUARDAR (CREAR O EDITAR) ---
   const handleSave = () => {
     const collectionMap = {
@@ -97,7 +119,7 @@ export default function WebConfigView({
     return `${action} ${labels[modalType] || 'Item'}`;
   };
 
-  // --- 3. RENDERIZADO DE TABLA (MODIFICADO CON ORDENAMIENTO) ---
+  // --- RENDERIZADO DE TABLA ---
   const renderTable = (title, data, columns, collectionName, editType) => (
     <div className="bg-white dark:bg-zinc-900 rounded-xl shadow-sm border border-zinc-200 dark:border-zinc-800 overflow-hidden mb-8">
       <div className="p-6 border-b border-zinc-200 dark:border-zinc-800 flex justify-between items-center">
@@ -108,7 +130,6 @@ export default function WebConfigView({
         <table className="w-full text-left text-sm text-zinc-600 dark:text-zinc-400">
           <thead className="bg-zinc-50 dark:bg-zinc-800/50 uppercase text-xs font-bold">
             <tr>
-              {/* Columna extra para Orden */}
               <th className="px-6 py-4 w-16 text-center">Orden</th>
               {columns.map((col, idx) => <th key={idx} className="px-6 py-4">{col.header}</th>)}
               <th className="px-6 py-4 text-right">Acciones</th>
@@ -118,13 +139,12 @@ export default function WebConfigView({
             {data.length === 0 ? (
               <tr><td colSpan={columns.length + 2} className="px-6 py-8 text-center text-zinc-500">No hay datos registrados.</td></tr>
             ) : (
-              data.map((item, idx) => ( // Usamos idx para saber la posición
+              data.map((item, idx) => ( 
                 <tr key={item.id} className="hover:bg-zinc-50 dark:hover:bg-zinc-800/50 transition group">
                   
-                  {/* --- NUEVA COLUMNA DE ORDENAMIENTO --- */}
+                  {/* COLUMNA DE ORDENAMIENTO */}
                   <td className="px-6 py-4 text-center">
                     <div className="flex flex-col items-center gap-1">
-                        {/* Botón SUBIR */}
                         <button 
                             onClick={() => handleReorder && handleReorder(collectionName, idx, 'up')}
                             disabled={idx === 0}
@@ -134,7 +154,6 @@ export default function WebConfigView({
                             <ArrowUp size={14} />
                         </button>
                         
-                        {/* Botón BAJAR */}
                         <button 
                             onClick={() => handleReorder && handleReorder(collectionName, idx, 'down')}
                             disabled={idx === data.length - 1}
@@ -145,12 +164,23 @@ export default function WebConfigView({
                         </button>
                     </div>
                   </td>
-                  {/* ------------------------------------- */}
 
                   {columns.map((col, i) => <td key={i} className="px-6 py-4">{item[col.field]}</td>)}
                   
                   <td className="px-6 py-4 text-right">
                     <div className="flex items-center justify-end gap-2">
+                      
+                      {/* --- BOTÓN WHATSAPP (Solo visible en Noticias) --- */}
+                      {collectionName === 'news' && (
+                        <button 
+                          onClick={() => handleShare(item)} 
+                          className="p-2 text-green-600 hover:bg-green-50 dark:hover:bg-green-900/30 rounded-lg transition"
+                          title="Compartir por WhatsApp"
+                        >
+                          <Share2 size={18} />
+                        </button>
+                      )}
+
                       <button 
                         onClick={() => handleEdit(item, editType || collectionName)} 
                         className="p-2 text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded-lg transition"
@@ -187,8 +217,7 @@ export default function WebConfigView({
 
   return (
     <div className="space-y-8">
-     
-
+      
       {/* TARJETAS DE ACCESO RÁPIDO */}
       <div className="grid md:grid-cols-2 gap-6">
          <div className="bg-blue-50 dark:bg-blue-900/20 p-6 rounded-xl border border-blue-100 dark:border-blue-800">

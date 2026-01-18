@@ -1,65 +1,67 @@
 import React, { useState, useEffect } from 'react';
 import { X, Heart, Calendar } from 'lucide-react';
-import { doc, updateDoc, getDoc } from 'firebase/firestore';
+import { doc, updateDoc, increment } from 'firebase/firestore'; // Importamos increment
 import { db, appId } from '../firebase';
 
 export default function NewsModal({ news, isOpen, onClose }) {
-  const [likes, setLikes] = useState(news?.likes || 0);
+  const [likes, setLikes] = useState(0);
   const [hasLiked, setHasLiked] = useState(false);
   const [isLiking, setIsLiking] = useState(false);
 
   useEffect(() => {
-    if (news?.id) {
-      // Verificar si el usuario ya dio like (usando localStorage)
+    if (news) {
+      // 1. Sincronizar estado visual con la data de la noticia
+      setLikes(news.likes || 0);
+
+      // 2. Verificar si el usuario ya dio like (usando localStorage del navegador)
       const likedNews = JSON.parse(localStorage.getItem('likedNews') || '[]');
       setHasLiked(likedNews.includes(news.id));
-      setLikes(news.likes || 0);
     }
   }, [news]);
 
   const handleLike = async () => {
     if (!news?.id || isLiking) return;
     
+    // Evitar errores con noticias de ejemplo (IDs '1', '2') que no existen en Firebase
+    if (['1', '2'].includes(news.id) && !news.createdAt) {
+        console.warn("No se pueden guardar likes en noticias de ejemplo.");
+        return;
+    }
+
     setIsLiking(true);
     try {
-      const docRef = doc(db, 'artifacts', appId, 'public', 'data', 'news');
-      const docSnap = await getDoc(docRef);
-      
-      if (docSnap.exists()) {
-        const data = docSnap.data();
-        const allNews = Array.isArray(data) ? data : (data.items || []);
-        const newsIndex = allNews.findIndex(n => n.id === news.id);
+      // REFERENCIA CORREGIDA: Apunta al documento específico en la colección 'news'
+      const newsRef = doc(db, 'artifacts', appId, 'public', 'data', 'news', news.id);
+
+      if (hasLiked) {
+        // --- QUITAR LIKE ---
+        // 1. Actualizar Firebase (restar 1)
+        await updateDoc(newsRef, { likes: increment(-1) });
         
-        if (newsIndex !== -1) {
-          const updatedNews = [...allNews];
-          const currentLikes = updatedNews[newsIndex].likes || 0;
-          
-          if (hasLiked) {
-            // Quitar like
-            updatedNews[newsIndex].likes = Math.max(0, currentLikes - 1);
-            setLikes(updatedNews[newsIndex].likes);
-            setHasLiked(false);
-            
-            // Actualizar localStorage
-            const likedNews = JSON.parse(localStorage.getItem('likedNews') || '[]');
-            localStorage.setItem('likedNews', JSON.stringify(likedNews.filter(id => id !== news.id)));
-          } else {
-            // Dar like
-            updatedNews[newsIndex].likes = currentLikes + 1;
-            setLikes(updatedNews[newsIndex].likes);
-            setHasLiked(true);
-            
-            // Actualizar localStorage
-            const likedNews = JSON.parse(localStorage.getItem('likedNews') || '[]');
-            localStorage.setItem('likedNews', JSON.stringify([...likedNews, news.id]));
-          }
-          
-          // Guardar en formato correcto
-          await updateDoc(docRef, Array.isArray(data) ? updatedNews : { items: updatedNews });
-        }
+        // 2. Actualizar estado local (visual)
+        setLikes(prev => Math.max(0, prev - 1));
+        setHasLiked(false);
+        
+        // 3. Actualizar localStorage
+        const likedNews = JSON.parse(localStorage.getItem('likedNews') || '[]');
+        localStorage.setItem('likedNews', JSON.stringify(likedNews.filter(id => id !== news.id)));
+
+      } else {
+        // --- DAR LIKE ---
+        // 1. Actualizar Firebase (sumar 1)
+        await updateDoc(newsRef, { likes: increment(1) });
+        
+        // 2. Actualizar estado local (visual)
+        setLikes(prev => prev + 1);
+        setHasLiked(true);
+        
+        // 3. Actualizar localStorage
+        const likedNews = JSON.parse(localStorage.getItem('likedNews') || '[]');
+        localStorage.setItem('likedNews', JSON.stringify([...likedNews, news.id]));
       }
+
     } catch (error) {
-      console.error('Error al dar like:', error);
+      console.error('Error al actualizar like:', error);
     } finally {
       setIsLiking(false);
     }
@@ -120,6 +122,7 @@ export default function NewsModal({ news, isOpen, onClose }) {
             </div>
             <div className="flex items-center gap-2">
               <Heart className={`h-4 w-4 ${hasLiked ? 'fill-red-600 text-red-600' : ''}`} />
+              {/* Mostramos el estado 'likes' local que se actualiza al instante */}
               <span>{likes} me gusta</span>
             </div>
           </div>
