@@ -4,7 +4,7 @@ import { DEFAULT_SPONSORS } from '../../utils/constants';
 import { doc, getDoc } from 'firebase/firestore';
 import { db, appId } from '../../firebase';
 
-// Solo configuración visual (Colores e Iconos) - SIN TEXTOS
+// Solo configuración visual (Colores e Iconos)
 const TIER_STYLES = {
   gold: {
     icon: Trophy,
@@ -96,23 +96,28 @@ export default function Sponsors({ sponsors }) {
                   key={sponsor.id}
                   className={`relative rounded-2xl p-8 border-2 ${style.borderColor} bg-gradient-to-b ${style.cardGradient} hover:scale-105 transition-all duration-300 group shadow-2xl ${style.shadow} flex flex-col items-center justify-center`}
                 >
-                  {/* Badge (Nombre del Tier tomado de la data) */}
+                  {/* Badge */}
                   <div className={`${style.bgBadge} ${style.color} px-4 py-2 rounded-full mb-6 flex items-center gap-2 border border-white/5`}>
                     <Icon className="h-4 w-4" />
                     <span className="font-bold text-sm tracking-wide uppercase">{sponsor.name}</span>
                   </div>
 
-                  {/* Logo */}
-                  <div className="w-40 h-40 bg-white rounded-full p-6 mb-6 shadow-lg flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
-                    <img
-                      src={sponsor.logo}
-                      alt={sponsor.name}
-                      className="w-full h-full object-contain"
-                      onError={(e) => {
-                        e.target.src = 'https://placehold.co/200x200/ef4444/white?text=' + sponsor.name.substring(0, 1);
-                      }}
-                    />
-                  </div>
+                  {/* --- LOGO CIRCULAR (Estilo copiado del Admin View) --- */}
+             <div className="relative mb-6">
+    {/* Contenedor con el tamaño w-40 h-40 del primer diseño */}
+    <div className="relative group w-40 h-40 mx-auto">
+        <img
+            src={sponsor.logo}
+            alt={sponsor.name}
+            // Mantiene el diseño visual del segundo (object-cover, bordes, sombra, hover)
+            className="w-full h-full object-cover rounded-full shadow-md border-4 border-white dark:border-zinc-700 cursor-pointer transition-transform group-hover:scale-105"
+            onError={(e) => {
+                e.target.src = 'https://placehold.co/200x200/ef4444/white?text=' + sponsor.name.substring(0, 1);
+            }}
+        />
+    </div>
+</div>
+                  {/* ----------------------------------------------------- */}
 
                   {/* Nombre del Sponsor */}
                   <h3 className="text-xl font-bold text-white text-center">
@@ -177,7 +182,7 @@ export default function Sponsors({ sponsors }) {
                 </div>
               </div>
 
-              {/* Grid del Modal: Aquí mostramos la DESCRIPCIÓN que viene de la data */}
+              {/* Grid del Modal */}
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 {displaySponsors.map((sponsor) => {
                   const style = getStyle(sponsor.tier);
@@ -195,7 +200,6 @@ export default function Sponsors({ sponsors }) {
                       </div>
                       
                       <div className="flex-1">
-                        {/* Renderizamos la descripción respetando los saltos de línea */}
                         <div className="text-zinc-300 text-sm whitespace-pre-line leading-relaxed">
                             {sponsor.description || "Contáctanos para conocer los beneficios."}
                         </div>

@@ -12,7 +12,7 @@ export default function WebConfigView({
   handleDelete, 
   handleUpdate, 
   toggleVisibility,
-  handleReorder, // <--- 2. NUEVA PROP: Función para reordenar desde el padre
+  handleReorder, // Función para reordenar desde el padre
   showNotification
 }) {
   const [modalOpen, setModalOpen] = useState(false);
@@ -187,9 +187,7 @@ export default function WebConfigView({
 
   return (
     <div className="space-y-8">
-      <div className="flex justify-between items-center">
-        <h2 className="text-2xl font-bold text-zinc-800 dark:text-white">Configuración Web</h2>
-      </div>
+     
 
       {/* TARJETAS DE ACCESO RÁPIDO */}
       <div className="grid md:grid-cols-2 gap-6">

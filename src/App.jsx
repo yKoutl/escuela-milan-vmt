@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { onAuthStateChanged, signInAnonymously } from 'firebase/auth';
-import { collection, onSnapshot, query } from 'firebase/firestore';
+import { collection, onSnapshot, query, orderBy } from 'firebase/firestore';
 import { auth, db, appId } from './firebase';
 import { ThemeProvider } from './contexts/ThemeContext';
 import { THEME_CLASSES } from './utils/theme';
@@ -39,10 +39,23 @@ function AppContent() {
     if (!user) return;
    
     const setupListener = (colName, setState) => {
-      const q = query(collection(db, 'artifacts', appId, 'public', 'data', colName));
+      // Colecciones que usan ordenamiento manual por campo 'order'
+      const webCollections = ['news', 'achievements', 'schedules'];
+      const isWebCollection = webCollections.includes(colName);
+      
+      // Si es colección web, ordenar por campo 'order' en Firebase
+      const q = isWebCollection 
+        ? query(collection(db, 'artifacts', appId, 'public', 'data', colName), orderBy('order', 'asc'))
+        : query(collection(db, 'artifacts', appId, 'public', 'data', colName));
+      
       return onSnapshot(q, (snapshot) => {
         const data = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-        data.sort((a, b) => (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0));
+        
+        // Solo aplicar ordenamiento por fecha si NO es colección web
+        if (!isWebCollection) {
+          data.sort((a, b) => (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0));
+        }
+        
         setState(data);
       }, (err) => console.error(`Error fetching ${colName}:`, err));
     };

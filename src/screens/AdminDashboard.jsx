@@ -73,11 +73,29 @@ export default function AdminDashboard({
   // Generic handlers
   const handleAdd = async (collectionName, data) => {
     try {
-      await addDoc(collection(db, 'artifacts', appId, 'public', 'data', collectionName), {
+      // Para colecciones web, asignar el campo 'order' automáticamente
+      const webCollections = ['news', 'achievements', 'schedules'];
+      const isWebCollection = webCollections.includes(collectionName);
+      
+      let items = [];
+      if (isWebCollection) {
+        if (collectionName === 'news') items = news;
+        else if (collectionName === 'achievements') items = achievements;
+        else if (collectionName === 'schedules') items = schedules;
+      }
+      
+      const newData = {
         ...data,
         visible: true,
         createdAt: serverTimestamp()
-      });
+      };
+      
+      // Agregar campo 'order' para colecciones web (al final de la lista)
+      if (isWebCollection) {
+        newData.order = items.length;
+      }
+      
+      await addDoc(collection(db, 'artifacts', appId, 'public', 'data', collectionName), newData);
       showNotification('Agregado correctamente');
     } catch (_e) { showNotification('Error al agregar', 'error'); }
   };
@@ -103,49 +121,52 @@ export default function AdminDashboard({
     } catch (_e) { showNotification('Error al actualizar', 'error'); }
   };
 
-  // ... código anterior (toggleVisibility) ...
-
-  // --- NUEVA FUNCIÓN: EL "CEREBRO" DEL REORDENAMIENTO ---
+  // --- FUNCIÓN DE REORDENAMIENTO (MEJORADA) ---
   const handleReorder = async (collectionName, index, direction) => {
-    // 1. Identificar qué lista vamos a mover
+    // 1. Identificar lista
     let items = [];
-    
-    // Mapeamos el nombre de la colección al estado correcto
     if (collectionName === 'news') items = news;
     else if (collectionName === 'achievements') items = achievements;
     else if (collectionName === 'schedules') items = schedules;
 
-    // Si la lista está vacía o el movimiento es inválido, no hacemos nada
     if (!items || items.length === 0) return;
+    
+    // Validación de límites
     const newIndex = direction === 'up' ? index - 1 : index + 1;
     if (newIndex < 0 || newIndex >= items.length) return;
 
-    // 2. Obtener los dos ítems que vamos a intercambiar
+    // 2. Obtener los dos ítems
     const itemA = items[index];      // El que movemos
-    const itemB = items[newIndex];   // El que estaba en el lugar destino
+    const itemB = items[newIndex];   // El que será reemplazado
 
     try {
-      // 3. Actualizar en Firebase (Intercambiamos sus campos 'order')
-      // NOTA: Si tus documentos no tienen campo 'order', usamos el índice como respaldo
-      const orderA = itemA.order !== undefined ? itemA.order : index;
-      const orderB = itemB.order !== undefined ? itemB.order : newIndex;
+      // 3. Calcular valores de orden (LÓGICA CORREGIDA)
+      // Si el campo 'order' no existe, usamos su posición en el array (fallback)
+      let valOrderA = itemA.order !== undefined ? itemA.order : index;
+      let valOrderB = itemB.order !== undefined ? itemB.order : newIndex;
 
-      // Referencias a los documentos en TU ruta de artifacts
+      // --- EL ARREGLO CLAVE ---
+      // Si por error ambos tienen el mismo 'order' (ej: ambos son 0), 
+      // el intercambio no haría nada. En ese caso, forzamos que usen sus índices.
+      if (valOrderA === valOrderB) {
+        valOrderA = index;
+        valOrderB = newIndex;
+      }
+
       const docRefA = doc(db, 'artifacts', appId, 'public', 'data', collectionName, itemA.id);
       const docRefB = doc(db, 'artifacts', appId, 'public', 'data', collectionName, itemB.id);
 
-      // Cruzamos los valores: A toma el orden de B, y B toma el de A
-      await updateDoc(docRefA, { order: orderB });
-      await updateDoc(docRefB, { order: orderA });
+      // 4. Intercambiamos: A recibe el valor de B, y B recibe el valor de A
+      await updateDoc(docRefA, { order: valOrderB });
+      await updateDoc(docRefB, { order: valOrderA });
 
-      // No necesitamos actualizar el estado manual (setNews, etc.) porque 
-      // si tienes un onSnapshot en App.jsx, Firebase avisará del cambio automáticamente.
-      
+      showNotification('Orden actualizado correctamente');
     } catch (error) {
       console.error("Error al reordenar:", error);
       showNotification('Error al mover el elemento', 'error');
     }
   };
+
   const menuItems = [
     { text: 'Dashboard', icon: LayoutDashboard, id: 'overview' },
     {
@@ -317,7 +338,7 @@ export default function AdminDashboard({
            {adminTab === 'students-list' && <StudentsView students={students} categories={categories} handleAdd={handleAdd} handleDelete={handleDelete} />}
            {adminTab === 'students-cats' && <CategoriesView categories={categories} handleAdd={handleAdd} handleDelete={handleDelete} handleUpdate={handleUpdate} />}
            {adminTab === 'students-pay' && <PaymentsView categories={categories} students={students} payments={payments} handleAdd={handleAdd} handleDelete={handleDelete} handleUpdate={handleUpdate} showNotification={showNotification} />}
-           {adminTab === 'config-web' && <WebConfigView news={news} achievements={achievements} schedules={schedules} handleAdd={handleAdd} handleDelete={handleDelete} toggleVisibility={toggleVisibility} showNotification={showNotification} handleReorder={handleReorder}/>}
+           {adminTab === 'config-web' && <WebConfigView news={news} achievements={achievements} schedules={schedules} handleAdd={handleAdd} handleDelete={handleDelete} handleUpdate={handleUpdate} toggleVisibility={toggleVisibility} showNotification={showNotification} handleReorder={handleReorder} />}
            {adminTab === 'config-images' && <SiteImagesView showNotification={showNotification} />}
            {adminTab === 'config-pricing' && <PricingConfigView showNotification={showNotification} />}
            {adminTab === 'config-memberships' && <MembershipsView showNotification={showNotification} />}

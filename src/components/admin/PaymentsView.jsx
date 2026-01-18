@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { Save, FileText, Download, Edit, Search, X } from 'lucide-react';
+import { Save, FileText, Download, Edit, Search, X,Trash2 } from 'lucide-react';
 import { serverTimestamp, Timestamp } from 'firebase/firestore';
 import { PDFDownloadLink } from '@react-pdf/renderer';
 import { THEME_CLASSES } from '../../utils/theme';
@@ -167,9 +167,12 @@ export default function PaymentsView({ categories, students, payments, handleAdd
             <Search className="h-5 w-5 text-zinc-500" />
             <h3 className="font-bold text-zinc-800 dark:text-white">Filtros de Búsqueda</h3>
           </div>
-          <button onClick={clearFilters} className="text-xs text-red-600 hover:text-red-700 font-bold flex items-center gap-1">
-            <X className="h-3 w-3" /> Limpiar
-          </button>
+            <button 
+              onClick={clearFilters} 
+              className="text-xs text-red-600 hover:text-red-700 font-bold flex items-center gap-1 transition-colors"
+            >
+              <Trash2 className="h-3 w-3" /> Limpiar
+            </button>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-5 gap-3">
           <input

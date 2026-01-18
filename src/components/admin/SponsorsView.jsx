@@ -217,30 +217,30 @@ export default function SponsorsView({ showNotification }) {
                     </button>
                 </div>
 
-                {/* Área de Logo */}
+                {/* Área de Logo (MODIFICADO PARA SER CÍRCULO) */}
                 <div className="relative">
                   <label className="block text-xs font-bold text-zinc-500 uppercase mb-2 text-center">
                     Logo del Auspiciador
                   </label>
                   
                   {sponsor.logo ? (
-                    <div className="relative group bg-zinc-50 dark:bg-zinc-900 rounded-lg p-4 border-2 border-dashed border-zinc-200 dark:border-zinc-700">
+                    <div className="relative group w-32 h-32 mx-auto">
                       <img
                         src={sponsor.logo}
                         alt={sponsor.name}
-                        className="w-full h-32 object-contain cursor-pointer transition-transform group-hover:scale-105"
+                        className="w-full h-full object-cover rounded-full shadow-md border-4 border-white dark:border-zinc-700 cursor-pointer transition-transform group-hover:scale-105"
                         onClick={() => setPreviewImage(sponsor.logo)}
                       />
                       <button
                         onClick={() => updateSponsor(idx, 'logo', '')}
-                        className="absolute -top-2 -right-2 p-1.5 bg-red-600 rounded-full hover:bg-red-700 shadow-md transition-opacity opacity-0 group-hover:opacity-100"
+                        className="absolute 0 top-0 -right-2 p-1.5 bg-red-600 rounded-full hover:bg-red-700 shadow-md transition-opacity opacity-0 group-hover:opacity-100 z-10"
                         title="Eliminar logo"
                       >
                         <Trash2 className="h-3 w-3 text-white" />
                       </button>
                     </div>
                   ) : (
-                    <label className="cursor-pointer block">
+                    <label className="cursor-pointer block w-32 h-32 mx-auto">
                       <input
                         type="file"
                         accept="image/*"
@@ -248,13 +248,13 @@ export default function SponsorsView({ showNotification }) {
                         disabled={uploading[sponsor.id]}
                         className="hidden"
                       />
-                      <div className="border-2 border-dashed border-zinc-300 dark:border-zinc-600 rounded-lg h-40 hover:border-red-500 hover:bg-red-50 dark:hover:bg-zinc-700/50 transition flex flex-col items-center justify-center group">
+                      <div className="w-full h-full rounded-full border-2 border-dashed border-zinc-300 dark:border-zinc-600 hover:border-red-500 hover:bg-red-50 dark:hover:bg-zinc-700/50 transition flex flex-col items-center justify-center group bg-zinc-50 dark:bg-zinc-900">
                         {uploading[sponsor.id] ? (
                           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-red-600"></div>
                         ) : (
                           <>
-                            <Upload className="h-8 w-8 text-zinc-400 group-hover:text-red-500 transition-colors mb-2" />
-                            <span className="text-sm font-medium text-zinc-500 group-hover:text-red-600">Subir Logo</span>
+                            <Upload className="h-6 w-6 text-zinc-400 group-hover:text-red-500 transition-colors mb-1" />
+                            <span className="text-[10px] font-bold text-zinc-500 group-hover:text-red-600 text-center uppercase leading-tight">Subir<br/>Logo</span>
                           </>
                         )}
                       </div>
