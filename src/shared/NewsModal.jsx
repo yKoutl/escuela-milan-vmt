@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { X, Heart, Calendar } from 'lucide-react';
+import { X, Heart, Calendar, Share2 } from 'lucide-react';
 import { doc, updateDoc, increment } from 'firebase/firestore'; // Importamos increment
 import { db, appId } from '../firebase';
 
@@ -7,6 +7,8 @@ export default function NewsModal({ news, isOpen, onClose }) {
   const [likes, setLikes] = useState(0);
   const [hasLiked, setHasLiked] = useState(false);
   const [isLiking, setIsLiking] = useState(false);
+
+  const [isSharing, setIsSharing] = useState(false);
 
   useEffect(() => {
     if (news) {
@@ -21,11 +23,11 @@ export default function NewsModal({ news, isOpen, onClose }) {
 
   const handleLike = async () => {
     if (!news?.id || isLiking) return;
-    
+
     // Evitar errores con noticias de ejemplo (IDs '1', '2') que no existen en Firebase
     if (['1', '2'].includes(news.id) && !news.createdAt) {
-        console.warn("No se pueden guardar likes en noticias de ejemplo.");
-        return;
+      console.warn("No se pueden guardar likes en noticias de ejemplo.");
+      return;
     }
 
     setIsLiking(true);
@@ -37,11 +39,11 @@ export default function NewsModal({ news, isOpen, onClose }) {
         // --- QUITAR LIKE ---
         // 1. Actualizar Firebase (restar 1)
         await updateDoc(newsRef, { likes: increment(-1) });
-        
+
         // 2. Actualizar estado local (visual)
         setLikes(prev => Math.max(0, prev - 1));
         setHasLiked(false);
-        
+
         // 3. Actualizar localStorage
         const likedNews = JSON.parse(localStorage.getItem('likedNews') || '[]');
         localStorage.setItem('likedNews', JSON.stringify(likedNews.filter(id => id !== news.id)));
@@ -50,11 +52,11 @@ export default function NewsModal({ news, isOpen, onClose }) {
         // --- DAR LIKE ---
         // 1. Actualizar Firebase (sumar 1)
         await updateDoc(newsRef, { likes: increment(1) });
-        
+
         // 2. Actualizar estado local (visual)
         setLikes(prev => prev + 1);
         setHasLiked(true);
-        
+
         // 3. Actualizar localStorage
         const likedNews = JSON.parse(localStorage.getItem('likedNews') || '[]');
         localStorage.setItem('likedNews', JSON.stringify([...likedNews, news.id]));
@@ -64,6 +66,64 @@ export default function NewsModal({ news, isOpen, onClose }) {
       console.error('Error al actualizar like:', error);
     } finally {
       setIsLiking(false);
+    }
+  };
+
+  // Función para compartir (Ahora soporta Imagen Real)
+  const handleShare = async () => {
+    if (!news || isSharing) return;
+    setIsSharing(true);
+
+    try {
+      const shareData = {
+        title: news.title,
+        text: `${news.title}\n\n${news.desc || ''}`,
+      };
+
+      let fileShared = false;
+
+      // Intentar obtener la imagen como archivo real (Blob)
+      if (news.img) {
+        try {
+          const response = await fetch(news.img);
+          const blob = await response.blob();
+
+          // Crear archivo con nombre limpio y extensión correcta
+          const file = new File([blob], 'milan_news.jpg', { type: blob.type });
+
+          // Verificar soporte
+          if (navigator.canShare && navigator.canShare({ files: [file] })) {
+            shareData.files = [file];
+            fileShared = true;
+          }
+        } catch (error) {
+          // Fallo silencioso del fetch (CORS o error red), se usará link
+        }
+      }
+
+      const SHARE_URL = 'https://escuela-milan-vmt.vercel.app/';
+      const MORE_INFO_TEXT = `\n\n📢 Más información aquí: ${SHARE_URL}`;
+
+      if (fileShared) {
+        shareData.text += MORE_INFO_TEXT;
+      } else {
+        shareData.text += MORE_INFO_TEXT;
+        shareData.url = SHARE_URL;
+      }
+
+      if (navigator.share) {
+        await navigator.share(shareData);
+      } else {
+        // Fallback Portapapeles
+        await navigator.clipboard.writeText(`${shareData.title}\n${shareData.text}`);
+        alert('Enlace copiado al portapapeles');
+      }
+    } catch (err) {
+      if (err.name !== 'AbortError') {
+        // Solo alertar errores reales, no cancelaciones
+      }
+    } finally {
+      setIsSharing(false);
     }
   };
 
@@ -111,12 +171,12 @@ export default function NewsModal({ news, isOpen, onClose }) {
             <div className="flex items-center gap-2">
               <Calendar className="h-4 w-4" />
               <span>
-                {news.createdAt?.seconds 
+                {news.createdAt?.seconds
                   ? new Date(news.createdAt.seconds * 1000).toLocaleDateString('es-ES', {
-                      year: 'numeric',
-                      month: 'long',
-                      day: 'numeric'
-                    })
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric'
+                  })
                   : 'Hoy'}
               </span>
             </div>
@@ -138,19 +198,29 @@ export default function NewsModal({ news, isOpen, onClose }) {
             )}
           </div>
 
-          {/* Botón de me gusta */}
-          <button
-            onClick={handleLike}
-            disabled={isLiking}
-            className={`w-full py-3 rounded-lg font-bold transition flex items-center justify-center gap-2 ${
-              hasLiked
+          {/* Botones de acción */}
+          <div className="flex gap-3">
+            <button
+              onClick={handleLike}
+              disabled={isLiking}
+              className={`flex-1 py-3 rounded-lg font-bold transition flex items-center justify-center gap-2 ${hasLiked
                 ? 'bg-red-600 hover:bg-red-700 text-white'
                 : 'bg-zinc-100 hover:bg-zinc-200 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-zinc-900 dark:text-white'
-            } disabled:opacity-50`}
-          >
-            <Heart className={`h-5 w-5 ${hasLiked ? 'fill-current' : ''}`} />
-            {isLiking ? 'Cargando...' : hasLiked ? 'Te gusta' : 'Me gusta'}
-          </button>
+                } disabled:opacity-50`}
+            >
+              <Heart className={`h-5 w-5 ${hasLiked ? 'fill-current' : ''}`} />
+              {isLiking ? '...' : hasLiked ? 'Te gusta' : 'Me gusta'}
+            </button>
+
+            <button
+              onClick={handleShare}
+              disabled={isSharing}
+              className="px-6 py-3 rounded-lg font-bold transition flex items-center justify-center gap-2 bg-zinc-100 hover:bg-zinc-200 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-zinc-900 dark:text-white disabled:opacity-50"
+            >
+              <Share2 className="h-5 w-5" />
+              {isSharing ? '...' : 'Compartir'}
+            </button>
+          </div>
         </div>
       </div>
     </div>
