@@ -32,21 +32,19 @@ export const uploadImage = async (file, folderName = 'milan-school') => {
 
   // 2. Validación básica de imagen
   if (!isValidImage(file)) {
-      alert("Archivo no válido. Asegúrate de que sea una imagen (JPG, PNG, GIF, WEBP) y menor a 10MB.");
-      return null;
+    alert("Archivo no válido. Asegúrate de que sea una imagen (JPG, PNG, GIF, WEBP) y menor a 10MB.");
+    return null;
   }
 
   try {
     // 3. Comprimir la imagen antes de subir
-    console.log(`📦 Comprimiendo imagen: ${file.name} (${formatFileSize(file.size)})`);
     const compressedFile = await imageCompression(file, COMPRESSION_OPTIONS);
-    console.log(`✅ Compresión completa: ${formatFileSize(compressedFile.size)}`);
 
     // 4. Crear FormData con la imagen comprimida
     const formData = new FormData();
     formData.append('file', compressedFile);
     formData.append('upload_preset', CLOUDINARY_UPLOAD_PRESET);
-    
+
     // 5. Forzar carpeta (aunque el preset ya lo tenga, esto asegura el orden)
     if (folderName) {
       formData.append('folder', folderName);
@@ -66,7 +64,6 @@ export const uploadImage = async (file, folderName = 'milan-school') => {
     }
 
     // Retorna la URL segura (https)
-    console.log('🎉 Imagen subida exitosamente:', data.secure_url);
     return data.secure_url;
 
   } catch (error) {
@@ -81,32 +78,32 @@ export const uploadImage = async (file, folderName = 'milan-school') => {
  * @param {FileList|File[]} files 
  */
 export const uploadMultipleImages = async (files) => {
-    if (!files || files.length === 0) return [];
-    const promises = Array.from(files).map(file => uploadImage(file));
-    // Filtramos los nulos si alguna falla
-    const results = await Promise.all(promises);
-    return results.filter(url => url !== null);
+  if (!files || files.length === 0) return [];
+  const promises = Array.from(files).map(file => uploadImage(file));
+  // Filtramos los nulos si alguna falla
+  const results = await Promise.all(promises);
+  return results.filter(url => url !== null);
 };
-  
+
 /**
  * Valida tipo y tamaño (Máx 10MB)
  */
 export const isValidImage = (file) => {
-    if (!file) return false;
-    const validTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp', 'image/gif'];
-    const maxSize = 10 * 1024 * 1024; 
-    return validTypes.includes(file.type) && file.size <= maxSize;
+  if (!file) return false;
+  const validTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp', 'image/gif'];
+  const maxSize = 10 * 1024 * 1024;
+  return validTypes.includes(file.type) && file.size <= maxSize;
 };
-  
+
 /**
  * Formatea bytes a texto legible (ej: 2.5 MB)
  */
 export const formatFileSize = (bytes) => {
-    if (bytes === 0) return '0 Bytes';
-    const k = 1024;
-    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
-    const i = Math.floor(Math.log(bytes) / Math.log(k));
-    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+  if (bytes === 0) return '0 Bytes';
+  const k = 1024;
+  const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+  const i = Math.floor(Math.log(bytes) / Math.log(k));
+  return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
 };
 
 /**
@@ -114,6 +111,6 @@ export const formatFileSize = (bytes) => {
  * Solo simulamos el éxito.
  */
 export const deleteImage = async (imageUrl) => {
-    console.warn("⚠️ El borrado real requiere Backend. Se ha desvinculado la imagen de la vista.");
-    return true;
+  console.warn("⚠️ El borrado real requiere Backend. Se ha desvinculado la imagen de la vista.");
+  return true;
 };

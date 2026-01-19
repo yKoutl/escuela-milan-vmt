@@ -11,21 +11,19 @@ export default function WelcomeModal() {
   const [announcementImage, setAnnouncementImage] = useState(FALLBACK_IMAGE);
   const [showFloatingButton, setShowFloatingButton] = useState(false);
 
-  console.log('🎯 [WelcomeModal] RENDERIZANDO - isOpen:', isOpen, 'showFloatingButton:', showFloatingButton);
+
 
   useEffect(() => {
-    console.log('🔍 [WelcomeModal] INICIANDO - Modal ABIERTO por defecto');
-    
+
     // Cargar imagen en segundo plano
     const loadImage = async () => {
       try {
         const docRef = doc(db, 'artifacts', appId, 'public', 'data', 'siteConfig', 'images');
         const docSnap = await getDoc(docRef);
-        
+
         if (docSnap.exists()) {
           const data = docSnap.data();
           if (data.announcementImage) {
-            console.log('✅ [WelcomeModal] Imagen cargada:', data.announcementImage);
             setAnnouncementImage(data.announcementImage);
           }
         }
@@ -33,18 +31,16 @@ export default function WelcomeModal() {
         console.error('❌ [WelcomeModal] Error:', error);
       }
     };
-    
+
     loadImage();
   }, []);
 
   const handleClose = () => {
-    console.log('🔒 [WelcomeModal] Cerrando modal');
     setIsOpen(false);
     setShowFloatingButton(true);
   };
 
   const handleOpenFromButton = () => {
-    console.log('🔓 [WelcomeModal] Abriendo modal desde botón flotante');
     setIsOpen(true);
     setShowFloatingButton(false);
   };

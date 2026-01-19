@@ -56,4 +56,52 @@ export const THEME_CLASSES = {
 };
 
 
+
 export default THEME_CONFIG;
+
+// --- LOGICA DE NEGOCIO DEL TEMA (REFACTOR clean code) ---
+
+export const THEME_KEY = 'milan_app_theme_v4';
+
+/**
+ * Obtiene el estado inicial del tema.
+ * Regla: 100% manual. Si no hay nada guardado, es Light (false).
+ * Ignora window.matchMedia.
+ */
+export const getInitialTheme = () => {
+  try {
+    const savedTheme = localStorage.getItem(THEME_KEY);
+    if (savedTheme !== null) {
+      return JSON.parse(savedTheme);
+    }
+    return false; // Default: Light Mode
+  } catch (error) {
+    console.warn('Error reading theme from localStorage:', error);
+    return false;
+  }
+};
+
+/**
+ * Guarda la preferencia del usuario en localStorage.
+ * @param {boolean} isDark 
+ */
+export const setThemeInStorage = (isDark) => {
+  try {
+    localStorage.setItem(THEME_KEY, JSON.stringify(isDark));
+  } catch (error) {
+    console.error('Error saving theme to localStorage:', error);
+  }
+};
+
+/**
+ * Aplica la clase 'dark' al elemento html (document.documentElement).
+ * @param {boolean} isDark 
+ */
+export const applyThemeToDom = (isDark) => {
+  const root = document.documentElement;
+  if (isDark) {
+    root.classList.add('dark');
+  } else {
+    root.classList.remove('dark');
+  }
+};
