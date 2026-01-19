@@ -3,8 +3,8 @@ import { Menu, LayoutDashboard, Users, Settings, LogOut, Image, Sun, Moon, BookO
 import { addDoc, collection, serverTimestamp, deleteDoc, doc, updateDoc } from 'firebase/firestore';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
 import { db, appId } from "../firebase";
-import { LOGO_URL } from "../utils/constants";
-import { THEME_CLASSES, DEFAULT_SCHEDULE } from '../utils/theme';
+import { LOGO_URL,DEFAULT_SCHEDULE } from "../utils/constants";
+import { THEME_CLASSES } from '../utils/theme';
 import { useTheme } from '../contexts/ThemeContext';
 import StudentsView from '../components/admin/StudentsView';
 import CategoriesView from '../components/admin/CategoriesView';

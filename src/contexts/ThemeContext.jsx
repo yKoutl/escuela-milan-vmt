@@ -10,22 +10,28 @@ export function useTheme() {
   return context;
 }
 
-function ThemeProvider({ children }) {
+export function ThemeProvider({ children }) {
   const [isDarkMode, setIsDarkMode] = useState(() => {
-    // Verificar localStorage primero
+    // 1. PRIMERO: Miramos si el usuario ya eligió algo antes (Memoria)
     const saved = localStorage.getItem('darkMode');
+    
+    // Si existe una elección guardada, la respetamos.
     if (saved !== null) {
       return JSON.parse(saved);
     }
-    // Verificar preferencia del sistema
-    return window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+    
+    // 2. SEGUNDO: Si es un usuario nuevo (o borró caché), 
+    // FORZAMOS que empiece en 'false' (Modo Día).
+    // IMPORTANTE: Aquí eliminamos la línea de "window.matchMedia", 
+    // así que ya no le importa la configuración de tu PC.
+    return false; 
   });
 
   useEffect(() => {
-    // Guardar en localStorage
+    // Guardamos la decisión cada vez que cambia
     localStorage.setItem('darkMode', JSON.stringify(isDarkMode));
     
-    // Aplicar o remover clase 'dark' del html
+    // Aplicamos visualmente el cambio
     const root = document.documentElement;
     if (isDarkMode) {
       root.classList.add('dark');
@@ -44,5 +50,3 @@ function ThemeProvider({ children }) {
     </ThemeContext.Provider>
   );
 }
-
-export { ThemeProvider };

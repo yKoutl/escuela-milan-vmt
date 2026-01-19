@@ -136,9 +136,14 @@ export default function RegistrationSection({ user, showNotification }) {
          </div>
       </div>
       
-      {/* SVG WAVE */}
+  {/* SVG WAVE */}
       <svg xmlns="http://www.w3.org/2000/svg" className="w-full -mt-60 relative z-0" viewBox="0 0 1440 320">
-        <path fill="#27272A">
+        <path 
+          /* fill-[#FFF4F0] -> Color crema suave para Modo Día
+             dark:fill-[#18181C] -> Color gris oscuro para Modo Noche
+          */
+          className="fill-[#FFF4F0] dark:fill-[#18181C] transition-colors duration-300"
+        >
           <animate 
             attributeName="d"
             dur="6s"
@@ -151,7 +156,6 @@ export default function RegistrationSection({ user, showNotification }) {
           />
         </path>
       </svg>
-
     </section>
   );
 }
