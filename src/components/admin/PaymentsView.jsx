@@ -14,6 +14,7 @@ export default function PaymentsView({ categories, students, payments, handleAdd
   const [selStudent, setSelStudent] = useState('');
   const [selMonth, setSelMonth] = useState('');
   const [amount, setAmount] = useState('');
+  const [paymentDate, setPaymentDate] = useState(new Date().toISOString().split('T')[0]);
   const [deleteConfirmId, setDeleteConfirmId] = useState(null);
   
   // Filtros avanzados
@@ -36,6 +37,10 @@ export default function PaymentsView({ categories, students, payments, handleAdd
   const handleRegisterPayment = () => {
     if(!selStudent || !selMonth || !amount) { showNotification('Complete todos los campos', 'error'); return; }
    
+    // Crear fecha sin problemas de zona horaria
+    const [year, month, day] = paymentDate.split('-');
+    const paymentDateObj = new Date(year, month - 1, day, 12, 0, 0);
+    
     handleAdd('payments', {
       studentId: selStudent,
       studentName: selStudent,
@@ -43,11 +48,12 @@ export default function PaymentsView({ categories, students, payments, handleAdd
       month: selMonth,
       year: new Date().getFullYear(),
       createdAt: serverTimestamp(), // Fecha de registro
-      paymentDate: serverTimestamp(), // Fecha de pago
+      paymentDate: Timestamp.fromDate(paymentDateObj), // Fecha de pago seleccionada
       amount: amount,
       status: 'Pagado'
     });
     setAmount('');
+    setPaymentDate(new Date().toISOString().split('T')[0]);
   };
 
   const handleDeleteWithConfirmation = (id) => {
@@ -56,11 +62,18 @@ export default function PaymentsView({ categories, students, payments, handleAdd
   };
 
   const handleEdit = (payment) => {
+    let dateFormatted = new Date().toISOString().split('T')[0];
+    if (payment.paymentDate?.seconds) {
+      const date = new Date(payment.paymentDate.seconds * 1000);
+      const year = date.getFullYear();
+      const month = String(date.getMonth() + 1).padStart(2, '0');
+      const day = String(date.getDate()).padStart(2, '0');
+      dateFormatted = `${year}-${month}-${day}`;
+    }
+    
     setEditingPayment({
       ...payment,
-      paymentDateFormatted: payment.paymentDate?.seconds 
-        ? new Date(payment.paymentDate.seconds * 1000).toISOString().split('T')[0]
-        : new Date().toISOString().split('T')[0]
+      paymentDateFormatted: dateFormatted
     });
     setEditModalOpen(true);
   };
@@ -68,9 +81,14 @@ export default function PaymentsView({ categories, students, payments, handleAdd
   const saveEdit = async () => {
     if (!editingPayment) return;
     
-    const paymentDate = editingPayment.paymentDateFormatted 
-      ? Timestamp.fromDate(new Date(editingPayment.paymentDateFormatted))
-      : serverTimestamp();
+    let paymentDate;
+    if (editingPayment.paymentDateFormatted) {
+      const [year, month, day] = editingPayment.paymentDateFormatted.split('-');
+      const dateObj = new Date(year, month - 1, day, 12, 0, 0);
+      paymentDate = Timestamp.fromDate(dateObj);
+    } else {
+      paymentDate = serverTimestamp();
+    }
     
     await handleUpdate('payments', editingPayment.id, {
       amount: editingPayment.amount,
@@ -125,7 +143,7 @@ export default function PaymentsView({ categories, students, payments, handleAdd
      
       <div className="bg-zinc-100 dark:bg-zinc-800 p-6 rounded-xl border border-zinc-200 dark:border-zinc-700">
          <h3 className="font-bold mb-4 text-zinc-700 dark:text-zinc-300">Registrar Nuevo Pago (Año Actual: {new Date().getFullYear()})</h3>
-         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+         <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
             <div>
               <label className="block text-xs font-bold text-zinc-500 mb-1">1. Categoría</label>
               <select className="w-full p-2 rounded border dark:bg-zinc-900 dark:border-zinc-700 dark:text-white" value={selCategory} onChange={e => setSelCategory(e.target.value)}>
@@ -148,6 +166,16 @@ export default function PaymentsView({ categories, students, payments, handleAdd
                 <option value="">Seleccione...</option>
                 {MONTHS.map(m => <option key={m} value={m}>{m}</option>)}
               </select>
+            </div>
+
+            <div>
+              <label className="block text-xs font-bold text-zinc-500 mb-1">4. Fecha de Pago</label>
+              <input 
+                type="date" 
+                className="w-full p-2 rounded border dark:bg-zinc-900 dark:border-zinc-700 dark:text-white" 
+                value={paymentDate} 
+                onChange={e => setPaymentDate(e.target.value)}
+              />
             </div>
 
             <div className="flex gap-2 items-end">
@@ -272,8 +300,7 @@ export default function PaymentsView({ categories, students, payments, handleAdd
           { header: 'Fecha Pago', field: 'paymentDate', render: r => {
             if (!r.paymentDate?.seconds) return 'Hoy';
             const date = new Date(r.paymentDate.seconds * 1000);
-            return date.toLocaleDateString('es-PE', { day: '2-digit', month: '2-digit', year: 'numeric' }) + ' ' + 
-                   date.toLocaleTimeString('es-PE', { hour: '2-digit', minute: '2-digit' });
+            return date.toLocaleDateString('es-PE', { day: '2-digit', month: '2-digit', year: 'numeric' });
           }},
           { header: 'Alumno', field: 'studentName' },
           { header: 'Concepto', field: 'month', render: r => `${r.month} ${r.year}` },

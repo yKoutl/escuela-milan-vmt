@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { Plus, Search, Filter, Trash2 } from 'lucide-react'; 
+import { Plus, Search, Filter, Trash2, Edit } from 'lucide-react'; 
 import { THEME_CLASSES } from '../../utils/theme';
 import GenericTable from './GenericTable';
 import Modal from '../../shared/Modal';
@@ -9,6 +9,8 @@ export default function StudentsView({ students, categories, handleAdd, handleDe
   const [showFilters, setShowFilters] = useState(false);
   const [newStudent, setNewStudent] = useState({ name: '', dob: '', category: '', parent: '', phone: '', status: 'Activo' });
   const [deleteConfirmId, setDeleteConfirmId] = useState(null);
+  const [editModalOpen, setEditModalOpen] = useState(false);
+  const [editingStudent, setEditingStudent] = useState(null);
   
   // Filtros
   const [filterName, setFilterName] = useState('');
@@ -236,6 +238,18 @@ export default function StudentsView({ students, categories, handleAdd, handleDe
         title="Lista de Alumnos"
         data={filteredStudents}
         onDelete={setDeleteConfirmId}
+        customActions={(row) => (
+          <button
+            onClick={() => {
+              setEditingStudent(row);
+              setEditModalOpen(true);
+            }}
+            className="text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-950 p-2 rounded"
+            title="Editar alumno"
+          >
+            <Edit className="h-4 w-4" />
+          </button>
+        )}
         columns={[
           { header: 'Nombre', field: 'name', render: (r) => <div className="font-bold text-zinc-900 dark:text-white">{r.name}</div> },
           { header: 'Categoría', field: 'category', render: (r) => <span className="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded">{r.category || 'Sin Cat'}</span> },
@@ -274,6 +288,103 @@ export default function StudentsView({ students, categories, handleAdd, handleDe
             Eliminar
           </button>
         </div>
+      </Modal>
+
+      {/* Modal de Edición de Estudiante */}
+      <Modal 
+        isOpen={editModalOpen} 
+        onClose={() => setEditModalOpen(false)}
+        title="Editar Alumno"
+      >
+        {editingStudent && (
+          <div className="space-y-4">
+            <div>
+              <label className="block text-sm font-bold text-zinc-700 dark:text-zinc-300 mb-1">Nombre Completo</label>
+              <input
+                type="text"
+                className={INPUT_STYLE}
+                value={editingStudent.name}
+                onChange={(e) => setEditingStudent({...editingStudent, name: e.target.value})}
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-bold text-zinc-700 dark:text-zinc-300 mb-1">Fecha de Nacimiento</label>
+              <input
+                type="date"
+                className={INPUT_STYLE}
+                value={editingStudent.dob || ''}
+                onChange={(e) => {
+                  const dateValue = e.target.value;
+                  let autoCategory = editingStudent.category;
+                  if (dateValue) {
+                    const year = parseInt(dateValue.split('-')[0]);
+                    autoCategory = year <= 2008 ? '2008+' : year.toString();
+                  }
+                  setEditingStudent({...editingStudent, dob: dateValue, category: autoCategory});
+                }}
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-bold text-zinc-700 dark:text-zinc-300 mb-1">Categoría</label>
+              <select
+                className={INPUT_STYLE}
+                value={editingStudent.category}
+                onChange={(e) => setEditingStudent({...editingStudent, category: e.target.value})}
+              >
+                <option value="">Seleccionar Categoría</option>
+                <option value="2008+">2008+</option>
+                {categories.map(c => <option key={c.id} value={c.name}>{c.name}</option>)}
+              </select>
+            </div>
+            <div>
+              <label className="block text-sm font-bold text-zinc-700 dark:text-zinc-300 mb-1">Apoderado</label>
+              <input
+                type="text"
+                className={INPUT_STYLE}
+                value={editingStudent.parent}
+                onChange={(e) => setEditingStudent({...editingStudent, parent: e.target.value})}
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-bold text-zinc-700 dark:text-zinc-300 mb-1">Teléfono</label>
+              <input
+                type="text"
+                className={INPUT_STYLE}
+                value={editingStudent.phone}
+                onChange={(e) => setEditingStudent({...editingStudent, phone: e.target.value})}
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-bold text-zinc-700 dark:text-zinc-300 mb-1">Estado</label>
+              <select
+                className={INPUT_STYLE}
+                value={editingStudent.status}
+                onChange={(e) => setEditingStudent({...editingStudent, status: e.target.value})}
+              >
+                <option value="Activo">Activo</option>
+                <option value="Inactivo">Inactivo</option>
+              </select>
+            </div>
+            <div className="flex justify-end gap-3 mt-6">
+              <button
+                onClick={() => setEditModalOpen(false)}
+                className="px-4 py-2 bg-zinc-200 dark:bg-zinc-700 text-zinc-800 dark:text-zinc-200 rounded hover:bg-zinc-300 dark:hover:bg-zinc-600 font-bold"
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={() => {
+                  handleAdd('students', editingStudent);
+                  setEditModalOpen(false);
+                  setEditingStudent(null);
+                }}
+                className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 font-bold"
+              >
+                Guardar Cambios
+              </button>
+            </div>
+          </div>
+        )}
       </Modal>
     </div>
   );

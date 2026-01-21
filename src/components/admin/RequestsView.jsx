@@ -295,15 +295,6 @@ export default function RequestsView({ handleDelete, showNotification }) {
                />
              </div>
              <div>
-               <label className="block text-sm font-bold text-zinc-700 dark:text-zinc-300 mb-1">Email</label>
-               <input
-                 type="email"
-                 className="w-full p-2 rounded border dark:bg-zinc-800 dark:border-zinc-700 dark:text-white"
-                 value={editingReg.email || ''}
-                 onChange={(e) => setEditingReg({...editingReg, email: e.target.value})}
-               />
-             </div>
-             <div>
                <label className="block text-sm font-bold text-zinc-700 dark:text-zinc-300 mb-1">Estado</label>
                <select
                  className="w-full p-2 rounded border dark:bg-zinc-800 dark:border-zinc-700 dark:text-white"

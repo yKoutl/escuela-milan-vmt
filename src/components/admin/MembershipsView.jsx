@@ -19,7 +19,7 @@ export default function MembershipsView({ showNotification }) {
       const docSnap = await getDoc(docRef);
       
       if (docSnap.exists()) {
-        setMemberships(docSnap.data().items || MEMBERSHIP_OPTIONS);
+        setMemberships(docSnap.data().memberships || MEMBERSHIP_OPTIONS);
       }
     } catch (error) {
       console.error('Error al cargar membresías:', error);
@@ -32,7 +32,7 @@ export default function MembershipsView({ showNotification }) {
     setLoading(true);
     try {
       const docRef = doc(db, 'artifacts', appId, 'public', 'data', 'config', 'memberships');
-      await setDoc(docRef, { items: memberships });
+      await setDoc(docRef, { memberships: memberships });
       showNotification('Membresías actualizadas correctamente');
     } catch (error) {
       console.error('Error:', error);

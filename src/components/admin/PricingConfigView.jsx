@@ -6,8 +6,8 @@ import { db, appId } from '../../firebase';
 export default function PricingConfigView({ showNotification }) {
   const [loading, setLoading] = useState(false);
   const [config, setConfig] = useState({
-    inscription: '30',
-    monthly: '150',
+    inscriptionPrice: '30',
+    monthlyPrice: '150',
     packages: [
       { months: '1 MES', price: '149.90', discount: false },
       { months: '2 MESES', price: '249.90', discount: true },
@@ -61,7 +61,7 @@ export default function PricingConfigView({ showNotification }) {
     setConfig({ ...config, packages: newPackages });
   };
 
-  if (loading && !config.inscription) {
+  if (loading && !config.inscriptionPrice) {
     return (
       <div className="flex items-center justify-center h-64">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-red-600"></div>
@@ -101,8 +101,8 @@ export default function PricingConfigView({ showNotification }) {
               type="number"
               min="0"
               step="0.01"
-              value={config.inscription}
-              onChange={(e) => setConfig({ ...config, inscription: e.target.value })}
+              value={config.inscriptionPrice}
+              onChange={(e) => setConfig({ ...config, inscriptionPrice: e.target.value })}
               className="w-full border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 p-3 rounded text-zinc-900 dark:text-white"
             />
           </div>
@@ -115,8 +115,8 @@ export default function PricingConfigView({ showNotification }) {
               type="number"
               min="0"
               step="0.01"
-              value={config.monthly}
-              onChange={(e) => setConfig({ ...config, monthly: e.target.value })}
+              value={config.monthlyPrice}
+              onChange={(e) => setConfig({ ...config, monthlyPrice: e.target.value })}
               className="w-full border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 p-3 rounded text-zinc-900 dark:text-white"
             />
           </div>
