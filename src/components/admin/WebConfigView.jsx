@@ -315,16 +315,68 @@ export default function WebConfigView({
       )}
 
       {/* TABLA 3: HORARIOS */}
+      {/* TABLA 3: HORARIOS */}
       <div className="flex justify-between items-center pt-8 border-t dark:border-zinc-800">
         <h3 className="text-xl font-bold">Horarios</h3>
-        <button onClick={() => openModal('schedules')} className="bg-zinc-900 dark:bg-white dark:text-black text-white px-3 py-2 rounded-lg text-sm font-bold">+ Agregar Horario</button>
+        <div className="flex gap-2">
+          {/* Botón Importar Predeterminados (Solo si está vacío o se quiere forzar) */}
+          <button
+            onClick={async () => {
+              if (schedules.length > 0 && !window.confirm("Ya tienes horarios. ¿Deseas agregar los predeterminados de todas formas?")) return;
+
+              const { DEFAULT_SCHEDULE } = await import('../../utils/constants');
+
+              const daysList = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes'];
+
+              for (const item of DEFAULT_SCHEDULE) {
+                // CORRECCIÓN: NO crear múltiples registros. Crear UNO SOLO con el array de días.
+                // El usuario quiere ver "Lunes a Viernes" en una sola fila (8 registros totales).
+
+                let daysValue = [item.days]; // Fallback
+                if (item.days === 'Lunes a Viernes') {
+                  daysValue = daysList;
+                }
+
+                await handleAdd('schedules', {
+                  category: item.cat,
+                  day: item.days, // Guardamos el string "Lunes a Viernes" o lo que venga para visualización rápida
+                  time: item.time,
+                  visible: true,
+                  order: parseInt(item.id) || 0,
+                  days: daysValue // Guardamos el array real para lógica interna si se necesita
+                });
+              }
+              showNotification("Horarios importados correctamente (8 Registros)");
+            }}
+            className="bg-yellow-100 text-yellow-800 hover:bg-yellow-200 px-3 py-2 rounded-lg text-sm font-bold flex items-center gap-2"
+          >
+            <Upload size={14} /> Importar Default
+          </button>
+
+          {/* Botón Eliminar Todos */}
+          {schedules.length > 0 && (
+            <button
+              onClick={async () => {
+                if (!window.confirm("¿Estás seguro de ELIMINAR TODOS los horarios? Esta acción no se puede deshacer.")) return;
+                for (const item of schedules) {
+                  await handleDelete('schedules', item.id);
+                }
+                showNotification("Todos los horarios han sido eliminados");
+              }}
+              className="bg-red-100 text-red-800 hover:bg-red-200 px-3 py-2 rounded-lg text-sm font-bold flex items-center gap-2"
+            >
+              <Trash2 size={14} /> Eliminar Todos
+            </button>
+          )}
+          <button onClick={() => openModal('schedules')} className="bg-zinc-900 dark:bg-white dark:text-black text-white px-3 py-2 rounded-lg text-sm font-bold">+ Nuevo Horario</button>
+        </div>
       </div>
       {renderTable(
         "Horarios",
         schedules,
         [
-          { header: 'Categoría', field: 'cat' },
-          { header: 'Días', field: 'days' },
+          { header: 'Día', field: 'day' },
+          { header: 'Categoría', field: 'category' },
           { header: 'Horario', field: 'time' }
         ],
         'schedules',
@@ -406,26 +458,61 @@ export default function WebConfigView({
               <label className="block text-sm font-bold mb-1 text-zinc-700 dark:text-zinc-300">Categoría</label>
               <input
                 className="w-full p-2 border rounded dark:bg-zinc-800 dark:border-zinc-700 mb-2"
-                placeholder="Ej: Categoría 2023-2022-2021"
-                value={formData.cat || ''}
-                onChange={e => setFormData({ ...formData, cat: e.target.value })}
+                placeholder="Ej: Categoría 2016-2015"
+                value={formData.category || ''}
+                onChange={e => setFormData({ ...formData, category: e.target.value, cat: e.target.value })}
               />
 
-              <label className="block text-sm font-bold mb-1 text-zinc-700 dark:text-zinc-300">Días</label>
-              <input
-                className="w-full p-2 border rounded dark:bg-zinc-800 dark:border-zinc-700 mb-2"
-                placeholder="Ej: Lun a Vie"
-                value={formData.days || ''}
-                onChange={e => setFormData({ ...formData, days: e.target.value })}
-              />
+              <label className="block text-sm font-bold mb-2 text-zinc-700 dark:text-zinc-300">Días de Entrenamiento</label>
+              <div className="bg-zinc-50 dark:bg-zinc-800/50 p-3 rounded-lg border border-zinc-200 dark:border-zinc-700 mb-4">
+                <div className="flex flex-wrap gap-2 mb-3">
+                  {['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'].map(day => (
+                    <button
+                      key={day}
+                      onClick={() => {
+                        const currentDays = formData.days || [];
+                        const newDays = currentDays.includes(day)
+                          ? currentDays.filter(d => d !== day)
+                          : [...currentDays, day];
+                        setFormData({ ...formData, days: newDays });
+                      }}
+                      className={`text-xs px-2 py-1 rounded border transition-colors ${(formData.days || []).includes(day)
+                        ? 'bg-red-600 text-white border-red-600'
+                        : 'bg-white dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 border-zinc-300 dark:border-zinc-600 hover:border-red-400'
+                        }`}
+                    >
+                      {day}
+                    </button>
+                  ))}
+                </div>
+                <button
+                  onClick={() => setFormData({ ...formData, days: ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes'] })}
+                  className="text-xs text-blue-600 hover:underline mr-3"
+                >
+                  Seleccionar Lun-Vie
+                </button>
+                <button
+                  onClick={() => setFormData({ ...formData, days: [] })}
+                  className="text-xs text-zinc-500 hover:underline"
+                >
+                  Limpiar
+                </button>
+              </div>
 
               <label className="block text-sm font-bold mb-1 text-zinc-700 dark:text-zinc-300">Horario</label>
-              <input
+              <select
                 className="w-full p-2 border rounded dark:bg-zinc-800 dark:border-zinc-700"
-                placeholder="Ej: 17:00 - 18:15"
                 value={formData.time || ''}
                 onChange={e => setFormData({ ...formData, time: e.target.value })}
-              />
+              >
+                <option value="">Seleccione horario...</option>
+                {[
+                  "16:00 - 17:15", "16:00 - 17:30",
+                  "17:00 - 18:15", "17:30 - 19:00",
+                  "17:45 - 19:00", "18:45 - 20:00",
+                  "19:45 - 21:00"
+                ].map(t => <option key={t} value={t}>{t}</option>)}
+              </select>
             </>
           )}
 
@@ -440,6 +527,6 @@ export default function WebConfigView({
         imageUrl={previewImage}
         onClose={() => setPreviewImage(null)}
       />
-    </div>
+    </div >
   );
 }

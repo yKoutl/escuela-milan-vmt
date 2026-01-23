@@ -1,17 +1,21 @@
 import React, { useState, useMemo } from 'react';
-import { Plus, Search, Filter, Trash2, Edit } from 'lucide-react'; 
+import { Plus, Search, Filter, Trash2, Edit, ChevronDown } from 'lucide-react';
 import { THEME_CLASSES } from '../../utils/theme';
 import GenericTable from './GenericTable';
 import Modal from '../../shared/Modal';
+import { usePaginatedQuery } from '../../hooks/usePaginatedQuery'; // Importar Hook
 
-export default function StudentsView({ students, categories, handleAdd, handleDelete }) {
+export default function StudentsView({ categories, handleAdd, handleDelete }) {
+  // --- CARGA DE DATOS PAGINADA ---
+  const { data: students, loading, loadMore, hasMore } = usePaginatedQuery('students', 30);
+
   const [showForm, setShowForm] = useState(false);
   const [showFilters, setShowFilters] = useState(false);
   const [newStudent, setNewStudent] = useState({ name: '', dob: '', category: '', parent: '', phone: '', status: 'Activo' });
   const [deleteConfirmId, setDeleteConfirmId] = useState(null);
   const [editModalOpen, setEditModalOpen] = useState(false);
   const [editingStudent, setEditingStudent] = useState(null);
-  
+
   // Filtros
   const [filterName, setFilterName] = useState('');
   const [filterCategory, setFilterCategory] = useState('');
@@ -19,7 +23,7 @@ export default function StudentsView({ students, categories, handleAdd, handleDe
   const [filterContact, setFilterContact] = useState('');
   const [filterStartDate, setFilterStartDate] = useState('');
   const [filterEndDate, setFilterEndDate] = useState('');
-  
+
   // --- LÓGICA DE CÁLCULO DE CATEGORÍA AUTOMÁTICA ---
   const handleDateChange = (e) => {
     const dateValue = e.target.value;
@@ -37,21 +41,21 @@ export default function StudentsView({ students, categories, handleAdd, handleDe
       }
     }
 
-    setNewStudent({ 
-      ...newStudent, 
-      dob: dateValue, 
+    setNewStudent({
+      ...newStudent,
+      dob: dateValue,
       category: autoCategory // Actualizamos la categoría automáticamente
     });
   };
 
-  // Lógica de filtrado
+  // Lógica de filtrado (Aplica sobre los datos YA CARGADOS)
   const filteredStudents = useMemo(() => {
     return students.filter(student => {
       const matchName = !filterName || student.name.toLowerCase().includes(filterName.toLowerCase());
       const matchCategory = !filterCategory || student.category === filterCategory;
       const matchStatus = !filterStatus || student.status === filterStatus;
       const matchContact = !filterContact || (student.phone && student.phone.includes(filterContact));
-      
+
       let matchDate = true;
       if ((filterStartDate || filterEndDate) && student.createdAt?.seconds) {
         const studentDate = new Date(student.createdAt.seconds * 1000);
@@ -65,11 +69,11 @@ export default function StudentsView({ students, categories, handleAdd, handleDe
           matchDate = matchDate && studentDate <= endDate;
         }
       }
-      
+
       return matchName && matchCategory && matchStatus && matchContact && matchDate;
     });
   }, [students, filterName, filterCategory, filterStatus, filterContact, filterStartDate, filterEndDate]);
-  
+
   const submitStudent = (e) => {
     e.preventDefault();
     handleAdd('students', newStudent);
@@ -100,26 +104,26 @@ export default function StudentsView({ students, categories, handleAdd, handleDe
       {/* --- CABECERA --- */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <h2 className="text-2xl font-bold text-zinc-800 dark:text-white">Directorio de Alumnos</h2>
-        
+
         {/* BOTONES DE ACCIÓN */}
         <div className="flex gap-2 w-full md:w-auto">
-          <button 
-            onClick={() => setShowFilters(!showFilters)} 
+          <button
+            onClick={() => setShowFilters(!showFilters)}
             className={`flex-1 md:flex-none px-4 py-2 rounded-lg flex items-center justify-center font-bold text-sm border transition
-              ${showFilters 
-                ? 'bg-zinc-200 text-zinc-800 border-zinc-300 dark:bg-zinc-700 dark:text-white dark:border-zinc-600' 
+              ${showFilters
+                ? 'bg-zinc-200 text-zinc-800 border-zinc-300 dark:bg-zinc-700 dark:text-white dark:border-zinc-600'
                 : 'bg-white text-zinc-600 border-zinc-200 hover:bg-zinc-50 dark:bg-zinc-900 dark:text-zinc-300 dark:border-zinc-800'
               }`}
           >
-            <Filter className="h-4 w-4 mr-2"/> 
+            <Filter className="h-4 w-4 mr-2" />
             Filtros
           </button>
 
-          <button 
-            onClick={() => setShowForm(!showForm)} 
+          <button
+            onClick={() => setShowForm(!showForm)}
             className={`flex-1 md:flex-none ${THEME_CLASSES.button.primary} px-4 py-2 rounded-lg flex items-center justify-center font-bold text-sm shadow-md`}
           >
-            <Plus className="h-4 w-4 mr-2"/> 
+            <Plus className="h-4 w-4 mr-2" />
             Nuevo Alumno
           </button>
         </div>
@@ -129,33 +133,33 @@ export default function StudentsView({ students, categories, handleAdd, handleDe
       {showForm && (
         <div className={`${THEME_CLASSES.bg.card} p-6 rounded-lg animate-fade-in-up ${THEME_CLASSES.border.primary} border mb-6`}>
           <form onSubmit={submitStudent} className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <input required placeholder="Nombre Completo" className={INPUT_STYLE} value={newStudent.name} onChange={e => setNewStudent({...newStudent, name: e.target.value})} />
-            
+            <input required placeholder="Nombre Completo" className={INPUT_STYLE} value={newStudent.name} onChange={e => setNewStudent({ ...newStudent, name: e.target.value })} />
+
             {/* INPUT FECHA CON LÓGICA AUTOMÁTICA */}
             <div>
-              <input 
-                required 
-                type="date" 
-                className={INPUT_STYLE} 
-                value={newStudent.dob} 
+              <input
+                required
+                type="date"
+                className={INPUT_STYLE}
+                value={newStudent.dob}
                 onChange={handleDateChange} // <--- Aquí usamos la nueva función
               />
               <p className="text-xs text-zinc-400 mt-1 ml-1">La categoría se seleccionará automáticamente.</p>
             </div>
 
-            <select className={INPUT_STYLE} value={newStudent.category} onChange={e => setNewStudent({...newStudent, category: e.target.value})}>
+            <select className={INPUT_STYLE} value={newStudent.category} onChange={e => setNewStudent({ ...newStudent, category: e.target.value })}>
               <option value="">Seleccionar Categoría</option>
               {/* Opción especial 2008+ por si no viene en las categorias */}
               <option value="2008+">2008+</option>
               {categories.map(c => <option key={c.id} value={c.name}>{c.name}</option>)}
             </select>
-            
-            <input required placeholder="Apoderado" className={INPUT_STYLE} value={newStudent.parent} onChange={e => setNewStudent({...newStudent, parent: e.target.value})} />
-            <input required placeholder="Teléfono" className={INPUT_STYLE} value={newStudent.phone} onChange={e => setNewStudent({...newStudent, phone: e.target.value})} />
-            
+
+            <input required placeholder="Apoderado" className={INPUT_STYLE} value={newStudent.parent} onChange={e => setNewStudent({ ...newStudent, parent: e.target.value })} />
+            <input required placeholder="Teléfono" className={INPUT_STYLE} value={newStudent.phone} onChange={e => setNewStudent({ ...newStudent, phone: e.target.value })} />
+
             <div className="col-span-1 md:col-span-2 flex justify-end gap-2 mt-2">
-                <button type="button" onClick={() => setShowForm(false)} className={`px-4 py-2 ${THEME_CLASSES.button.secondary} rounded font-bold`}>Cancelar</button>
-                <button type="submit" className={`px-4 py-2 ${THEME_CLASSES.button.primary} rounded font-bold`}>Guardar Alumno</button>
+              <button type="button" onClick={() => setShowForm(false)} className={`px-4 py-2 ${THEME_CLASSES.button.secondary} rounded font-bold`}>Cancelar</button>
+              <button type="submit" className={`px-4 py-2 ${THEME_CLASSES.button.primary} rounded font-bold`}>Guardar Alumno</button>
             </div>
           </form>
         </div>
@@ -169,9 +173,9 @@ export default function StudentsView({ students, categories, handleAdd, handleDe
               <Search className="h-5 w-5 text-zinc-500" />
               <h3 className="font-bold text-zinc-800 dark:text-white">Filtros de Búsqueda</h3>
             </div>
-            
-            <button 
-              onClick={clearFilters} 
+
+            <button
+              onClick={clearFilters}
               className="text-xs text-red-600 hover:text-red-700 font-bold flex items-center gap-1 transition-colors"
             >
               <Trash2 className="h-3 w-3" /> Limpiar
@@ -256,18 +260,20 @@ export default function StudentsView({ students, categories, handleAdd, handleDe
           { header: 'Apoderado', field: 'parent' },
           { header: 'Contacto', field: 'phone' },
           { header: 'Estado', field: 'status', render: (r) => <span className={`text-xs px-2 py-1 rounded ${r.status === 'Activo' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>{r.status}</span> },
-          { header: 'Fecha de Registro', field: 'createdAt', render: (r) => {
-            if (!r.createdAt?.seconds) return 'Sin fecha';
-            const date = new Date(r.createdAt.seconds * 1000);
-            return date.toLocaleDateString('es-PE', { day: '2-digit', month: '2-digit', year: 'numeric' }) + ' ' + 
-                   date.toLocaleTimeString('es-PE', { hour: '2-digit', minute: '2-digit' });
-          }}
+          {
+            header: 'Fecha de Registro', field: 'createdAt', render: (r) => {
+              if (!r.createdAt?.seconds) return 'Sin fecha';
+              const date = new Date(r.createdAt.seconds * 1000);
+              return date.toLocaleDateString('es-PE', { day: '2-digit', month: '2-digit', year: 'numeric' }) + ' ' +
+                date.toLocaleTimeString('es-PE', { hour: '2-digit', minute: '2-digit' });
+            }
+          }
         ]}
       />
 
       {/* Modal de Confirmación de Eliminación */}
-      <Modal 
-        isOpen={deleteConfirmId !== null} 
+      <Modal
+        isOpen={deleteConfirmId !== null}
         onClose={() => setDeleteConfirmId(null)}
         title="Confirmar Eliminación"
       >
@@ -275,13 +281,13 @@ export default function StudentsView({ students, categories, handleAdd, handleDe
           ¿Estás seguro de que deseas eliminar este alumno? Esta acción no se puede deshacer.
         </p>
         <div className="flex justify-end gap-3">
-          <button 
+          <button
             onClick={() => setDeleteConfirmId(null)}
             className="px-4 py-2 bg-zinc-200 dark:bg-zinc-700 text-zinc-800 dark:text-zinc-200 rounded hover:bg-zinc-300 dark:hover:bg-zinc-600 font-bold"
           >
             Cancelar
           </button>
-          <button 
+          <button
             onClick={() => handleDeleteWithConfirmation(deleteConfirmId)}
             className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 font-bold"
           >
@@ -291,8 +297,8 @@ export default function StudentsView({ students, categories, handleAdd, handleDe
       </Modal>
 
       {/* Modal de Edición de Estudiante */}
-      <Modal 
-        isOpen={editModalOpen} 
+      <Modal
+        isOpen={editModalOpen}
         onClose={() => setEditModalOpen(false)}
         title="Editar Alumno"
       >
@@ -304,7 +310,7 @@ export default function StudentsView({ students, categories, handleAdd, handleDe
                 type="text"
                 className={INPUT_STYLE}
                 value={editingStudent.name}
-                onChange={(e) => setEditingStudent({...editingStudent, name: e.target.value})}
+                onChange={(e) => setEditingStudent({ ...editingStudent, name: e.target.value })}
               />
             </div>
             <div>
@@ -320,7 +326,7 @@ export default function StudentsView({ students, categories, handleAdd, handleDe
                     const year = parseInt(dateValue.split('-')[0]);
                     autoCategory = year <= 2008 ? '2008+' : year.toString();
                   }
-                  setEditingStudent({...editingStudent, dob: dateValue, category: autoCategory});
+                  setEditingStudent({ ...editingStudent, dob: dateValue, category: autoCategory });
                 }}
               />
             </div>
@@ -329,7 +335,7 @@ export default function StudentsView({ students, categories, handleAdd, handleDe
               <select
                 className={INPUT_STYLE}
                 value={editingStudent.category}
-                onChange={(e) => setEditingStudent({...editingStudent, category: e.target.value})}
+                onChange={(e) => setEditingStudent({ ...editingStudent, category: e.target.value })}
               >
                 <option value="">Seleccionar Categoría</option>
                 <option value="2008+">2008+</option>
@@ -342,7 +348,7 @@ export default function StudentsView({ students, categories, handleAdd, handleDe
                 type="text"
                 className={INPUT_STYLE}
                 value={editingStudent.parent}
-                onChange={(e) => setEditingStudent({...editingStudent, parent: e.target.value})}
+                onChange={(e) => setEditingStudent({ ...editingStudent, parent: e.target.value })}
               />
             </div>
             <div>
@@ -351,7 +357,7 @@ export default function StudentsView({ students, categories, handleAdd, handleDe
                 type="text"
                 className={INPUT_STYLE}
                 value={editingStudent.phone}
-                onChange={(e) => setEditingStudent({...editingStudent, phone: e.target.value})}
+                onChange={(e) => setEditingStudent({ ...editingStudent, phone: e.target.value })}
               />
             </div>
             <div>
@@ -359,7 +365,7 @@ export default function StudentsView({ students, categories, handleAdd, handleDe
               <select
                 className={INPUT_STYLE}
                 value={editingStudent.status}
-                onChange={(e) => setEditingStudent({...editingStudent, status: e.target.value})}
+                onChange={(e) => setEditingStudent({ ...editingStudent, status: e.target.value })}
               >
                 <option value="Activo">Activo</option>
                 <option value="Inactivo">Inactivo</option>

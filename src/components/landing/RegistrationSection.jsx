@@ -85,7 +85,7 @@ export default function RegistrationSection({ user, showNotification }) {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {/* Nombre Alumno */}
                   <div className="flex flex-col justify-end">
-                    <input required className="w-full p-2 border rounded dark:bg-zinc-900 dark:border-zinc-700" placeholder="Nombre Alumno" value={formData.childName} onChange={e=>setFormData({...formData, childName:e.target.value})} />
+                    <input required className="w-full p-2 border rounded dark:bg-zinc-900 dark:border-zinc-700 placeholder:text-zinc-600 dark:placeholder:text-zinc-400" placeholder="Nombre Alumno" value={formData.childName} onChange={e=>setFormData({...formData, childName:e.target.value})} />
                   </div>
                   
                   {/* Fecha de Nacimiento con Etiqueta */}
@@ -103,11 +103,11 @@ export default function RegistrationSection({ user, showNotification }) {
                   </div>
                 </div>
 
-                <input required className="w-full p-2 border rounded dark:bg-zinc-900 dark:border-zinc-700" placeholder="Nombre Apoderado" value={formData.parentName} onChange={e=>setFormData({...formData, parentName:e.target.value})} />
+                <input required className="w-full p-2 border rounded dark:bg-zinc-900 dark:border-zinc-700 placeholder:text-zinc-600 dark:placeholder:text-zinc-400" placeholder="Nombre Apoderado" value={formData.parentName} onChange={e=>setFormData({...formData, parentName:e.target.value})} />
                 
                 <div className="grid grid-cols-2 gap-4">
                   <div className="flex flex-col justify-end">
-                    <input required className="p-2 border rounded dark:bg-zinc-900 dark:border-zinc-700 w-full" placeholder="Teléfono" value={formData.phone} onChange={e=>setFormData({...formData, phone:e.target.value})} />
+                    <input required className="p-2 border rounded dark:bg-zinc-900 dark:border-zinc-700 w-full placeholder:text-zinc-600 dark:placeholder:text-zinc-400" placeholder="Teléfono" value={formData.phone} onChange={e=>setFormData({...formData, phone:e.target.value})} />
                   </div>
                   
                   {/* Categoría con Etiqueta Arriba */}
