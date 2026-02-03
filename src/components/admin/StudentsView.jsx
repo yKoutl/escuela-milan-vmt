@@ -4,10 +4,12 @@ import { THEME_CLASSES } from '../../utils/theme';
 import GenericTable from './GenericTable';
 import Modal from '../../shared/Modal';
 import { usePaginatedQuery } from '../../hooks/usePaginatedQuery'; // Importar Hook
+// import { useCollection } from '../../hooks/useCollection';
 
 export default function StudentsView({ categories, handleAdd, handleDelete }) {
   // --- CARGA DE DATOS PAGINADA ---
-  const { data: students, loading, loadMore, hasMore } = usePaginatedQuery('students', 30);
+  // --- CARGA DE DATOS PAGINADA (50 items) ---
+  const { data: students, loading, loadMore, hasMore } = usePaginatedQuery('students', 50);
 
   const [showForm, setShowForm] = useState(false);
   const [showFilters, setShowFilters] = useState(false);
@@ -270,6 +272,19 @@ export default function StudentsView({ categories, handleAdd, handleDelete }) {
           }
         ]}
       />
+
+      {/* --- PAGINACIÓN --- */}
+      <div className="flex flex-col items-center justify-center py-4 gap-2">
+        {loading && <p className="text-zinc-500 animate-pulse text-sm">Cargando...</p>}
+        {!loading && hasMore && (
+          <button
+            onClick={loadMore}
+            className="flex items-center gap-2 px-6 py-2 bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-300 rounded-full hover:bg-zinc-200 dark:hover:bg-zinc-700 transition font-bold text-sm"
+          >
+            <ChevronDown className="h-4 w-4" /> Cargar más alumnos (50)
+          </button>
+        )}
+      </div>
 
       {/* Modal de Confirmación de Eliminación */}
       <Modal

@@ -10,11 +10,12 @@ import PDFReceipt from '../PDFReceipt';
 import PDFBatchReport from '../PDFBatchReport';
 import { useCollection } from '../../../hooks/useCollection';
 
-export default function PaymentHistoryView({ showNotification }) {
+export default function PaymentHistoryView({ showNotification, categories = [] }) {
   // Cargar lista de alumnos para el buscador (Lazy)
   const { data: students } = useCollection('students', 'name');
 
   const [searchStudent, setSearchStudent] = useState('');
+  const [searchCategory, setSearchCategory] = useState('');
   const [selectedStudent, setSelectedStudent] = useState(null);
 
   // Estado local para los pagos del alumno seleccionado (Busqueda eficiente)
@@ -27,11 +28,16 @@ export default function PaymentHistoryView({ showNotification }) {
 
   // Filtrar estudiantes para el autocompletado del buscador
   const filteredStudentsForSearch = useMemo(() => {
-    if (!searchStudent) return [];
+    if (!searchStudent && !searchCategory) return [];
+
     return students
-      .filter(s => s.name.toLowerCase().includes(searchStudent.toLowerCase()))
+      .filter(s => {
+        const matchName = !searchStudent || s.name.toLowerCase().includes(searchStudent.toLowerCase());
+        const matchCategory = !searchCategory || s.category === searchCategory;
+        return matchName && matchCategory;
+      })
       .slice(0, 10);
-  }, [students, searchStudent]);
+  }, [students, searchStudent, searchCategory]);
 
   // Cargar pagos SOLO cuando se selecciona un alumno
   useEffect(() => {
@@ -108,6 +114,7 @@ export default function PaymentHistoryView({ showNotification }) {
   const clearSearch = () => {
     setSelectedStudent(null);
     setSearchStudent('');
+    setSearchCategory('');
     setStudentPayments([]);
     setFilterMonth('');
     setFilterYear('');
@@ -128,10 +135,36 @@ export default function PaymentHistoryView({ showNotification }) {
 
   return (
     <div className="space-y-6">
-      <h2 className="text-2xl font-bold text-zinc-800 dark:text-white flex items-center gap-2">
-        <History className="text-blue-600" />
-        Historial de Pagos
-      </h2>
+      {/* Título y Botón de Exportar (Solo si hay alumno seleccionado) */}
+      {selectedStudent && (
+        <div className="flex justify-between items-center bg-white dark:bg-zinc-900 p-4 rounded-lg shadow mb-4 border border-zinc-200 dark:border-zinc-800">
+          <h2 className="text-xl font-bold text-zinc-800 dark:text-white flex items-center gap-2">
+            <History className="text-blue-600" />
+            Historial de Pagos: <span className="text-blue-600">{selectedStudent.name}</span>
+          </h2>
+
+          {studentPayments.length > 0 && (
+            <PDFDownloadLink
+              document={<PDFBatchReport
+                studentName={selectedStudent.name}
+                payments={studentPayments}
+                category={selectedStudent.category}
+              />}
+              fileName={`historial-${selectedStudent.name.replace(/\s+/g, '_')}-${new Date().toLocaleDateString('es-PE')}.pdf`}
+              className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg font-bold text-sm flex items-center transition-colors"
+            >
+              {({ loading }) => (loading ? 'Generando...' : <><Download className="h-4 w-4 mr-2" /> Descargar Historial Completo</>)}
+            </PDFDownloadLink>
+          )}
+        </div>
+      )}
+
+      {!selectedStudent && (
+        <h2 className="text-2xl font-bold text-zinc-800 dark:text-white flex items-center gap-2">
+          <History className="text-blue-600" />
+          Historial de Pagos
+        </h2>
+      )}
 
       {/* Buscador de Alumno */}
       <div className={`${THEME_CLASSES.bg.surface} p-6 rounded-xl shadow-sm ${THEME_CLASSES.border.primary} border`}>
@@ -140,16 +173,26 @@ export default function PaymentHistoryView({ showNotification }) {
           <h3 className="font-bold text-zinc-800 dark:text-white">Buscar Alumno</h3>
         </div>
 
-        <div className="relative">
+        <div className="relative grid grid-cols-1 md:grid-cols-3 gap-2">
+          <select
+            className="p-3 rounded-lg border dark:bg-zinc-800 dark:border-zinc-700 dark:text-white"
+            value={searchCategory}
+            onChange={e => setSearchCategory(e.target.value)}
+          >
+            <option value="">Todas las categorías</option>
+            {categories?.map(c => (
+              <option key={c.id} value={c.name}>{c.name}</option>
+            ))}
+          </select>
           <input
             type="text"
             placeholder="Escribe el nombre del alumno..."
-            className="w-full p-3 rounded-lg border dark:bg-zinc-800 dark:border-zinc-700 dark:text-white"
+            className="col-span-2 w-full p-3 rounded-lg border dark:bg-zinc-800 dark:border-zinc-700 dark:text-white"
             value={searchStudent}
             onChange={e => setSearchStudent(e.target.value)}
           />
 
-          {searchStudent && !selectedStudent && filteredStudentsForSearch.length > 0 && (
+          {(searchStudent || searchCategory) && !selectedStudent && filteredStudentsForSearch.length > 0 && (
             <div className="absolute top-full left-0 right-0 mt-1 bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-lg shadow-lg max-h-60 overflow-y-auto z-10">
               {filteredStudentsForSearch.map(student => (
                 <button
@@ -237,15 +280,36 @@ export default function PaymentHistoryView({ showNotification }) {
             <GenericTable
               title={`Historial de Pagos - ${selectedStudent.name}`}
               data={filteredPayments}
-              customActions={(row) => (
-                <PDFDownloadLink
-                  document={<PDFReceipt payment={row} />}
-                  fileName={`boleta-${row.studentName}-${row.month}-${row.year}.pdf`}
-                  className="text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-950 p-2 rounded inline-flex"
-                >
-                  {({ loading }) => (loading ? <FileText className="h-4 w-4 animate-pulse" /> : <FileText className="h-4 w-4" />)}
-                </PDFDownloadLink>
-              )}
+              customActions={(row) => {
+                const phone = selectedStudent?.phone?.replace(/\D/g, '');
+                const finalPhone = phone?.length === 9 ? `51${phone}` : phone;
+                const message = `Hola ${selectedStudent?.parent || ''}, le escribimos de la Escuela Milan para recordarle el pago de ${row.month} ${row.year} de su menor hijo(a) ${selectedStudent?.name || ''}. Monto pendiente: S/. ${row.amount}.`;
+
+                return (
+                  <>
+                    <PDFDownloadLink
+                      document={<PDFReceipt payment={row} />}
+                      fileName={`boleta-${row.studentName}-${row.month}-${row.year}.pdf`}
+                      className="text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-950 p-2 rounded inline-flex"
+                      title="Descargar Boleta"
+                    >
+                      {({ loading }) => (loading ? <FileText className="h-4 w-4 animate-pulse" /> : <FileText className="h-4 w-4" />)}
+                    </PDFDownloadLink>
+
+                    {(row.status === 'Vencido' || row.status === 'Pendiente') && finalPhone && (
+                      <a
+                        href={`https://wa.me/${finalPhone}?text=${encodeURIComponent(message)}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-green-600 hover:bg-green-50 dark:hover:bg-green-950 p-2 rounded inline-flex"
+                        title="Enviar recordatorio por WhatsApp"
+                      >
+                        <MessageCircle className="h-4 w-4" />
+                      </a>
+                    )}
+                  </>
+                );
+              }}
               columns={[
                 { header: 'Fecha Registro', field: 'createdAt', render: r => r.createdAt?.seconds ? new Date(r.createdAt.seconds * 1000).toLocaleDateString() : 'Hoy' },
                 { header: 'Fecha Pago', field: 'paymentDate', render: r => r.paymentDate?.seconds ? new Date(r.paymentDate.seconds * 1000).toLocaleDateString() : 'Hoy' },

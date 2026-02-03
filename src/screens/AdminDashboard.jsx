@@ -7,6 +7,7 @@ import { LOGO_URL, DEFAULT_SCHEDULE } from "../utils/constants";
 import { THEME_CLASSES } from '../utils/theme';
 import { useTheme } from '../contexts/ThemeContext';
 import { useCollection } from '../hooks/useCollection';
+import { usePendingPayments } from '../hooks/usePendingPayments';
 
 import StudentsView from '../components/admin/StudentsView';
 import CategoriesView from '../components/admin/CategoriesView';
@@ -42,6 +43,7 @@ export default function AdminDashboard({
 
   // Cargar Categorías
   const { data: categories } = useCollection('categories');
+  const { totalProblems } = usePendingPayments();
 
   // --- EFECTO: Cargar estadísticas reales (Usando Aggregation Queries para ahorrar lecturas) ---
   useEffect(() => {
@@ -183,7 +185,7 @@ export default function AdminDashboard({
       text: 'Pagos y Mensualidades', icon: CalendarDays,
       subItems: [
         { text: 'Control de Pagos', id: 'payments-control', icon: DollarSign },
-        { text: 'Pagos Pendientes', id: 'payments-pending', icon: AlertCircle },
+        { text: 'Pagos Pendientes', id: 'payments-pending', icon: AlertCircle, badge: totalProblems },
         { text: 'Historial de Pagos', id: 'payments-history', icon: History },
       ]
     },
@@ -223,9 +225,16 @@ export default function AdminDashboard({
                   {item.subItems.map(sub => {
                     const SubIcon = sub.icon;
                     return (
-                      <button key={sub.id} onClick={() => { setAdminTab(sub.id); setSidebarOpen(false); }} className={`w-full text-left px-3 py-2 rounded-lg text-sm mb-1 transition-colors flex items-center gap-2 ${adminTab === sub.id ? 'bg-red-50 text-red-600 font-bold dark:bg-red-900/20' : `${THEME_CLASSES.text.secondary} hover:bg-zinc-100 dark:hover:bg-zinc-800`}`}>
-                        {SubIcon && <SubIcon className="h-4 w-4" />}
-                        {sub.text}
+                      <button key={sub.id} onClick={() => { setAdminTab(sub.id); setSidebarOpen(false); }} className={`w-full text-left px-3 py-2 rounded-lg text-sm mb-1 transition-colors flex items-center justify-between ${adminTab === sub.id ? 'bg-red-50 text-red-600 font-bold dark:bg-red-900/20' : `${THEME_CLASSES.text.secondary} hover:bg-zinc-100 dark:hover:bg-zinc-800`}`}>
+                        <div className="flex items-center gap-2">
+                          {SubIcon && <SubIcon className="h-4 w-4" />}
+                          {sub.text}
+                        </div>
+                        {sub.badge > 0 && (
+                          <span className="bg-red-600 text-white text-[10px] font-bold px-2 py-0.5 rounded-full">
+                            {sub.badge}
+                          </span>
+                        )}
                       </button>
                     );
                   })}
@@ -348,7 +357,7 @@ export default function AdminDashboard({
           {adminTab === 'students-cats' && <CategoriesView categories={categories} handleAdd={handleAdd} handleDelete={handleDelete} handleUpdate={handleUpdate} />}
           {adminTab === 'payments-control' && <PaymentsView categories={categories} handleAdd={handleAdd} handleDelete={handleDelete} handleUpdate={handleUpdate} showNotification={showNotification} />}
           {adminTab === 'payments-pending' && <PendingPaymentsView showNotification={showNotification} />}
-          {adminTab === 'payments-history' && <PaymentHistoryView showNotification={showNotification} />}
+          {adminTab === 'payments-history' && <PaymentHistoryView categories={categories} showNotification={showNotification} />}
           {adminTab === 'config-web' && <WebConfigView news={news} achievements={achievements} schedules={schedules} handleAdd={handleAdd} handleDelete={handleDelete} handleUpdate={handleUpdate} toggleVisibility={toggleVisibility} showNotification={showNotification} handleReorder={handleReorder} />}
           {adminTab === 'config-images' && <SiteImagesView showNotification={showNotification} />}
           {adminTab === 'config-pricing' && <PricingConfigView showNotification={showNotification} />}

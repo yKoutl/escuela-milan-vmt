@@ -1,83 +1,19 @@
 import React, { useState, useMemo } from 'react';
-import { AlertCircle, Search, Trash2, DollarSign } from 'lucide-react';
+import { AlertCircle, Search, Trash2, DollarSign, MessageCircle } from 'lucide-react';
 import { THEME_CLASSES } from '../../../utils/theme';
 import GenericTable from '../GenericTable';
 import { MONTHS } from '../../../utils/constants';
-import { useCollection } from '../../../hooks/useCollection';
+import { usePendingPayments } from '../../../hooks/usePendingPayments';
 
 export default function PendingPaymentsView({ showNotification }) {
-  // Cargar datos (Lazy Loading: Solo se leen si entra a esta vista)
-  const { data: students } = useCollection('students');
-  const { data: payments } = useCollection('payments');
+  // Usar el hook personalizado para compartir la lógica con el Dashboard
+  const { pendingPayments, students, loading } = usePendingPayments();
 
   // Filtros
   const [filterName, setFilterName] = useState('');
   const [filterCategory, setFilterCategory] = useState('');
 
-  // Lógica para detectar pagos pendientes y vencidos
-  const pendingPayments = useMemo(() => {
-    const studentsWithIssues = [];
-    const currentDate = new Date();
-    const thirtyDaysAgo = new Date(currentDate.getTime() - (30 * 24 * 60 * 60 * 1000));
-
-    // Filtrar solo alumnos activos
-    const activeStudents = students.filter(s => s.status === 'Activo');
-
-    activeStudents.forEach(student => {
-      // Buscar todos los pagos del alumno
-      const studentPayments = payments.filter(p => p.studentName === student.name);
-
-      if (studentPayments.length === 0) {
-        // CASO 1: Sin ningún pago registrado
-        studentsWithIssues.push({
-          id: student.id,
-          studentName: student.name,
-          category: student.category,
-          parent: student.parent,
-          phone: student.phone,
-          status: 'Pendiente',
-          registeredDate: student.createdAt,
-          reason: 'Sin pagos'
-        });
-      } else {
-        // CASO 2: Buscar el último pago (por fecha de pago, no por fecha de registro)
-        const latestPayment = studentPayments.reduce((latest, current) => {
-          const latestDate = latest.paymentDate?.seconds || latest.createdAt?.seconds || 0;
-          const currentDate = current.paymentDate?.seconds || current.createdAt?.seconds || 0;
-          return currentDate > latestDate ? current : latest;
-        });
-
-        // Verificar si pasaron más de 30 días desde el último pago
-        // Usar paymentDate primero, si no existe usar createdAt
-        const paymentDateSeconds = latestPayment.paymentDate?.seconds || latestPayment.createdAt?.seconds;
-
-        if (paymentDateSeconds) {
-          const paymentDate = new Date(paymentDateSeconds * 1000);
-
-          if (paymentDate < thirtyDaysAgo) {
-            // El último pago fue hace más de 30 días
-            studentsWithIssues.push({
-              id: `${student.id}-overdue`,
-              studentName: student.name,
-              category: student.category,
-              parent: student.parent,
-              phone: student.phone,
-              status: 'Vencido',
-              lastPaymentDate: paymentDate,
-              lastPaymentMonth: latestPayment.month,
-              lastPaymentYear: latestPayment.year,
-              daysSincePayment: Math.floor((currentDate - paymentDate) / (1000 * 60 * 60 * 24)),
-              reason: 'Último pago vencido'
-            });
-          }
-        }
-      }
-    });
-
-    return studentsWithIssues;
-  }, [students, payments]);
-
-  // Filtrar pagos pendientes
+  // Filtrar pagos pendientes (Lógica visual local)
   const filteredPendingPayments = useMemo(() => {
     return pendingPayments.filter(payment => {
       const matchName = !filterName ||
@@ -96,6 +32,7 @@ export default function PendingPaymentsView({ showNotification }) {
 
   // Obtener categorías únicas
   const categories = useMemo(() => {
+    if (!students) return [];
     return [...new Set(students.map(s => s.category))].filter(Boolean);
   }, [students]);
 
@@ -171,6 +108,38 @@ export default function PendingPaymentsView({ showNotification }) {
       <GenericTable
         title="Lista de Alumnos con Pagos Pendientes o Vencidos"
         data={filteredPendingPayments}
+        customActions={(row) => {
+          const phone = row.phone?.replace(/\D/g, '');
+          const finalPhone = phone?.length === 9 ? `51${phone}` : phone;
+
+          let paymentDetail = '';
+          if (row.lastPaymentDate) {
+            // Caso Vencido: Mostrar fecha completa
+            const dateStr = row.lastPaymentDate.toLocaleDateString('es-PE', { day: '2-digit', month: '2-digit', year: 'numeric' });
+            paymentDetail = `Último pago registrado: ${dateStr}`;
+          } else {
+            // Caso Pendiente (Sin pagos previos): Mensaje de primera mensualidad
+            paymentDetail = `Pendiente de realizar el pago de su primera mensualidad`;
+          }
+
+          const message = `Hola ${row.parent || ''}, le escribimos de la Escuela Milan para recordarle que el alumno(a) ${row.studentName} presenta: ${row.reason}. ${paymentDetail}. Por favor regularizar.`;
+
+          return (
+            <>
+              {finalPhone && (
+                <a
+                  href={`https://wa.me/${finalPhone}?text=${encodeURIComponent(message)}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-green-600 hover:bg-green-50 dark:hover:bg-green-950 p-2 rounded inline-flex"
+                  title="Enviar recordatorio por WhatsApp"
+                >
+                  <MessageCircle className="h-4 w-4" />
+                </a>
+              )}
+            </>
+          );
+        }}
         columns={[
           { header: 'Alumno', field: 'studentName', render: r => <div className="font-bold text-zinc-900 dark:text-white">{r.studentName}</div> },
           { header: 'Categoría', field: 'category', render: r => <span className="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded">{r.category || 'Sin Cat'}</span> },
@@ -196,8 +165,8 @@ export default function PendingPaymentsView({ showNotification }) {
           {
             header: 'Estado', field: 'status', render: r => (
               <span className={`text-xs px-2 py-1 rounded font-bold ${r.status === 'Vencido'
-                  ? 'bg-red-100 text-red-800'
-                  : 'bg-orange-100 text-orange-800'
+                ? 'bg-red-100 text-red-800'
+                : 'bg-orange-100 text-orange-800'
                 }`}>
                 {r.status}
               </span>

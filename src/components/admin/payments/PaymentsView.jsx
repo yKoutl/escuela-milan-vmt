@@ -13,7 +13,7 @@ import { useCollection } from '../../../hooks/useCollection';
 
 export default function PaymentsView({ categories, handleAdd, handleDelete, handleUpdate, showNotification }) {
   // Datos locales
-  const { data: payments, loading, loadMore, hasMore } = usePaginatedQuery('payments');
+  const { data: payments, loading, loadMore, hasMore } = usePaginatedQuery('payments', 35);
   const { data: students } = useCollection('students', 'name'); // Carga completa para dropdown (Lazy)
 
   const [selCategory, setSelCategory] = useState('');
@@ -309,22 +309,7 @@ export default function PaymentsView({ categories, handleAdd, handleDelete, hand
           </div>
         </div>
 
-        {/* Exportación PDF por estudiante filtrado */}
-        {filterStudentName && filteredPayments.length > 0 && (
-          <div className="mt-3 pt-3 border-t border-zinc-200 dark:border-zinc-700">
-            <PDFDownloadLink
-              document={<PDFBatchReport
-                studentName={filterStudentName}
-                payments={filteredPayments}
-                category={filteredPayments[0]?.category}
-              />}
-              fileName={`reporte-${filterStudentName}-${new Date().toLocaleDateString('es-PE')}.pdf`}
-              className="bg-blue-600 text-white px-4 py-2 rounded-lg inline-flex items-center hover:bg-blue-700 font-bold text-sm"
-            >
-              {({ loading }) => (loading ? 'Generando...' : <><Download className="h-4 w-4 mr-2" /> Exportar PDF del Alumno Filtrado</>)}
-            </PDFDownloadLink>
-          </div>
-        )}
+        {/* Exportación PDF por estudiante filtrado REMOVIDO: Se movió a Historial */}
       </div>
 
       <GenericTable
@@ -388,7 +373,7 @@ export default function PaymentsView({ categories, handleAdd, handleDelete, hand
         ]}
       />
 
-      {/* --- PAGINACIÓN --- */}
+      {/* --- PAGINACIÓN (50 en 50) --- */}
       <div className="flex flex-col items-center justify-center py-4 gap-2">
         {loading && <p className="text-zinc-500 animate-pulse text-sm">Cargando pagos...</p>}
         {!loading && hasMore && (
@@ -396,7 +381,7 @@ export default function PaymentsView({ categories, handleAdd, handleDelete, hand
             onClick={loadMore}
             className="flex items-center gap-2 px-6 py-2 bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-300 rounded-full hover:bg-zinc-200 dark:hover:bg-zinc-700 transition font-bold text-sm"
           >
-            <ChevronDown className="h-4 w-4" /> Ver anteriores (Lote de 30)
+            <ChevronDown className="h-4 w-4" /> Ver anteriores (Lote de 50)
           </button>
         )}
         {!hasMore && payments.length > 0 && (
