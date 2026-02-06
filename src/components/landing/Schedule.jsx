@@ -1,6 +1,7 @@
 import React from 'react';
 import { Calendar, MapPin } from 'lucide-react';
 import { DEFAULT_SCHEDULE, FIELD_LOCATION } from '../../utils/constants';
+import fieldImage from '../../assets/CAMPO DEPORTIVO VIRGEN DE LOURDES PARADERO 11.jpg';
 
 export default function Schedule({ schedules = [] }) {
   // 1. Normalización y Agrupación Avanzada
@@ -117,7 +118,7 @@ export default function Schedule({ schedules = [] }) {
           {/* Columna derecha - Imagen del campo */}
           <div className="relative h-full min-h-[400px] rounded-2xl overflow-hidden shadow-2xl border-4 border-zinc-800">
             <img
-              src="https://i.postimg.cc/q7BCRrMw/CAMPO-DEPORTIVO-VIRGEN-DE-LOURDES-PARADERO-11.jpg"
+              src={fieldImage}
               alt="Campo Deportivo Virgen de Lourdes"
               className="absolute inset-0 w-full h-full object-cover opacity-70"
             />

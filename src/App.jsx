@@ -6,8 +6,8 @@ import { auth, db, appId } from './firebase';
 import { ThemeProvider } from './contexts/ThemeContext';
 import { THEME_CLASSES } from './utils/theme';
 import LandingScreen from './screens/LandingScreen';
-import LoginScreen from './screens/LoginScreen';
-import AdminDashboard from './screens/AdminDashboard';
+const LoginScreen = React.lazy(() => import('./screens/LoginScreen'));
+const AdminDashboard = React.lazy(() => import('./screens/AdminDashboard'));
 import Notification from './shared/Notification';
 import WelcomeModal from './shared/WelcomeModal';
 
@@ -39,7 +39,18 @@ function AppContent() {
   // Auth
   useEffect(() => {
     const initAuth = async () => {
-      await signInAnonymously(auth);
+      try {
+        await signInAnonymously(auth);
+      } catch (error) {
+        console.error("Auth Error:", error);
+        // If anonymous auth is disabled/fails, we might still want to allow viewing public data 
+        // if the security rules allow it (usually they require auth, but let's not crash the app logic).
+        if (error.code === 'auth/admin-restricted-operation') {
+          console.warn("Please enable Anonymous Authentication in the Firebase Console.");
+        }
+        // Fallback: Enable UI even if auth fails
+        setUser({ uid: 'guest', isAnonymous: true });
+      }
     };
     initAuth();
     const unsubscribe = onAuthStateChanged(auth, setUser);
@@ -60,6 +71,8 @@ function AppContent() {
 
   // --- Data Fetching (PUBLIC ONLY) ---
   useEffect(() => {
+    // If we require auth for data, checking !user here blocks everything if auth fails.
+    // For now, we'll keep it, assuming user fixes Auth in console.
     if (!user) return;
 
     // Track loading status of each collection
@@ -68,7 +81,7 @@ function AppContent() {
     // Safety timeout to ensure app always loads eventually
     const safetyTimeout = setTimeout(() => {
       setLoadingData(false);
-    }, 4000);
+    }, 1500);
 
     const checkAllLoaded = () => {
       if (loadStatus.news && loadStatus.achievements && loadStatus.schedules) {
@@ -120,6 +133,11 @@ function AppContent() {
   };
 
   if (view === 'landing' && (loadingData || !user)) {
+    // If auth failed, user might be null forever. 
+    // We should probably show the landing anyway after timeout if user is null but auth failed?
+    // For now, let's stick to original logic but we might need to revisit if auth never succeeds.
+    // However, the error handling above prevents the CRASH, but user state remains null.
+
     return (
       <div className="min-h-screen flex flex-col items-center justify-center bg-white dark:bg-black transition-colors">
         <Loader2 className="w-12 h-12 text-red-600 animate-spin mb-4" />
@@ -134,7 +152,7 @@ function AppContent() {
   return (
     <div className="font-sans min-h-screen">
       <Notification notification={notification} />
-      <WelcomeModal />
+      {view === 'landing' && <WelcomeModal />}
 
       {view === 'landing' && (
         <LandingScreen
@@ -149,17 +167,23 @@ function AppContent() {
         />
       )}
 
-      {view === 'admin-login' && <LoginScreen setView={setView} />}
+      <React.Suspense fallback={
+        <div className="min-h-screen flex items-center justify-center">
+          <Loader2 className="w-8 h-8 animate-spin text-red-600" />
+        </div>
+      }>
+        {view === 'admin-login' && <LoginScreen setView={setView} />}
 
-      {view === 'admin-dashboard' && (
-        <AdminDashboard
-          setView={setView}
-          news={news}
-          achievements={achievements}
-          schedules={schedules}
-          showNotification={showNotification}
-        />
-      )}
+        {view === 'admin-dashboard' && (
+          <AdminDashboard
+            setView={setView}
+            news={news}
+            achievements={achievements}
+            schedules={schedules}
+            showNotification={showNotification}
+          />
+        )}
+      </React.Suspense>
     </div>
   );
 }

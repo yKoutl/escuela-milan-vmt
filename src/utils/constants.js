@@ -1,3 +1,12 @@
+// Local Asset Imports
+import heroMilan from '../assets/hero milan.png';
+import campeonEcuador from '../assets/campeon ecuador.png';
+import campeon2019 from '../assets/Campeon-2019.jpg';
+import campeon2017 from '../assets/Campeon-2017.jpg';
+import sobreNosotros1 from '../assets/sobre nosotros 1.png';
+import sobreNosotros2 from '../assets/sobre nosotros 2.png';
+import sobreNosotros3 from '../assets/sobre nosotros 3.png';
+
 // Logo URL
 export const LOGO_URL = 'https://i.postimg.cc/43L0J04m/logo-milan.png';
 
@@ -9,7 +18,7 @@ export const DEFAULT_NEWS = [
     title: "Inicio del Torneo Apertura SJM",
     desc: "Nuestras categorías Sub-12 y Sub-14 debutan este fin de semana.",
     visible: true,
-    img: "https://i.postimg.cc/J4R4Hyc0/imagen_milan_fondo_principal.png"
+    img: heroMilan
   },
   {
     id: '2',
@@ -17,7 +26,7 @@ export const DEFAULT_NEWS = [
     title: "Pruebas masivas 2026",
     desc: "Buscamos nuevos talentos nacidos entre 2010 y 2018.",
     visible: true,
-    img: "https://i.postimg.cc/J4R4Hyc0/imagen_milan_fondo_principal.png"
+    img: heroMilan
   }
 ];
 
@@ -28,7 +37,7 @@ export const DEFAULT_ACHIEVEMENTS = [
     title: "Campeones internacionales",
     year: "2025",
     desc: "Escuela Milan se consagró campeon del Torneo Internacional Salinas - Ecuador 2025 Categoría 2018 - 2016.",
-    img: "https://i.postimg.cc/xdh5G1d7/campeon-ecuador.png",
+    img: campeonEcuador,
     visible: true
   },
 
@@ -37,7 +46,7 @@ export const DEFAULT_ACHIEVEMENTS = [
     title: "Campeones Liga SJM",
     year: "2019",
     desc: "La Escuela Milan se coronó campeona de la Liga de San Juan de Miraflores en 2019.",
-    img: "https://i.postimg.cc/VLXHgnQj/Campeon-2019.jpg",
+    img: campeon2019,
     visible: true
   },
   {
@@ -45,7 +54,7 @@ export const DEFAULT_ACHIEVEMENTS = [
     title: "Campeones Liga SJM",
     year: "2017",
     desc: "La Escuela Milan logró el campeonato de la Liga de San Juan de Miraflores en 2017.",
-    img: "https://i.postimg.cc/RCkDwG84/Campeon-2017.jpg",
+    img: campeon2017,
     visible: true
   }
 ];
@@ -68,11 +77,10 @@ export const FIELD_LOCATION = {
 };
 
 export const CAROUSEL_IMAGES = [
-  "https://i.postimg.cc/nzHTpgN0/sobre-nosotros-1.png",
-
-  "https://i.postimg.cc/WzqZv7p9/sobre-nosotros-3.png",
-
-  "https://i.postimg.cc/pdkzYT1q/sobre-nosotros-2.png"];
+  sobreNosotros1,
+  sobreNosotros3,
+  sobreNosotros2
+];
 
 export const MONTHS = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
 
@@ -124,11 +132,18 @@ export const MEMBERSHIP_OPTIONS = [
   }
 ];
 // ✅ AQUÍ ESTÁ EL CAMBIO PRINCIPAL: Textos actualizados para los sponsors
+import auspiciadoresImg from '../assets/auspiciadores.jpg';
+import sponsorOficialImg from '../assets/sponsor oficial.png';
+import yapeLogo from '../assets/logo yape.png';
+import plinLogo from '../assets/logo plin.png';
+import qrYape from '../assets/QRYAPE.png';
+import qrPlin from '../assets/QRPLIN.png';
+
 export const DEFAULT_SPONSORS = [
   {
     id: '1',
     name: 'Sponsor Principal',
-    logo: 'https://i.postimg.cc/SRXT91CV/auspiciadores.jpg',
+    logo: auspiciadoresImg,
     tier: 'gold',
     description: `Máxima visibilidad y exclusividad
 
@@ -143,7 +158,7 @@ export const DEFAULT_SPONSORS = [
   {
     id: '2',
     name: 'Sponsor Oficial',
-    logo: 'https://i.postimg.cc/SRXT91CV/auspiciadores.jpg',
+    logo: sponsorOficialImg,
     tier: 'silver',
     description: `Excelente presencia y alcance
 
@@ -157,7 +172,7 @@ export const DEFAULT_SPONSORS = [
   {
     id: '3',
     name: 'Aliado Estratégico',
-    logo: 'https://i.postimg.cc/SRXT91CV/auspiciadores.jpg',
+    logo: auspiciadoresImg,
     tier: 'bronze',
     description: `Visibilidad estratégica y valor
 
@@ -173,18 +188,18 @@ export const DONATION_METHODS = [
   {
     id: 'yape',
     name: 'Yape',
-    logo: 'https://i.postimg.cc/XqYfBsB5/yape.png',
+    logo: yapeLogo,
     color: 'from-purple-600 to-purple-700',
     phone: '999999999',
-    qrImage: 'https://i.postimg.cc/MpqQnPkM/QRYAPE.png'
+    qrImage: qrYape
   },
   {
     id: 'plin',
     name: 'Plin',
-    logo: 'https://i.postimg.cc/4y2z6ppB/plin.png',
+    logo: plinLogo,
     color: 'from-blue-600 to-blue-700',
     phone: '999999999',
-    qrImage: 'https://i.postimg.cc/MpqQnPkx/QRPLIN.png'
+    qrImage: qrPlin
   }
 ];
 
