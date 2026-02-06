@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { DollarSign, Save, Plus, Trash2, Eye, EyeOff } from 'lucide-react';
 import { doc, getDoc, setDoc } from 'firebase/firestore';
-import { db, appId } from '../../firebase';
+import { db, appId } from '../../../firebase';
 
 export default function PricingConfigView({ showNotification }) {
   const [loading, setLoading] = useState(false);
@@ -24,7 +24,7 @@ export default function PricingConfigView({ showNotification }) {
     try {
       const docRef = doc(db, 'artifacts', appId, 'public', 'data', 'config', 'pricing');
       const docSnap = await getDoc(docRef);
-      
+
       if (docSnap.exists()) {
         setConfig(docSnap.data());
       }
@@ -91,7 +91,7 @@ export default function PricingConfigView({ showNotification }) {
         <h3 className="text-lg font-bold text-zinc-900 dark:text-white mb-4">
           Costos Básicos
         </h3>
-        
+
         <div className="grid md:grid-cols-2 gap-6">
           <div>
             <label className="block text-sm font-bold text-zinc-700 dark:text-zinc-300 mb-2">

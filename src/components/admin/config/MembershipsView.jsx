@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { CreditCard, Save } from 'lucide-react';
 import { doc, getDoc, setDoc } from 'firebase/firestore';
-import { db, appId } from '../../firebase';
-import { MEMBERSHIP_OPTIONS } from '../../utils/constants';
+import { db, appId } from '../../../firebase';
+import { MEMBERSHIP_OPTIONS } from '../../../utils/constants';
 
 export default function MembershipsView({ showNotification }) {
   const [loading, setLoading] = useState(false);
@@ -17,7 +17,7 @@ export default function MembershipsView({ showNotification }) {
     try {
       const docRef = doc(db, 'artifacts', appId, 'public', 'data', 'config', 'memberships');
       const docSnap = await getDoc(docRef);
-      
+
       if (docSnap.exists()) {
         setMemberships(docSnap.data().memberships || MEMBERSHIP_OPTIONS);
       }

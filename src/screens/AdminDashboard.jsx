@@ -8,19 +8,20 @@ import { THEME_CLASSES } from '../utils/theme';
 import { useTheme } from '../contexts/ThemeContext';
 import { useCollection } from '../hooks/useCollection';
 import { usePendingPayments } from '../hooks/usePendingPayments';
+import { usePendingRequests } from '../hooks/usePendingRequests';
 
-import StudentsView from '../components/admin/StudentsView';
-import CategoriesView from '../components/admin/CategoriesView';
+import StudentsView from '../components/admin/students/StudentsView';
+import CategoriesView from '../components/admin/students/CategoriesView';
 import PaymentsView from '../components/admin/payments/PaymentsView';
 import PendingPaymentsView from '../components/admin/payments/PendingPaymentsView';
 import PaymentHistoryView from '../components/admin/payments/PaymentHistoryView';
-import WebConfigView from '../components/admin/WebConfigView';
-import RequestsView from '../components/admin/RequestsView';
-import SiteImagesView from '../components/admin/SiteImagesView';
-import PricingConfigView from '../components/admin/PricingConfigView';
-import MembershipsView from '../components/admin/MembershipsView';
-import SponsorsView from '../components/admin/SponsorsView';
-import DonationConfigView from '../components/admin/DonationConfigView';
+import WebConfigView from '../components/admin/config/WebConfigView';
+import RequestsView from '../components/admin/requests/RequestsView';
+import SiteImagesView from '../components/admin/config/SiteImagesView';
+import PricingConfigView from '../components/admin/config/PricingConfigView';
+import MembershipsView from '../components/admin/config/MembershipsView';
+import SponsorsView from '../components/admin/config/SponsorsView';
+import DonationConfigView from '../components/admin/config/DonationConfigView';
 
 export default function AdminDashboard({
   setView,
@@ -44,6 +45,7 @@ export default function AdminDashboard({
   // Cargar Categorías
   const { data: categories } = useCollection('categories');
   const { totalProblems } = usePendingPayments();
+  const { pendingCount: pendingRequests } = usePendingRequests();
 
   // --- EFECTO: Cargar estadísticas reales (Usando Aggregation Queries para ahorrar lecturas) ---
   useEffect(() => {
@@ -198,7 +200,7 @@ export default function AdminDashboard({
         { text: 'Membresías', id: 'config-memberships', icon: CreditCard },
         { text: 'Auspiciadores', id: 'config-sponsors', icon: Trophy },
         { text: 'Donaciones (QR)', id: 'config-donations', icon: Heart },
-        { text: 'Solicitudes Web', id: 'requests', icon: Inbox }
+        { text: 'Solicitudes Web', id: 'requests', icon: Inbox, badge: pendingRequests }
       ]
     }
   ];

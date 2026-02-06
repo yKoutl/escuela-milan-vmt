@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { Image as ImageIcon, Upload, Trash2, Eye, ArrowLeft, ArrowRight } from 'lucide-react';
 import { doc, setDoc, getDoc } from 'firebase/firestore';
-import { db, appId } from '../../firebase'; // Ajusta la ruta a tu firebase.js si es diferente
-import { uploadImage, deleteImage } from '../../utils/imageUpload'; // Ajusta la ruta a tu servicio
-import ImagePreviewModal from '../../shared/ImagePreviewModal';
+import { db, appId } from '../../../firebase'; // Ajusta la ruta a tu firebase.js si es diferente
+import { uploadImage, deleteImage } from '../../../utils/imageUpload'; // Ajusta la ruta a tu servicio
+import ImagePreviewModal from '../../../shared/ImagePreviewModal';
 
 export default function SiteImagesView({ showNotification }) {
   const [loading, setLoading] = useState(false);
@@ -14,12 +14,12 @@ export default function SiteImagesView({ showNotification }) {
     announcementEnabled: false
   });
   const [previewImage, setPreviewImage] = useState(null);
-  
+
   // Estados de carga independientes
   const [uploadingHero, setUploadingHero] = useState(false);
   const [uploadingCarousel, setUploadingCarousel] = useState(false);
   const [uploadingAnnouncement, setUploadingAnnouncement] = useState(false);
-  
+
   // Estado para bloquear botones mientras se reordena
   const [reordering, setReordering] = useState(false);
 
@@ -33,7 +33,7 @@ export default function SiteImagesView({ showNotification }) {
     try {
       const docRef = doc(db, 'artifacts', appId, 'public', 'data', 'siteConfig', 'images');
       const docSnap = await getDoc(docRef);
-      
+
       if (docSnap.exists()) {
         const data = docSnap.data();
         setSiteImages({
@@ -55,9 +55,9 @@ export default function SiteImagesView({ showNotification }) {
   // --- FUNCIÓN DE REORDENAMIENTO ---
   const handleMoveImage = async (index, direction) => {
     if (reordering) return;
-    
+
     const newImages = [...siteImages.carouselImages];
-    
+
     // Lógica de intercambio (Swap)
     if (direction === 'left' && index > 0) {
       [newImages[index], newImages[index - 1]] = [newImages[index - 1], newImages[index]];
@@ -75,7 +75,7 @@ export default function SiteImagesView({ showNotification }) {
       // Guardar solo el array en Firestore
       const docRef = doc(db, 'artifacts', appId, 'public', 'data', 'siteConfig', 'images');
       await setDoc(docRef, { carouselImages: newImages }, { merge: true });
-      
+
     } catch (error) {
       console.error("Error al mover:", error);
       showNotification("Error al reordenar imagen", "error");
@@ -103,7 +103,7 @@ export default function SiteImagesView({ showNotification }) {
       const docRef = doc(db, 'artifacts', appId, 'public', 'data', 'siteConfig', 'images');
       const newData = { ...siteImages, heroImage: imageUrl };
       await setDoc(docRef, newData, { merge: true });
-      
+
       setSiteImages(newData);
       showNotification('Imagen del Hero actualizada');
     } catch (error) {
@@ -124,23 +124,23 @@ export default function SiteImagesView({ showNotification }) {
     try {
       const uploadPromises = files.map(file => uploadImage(file, 'carousel'));
       const rawUrls = await Promise.all(uploadPromises);
-      
+
       // Filtrar errores (nulls)
       const validUrls = rawUrls.filter(url => url !== null);
 
       if (validUrls.length === 0) throw new Error("No se pudo subir ninguna imagen.");
-      
+
       const newCarouselImages = [...siteImages.carouselImages, ...validUrls];
-      
+
       const docRef = doc(db, 'artifacts', appId, 'public', 'data', 'siteConfig', 'images');
       const newData = { ...siteImages, carouselImages: newCarouselImages };
       await setDoc(docRef, newData, { merge: true });
-      
+
       setSiteImages(newData);
       showNotification(`${validUrls.length} imagen(es) agregada(s)`);
 
       if (validUrls.length < files.length) {
-         showNotification(`${files.length - validUrls.length} imágenes fallaron`, 'warning');
+        showNotification(`${files.length - validUrls.length} imágenes fallaron`, 'warning');
       }
     } catch (error) {
       console.error('Error:', error);
@@ -157,13 +157,13 @@ export default function SiteImagesView({ showNotification }) {
 
     try {
       await deleteImage(imageUrl);
-      
+
       const newCarouselImages = siteImages.carouselImages.filter((_, i) => i !== index);
-      
+
       const docRef = doc(db, 'artifacts', appId, 'public', 'data', 'siteConfig', 'images');
       const newData = { ...siteImages, carouselImages: newCarouselImages };
       await setDoc(docRef, newData, { merge: true });
-      
+
       setSiteImages(newData);
       showNotification('Imagen eliminada');
     } catch (error) {
@@ -178,11 +178,11 @@ export default function SiteImagesView({ showNotification }) {
 
     try {
       await deleteImage(siteImages.heroImage);
-      
+
       const docRef = doc(db, 'artifacts', appId, 'public', 'data', 'siteConfig', 'images');
       const newData = { ...siteImages, heroImage: '' };
       await setDoc(docRef, newData, { merge: true });
-      
+
       setSiteImages(newData);
       showNotification('Imagen del Hero eliminada');
     } catch (error) {
@@ -213,7 +213,7 @@ export default function SiteImagesView({ showNotification }) {
         <h3 className="text-lg font-bold text-zinc-900 dark:text-white mb-4">
           Imagen Principal (Hero)
         </h3>
-        
+
         <div className="grid md:grid-cols-2 gap-6">
           {/* Preview Hero */}
           <div>
@@ -304,7 +304,7 @@ export default function SiteImagesView({ showNotification }) {
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
             {siteImages.carouselImages.map((imageUrl, index) => (
               <div key={index} className="flex flex-col bg-zinc-50 dark:bg-zinc-900 rounded-lg p-2 shadow-sm">
-                
+
                 {/* Imagen con Overlay */}
                 <div className="relative group overflow-hidden rounded-md aspect-video mb-2">
                   <img
@@ -325,27 +325,27 @@ export default function SiteImagesView({ showNotification }) {
 
                 {/* Barra de Ordenamiento */}
                 <div className="flex justify-between items-center bg-zinc-200 dark:bg-zinc-800 rounded px-2 py-1">
-                   <button 
-                      onClick={() => handleMoveImage(index, 'left')}
-                      disabled={index === 0 || reordering}
-                      className={`p-1 hover:bg-zinc-300 dark:hover:bg-zinc-700 rounded transition ${index === 0 ? 'opacity-30 cursor-not-allowed' : ''}`}
-                      title="Mover antes"
-                   >
-                      <ArrowLeft size={16} className="text-zinc-700 dark:text-zinc-300"/>
-                   </button>
+                  <button
+                    onClick={() => handleMoveImage(index, 'left')}
+                    disabled={index === 0 || reordering}
+                    className={`p-1 hover:bg-zinc-300 dark:hover:bg-zinc-700 rounded transition ${index === 0 ? 'opacity-30 cursor-not-allowed' : ''}`}
+                    title="Mover antes"
+                  >
+                    <ArrowLeft size={16} className="text-zinc-700 dark:text-zinc-300" />
+                  </button>
 
-                   <span className="text-xs font-mono font-bold text-zinc-500 dark:text-zinc-400">
-                      {index + 1}
-                   </span>
+                  <span className="text-xs font-mono font-bold text-zinc-500 dark:text-zinc-400">
+                    {index + 1}
+                  </span>
 
-                   <button 
-                      onClick={() => handleMoveImage(index, 'right')}
-                      disabled={index === siteImages.carouselImages.length - 1 || reordering}
-                      className={`p-1 hover:bg-zinc-300 dark:hover:bg-zinc-700 rounded transition ${index === siteImages.carouselImages.length - 1 ? 'opacity-30 cursor-not-allowed' : ''}`}
-                      title="Mover después"
-                   >
-                      <ArrowRight size={16} className="text-zinc-700 dark:text-zinc-300"/>
-                   </button>
+                  <button
+                    onClick={() => handleMoveImage(index, 'right')}
+                    disabled={index === siteImages.carouselImages.length - 1 || reordering}
+                    className={`p-1 hover:bg-zinc-300 dark:hover:bg-zinc-700 rounded transition ${index === siteImages.carouselImages.length - 1 ? 'opacity-30 cursor-not-allowed' : ''}`}
+                    title="Mover después"
+                  >
+                    <ArrowRight size={16} className="text-zinc-700 dark:text-zinc-300" />
+                  </button>
                 </div>
               </div>
             ))}
@@ -369,17 +369,16 @@ export default function SiteImagesView({ showNotification }) {
               setSiteImages(newData);
               showNotification(newEnabled ? 'Modal habilitado' : 'Modal deshabilitado');
             }}
-            className={`px-4 py-2 rounded-lg font-bold transition flex items-center gap-2 ${
-              siteImages.announcementEnabled 
-                ? 'bg-green-600 hover:bg-green-700 text-white' 
+            className={`px-4 py-2 rounded-lg font-bold transition flex items-center gap-2 ${siteImages.announcementEnabled
+                ? 'bg-green-600 hover:bg-green-700 text-white'
                 : 'bg-zinc-300 hover:bg-zinc-400 dark:bg-zinc-700 dark:hover:bg-zinc-600 text-zinc-900 dark:text-white'
-            }`}
+              }`}
           >
             <Eye className="h-4 w-4" />
             {siteImages.announcementEnabled ? 'Visible' : 'Oculto'}
           </button>
         </div>
-        
+
         <p className="text-sm text-zinc-600 dark:text-zinc-400 mb-4">
           Este modal aparecerá automáticamente cuando los usuarios entren a la página.
         </p>
@@ -429,21 +428,21 @@ export default function SiteImagesView({ showNotification }) {
           <div className="flex flex-col justify-center">
             <label className="cursor-pointer">
               <input type="file" accept="image/*" onChange={async (e) => {
-                  const file = e.target.files[0];
-                  if (!file) return;
-                  setUploadingAnnouncement(true);
-                  try {
-                    if (siteImages.announcementImage) await deleteImage(siteImages.announcementImage);
-                    const imageUrl = await uploadImage(file, 'announcements');
-                    if(!imageUrl) throw new Error("Fallo al subir anuncio");
+                const file = e.target.files[0];
+                if (!file) return;
+                setUploadingAnnouncement(true);
+                try {
+                  if (siteImages.announcementImage) await deleteImage(siteImages.announcementImage);
+                  const imageUrl = await uploadImage(file, 'announcements');
+                  if (!imageUrl) throw new Error("Fallo al subir anuncio");
 
-                    const docRef = doc(db, 'artifacts', appId, 'public', 'data', 'siteConfig', 'images');
-                    const newData = { ...siteImages, announcementImage: imageUrl };
-                    await setDoc(docRef, newData, { merge: true });
-                    setSiteImages(newData);
-                    showNotification('Anuncio actualizado');
-                  } catch (error) { showNotification(error.message, 'error'); } finally { setUploadingAnnouncement(false); e.target.value = ''; }
-                }}
+                  const docRef = doc(db, 'artifacts', appId, 'public', 'data', 'siteConfig', 'images');
+                  const newData = { ...siteImages, announcementImage: imageUrl };
+                  await setDoc(docRef, newData, { merge: true });
+                  setSiteImages(newData);
+                  showNotification('Anuncio actualizado');
+                } catch (error) { showNotification(error.message, 'error'); } finally { setUploadingAnnouncement(false); e.target.value = ''; }
+              }}
                 disabled={uploadingAnnouncement}
                 className="hidden"
               />

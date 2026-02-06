@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { Save, Plus, Trash2, Upload, Heart } from 'lucide-react';
 import { doc, getDoc, setDoc } from 'firebase/firestore';
-import { db, appId } from '../../firebase';
-import { DONATION_METHODS } from '../../utils/constants';
-import { uploadImage, deleteImage } from '../../utils/imageUpload';
-import LoadingModal from '../../shared/LoadingModal';
+import { db, appId } from '../../../firebase';
+import { DONATION_METHODS } from '../../../utils/constants';
+import { uploadImage, deleteImage } from '../../../utils/imageUpload';
+import LoadingModal from '../../../shared/LoadingModal';
 
 export default function DonationConfigView({ showNotification }) {
   const [methods, setMethods] = useState(DONATION_METHODS);
@@ -20,7 +20,7 @@ export default function DonationConfigView({ showNotification }) {
     try {
       const docRef = doc(db, `artifacts/${appId}/public/data/config`, 'donations');
       const docSnap = await getDoc(docRef);
-      
+
       if (docSnap.exists()) {
         const data = docSnap.data();
         if (data.methods && Array.isArray(data.methods)) {
@@ -57,9 +57,9 @@ export default function DonationConfigView({ showNotification }) {
     try {
       const path = `donations/${methodId}_qr`;
       const url = await uploadImage(file, path);
-      
+
       if (url) {
-        setMethods(methods.map(m => 
+        setMethods(methods.map(m =>
           m.id === methodId ? { ...m, qrImage: url } : m
         ));
         showNotification?.('Imagen QR actualizada', 'success');
@@ -74,10 +74,10 @@ export default function DonationConfigView({ showNotification }) {
 
   const handleDeleteQR = async (methodId, qrImage) => {
     if (!qrImage) return;
-    
+
     try {
       await deleteImage(qrImage);
-      setMethods(methods.map(m => 
+      setMethods(methods.map(m =>
         m.id === methodId ? { ...m, qrImage: null } : m
       ));
       showNotification?.('Imagen QR eliminada', 'success');
@@ -88,7 +88,7 @@ export default function DonationConfigView({ showNotification }) {
   };
 
   const updateMethod = (methodId, field, value) => {
-    setMethods(methods.map(m => 
+    setMethods(methods.map(m =>
       m.id === methodId ? { ...m, [field]: value } : m
     ));
   };
@@ -105,7 +105,7 @@ export default function DonationConfigView({ showNotification }) {
     <div className="space-y-6">
       {/* Modal de carga - bloquea toda la pantalla */}
       <LoadingModal isOpen={isUploading} />
-      
+
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
           <Heart className="h-6 w-6 text-red-600" />
@@ -137,8 +137,8 @@ export default function DonationConfigView({ showNotification }) {
           >
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
-                <img 
-                  src={method.logo} 
+                <img
+                  src={method.logo}
                   alt={method.name}
                   className="h-12 object-contain"
                   onError={(e) => {
@@ -153,7 +153,7 @@ export default function DonationConfigView({ showNotification }) {
 
             {/* SECCIÓN CORREGIDA: Input con ID y Label asociado */}
             <div>
-              <label 
+              <label
                 htmlFor={`phone-${method.id}`}
                 className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-2"
               >
@@ -174,7 +174,7 @@ export default function DonationConfigView({ showNotification }) {
               <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-2">
                 Código QR
               </label>
-              
+
               {method.qrImage ? (
                 <div className="relative">
                   <img
@@ -230,8 +230,8 @@ export default function DonationConfigView({ showNotification }) {
               className="bg-white dark:bg-zinc-800 rounded-lg p-4 border border-zinc-200 dark:border-zinc-700"
             >
               <div className="flex items-center gap-3 mb-3">
-                <img 
-                  src={method.logo} 
+                <img
+                  src={method.logo}
                   alt={method.name}
                   className="h-8 object-contain"
                 />
@@ -239,8 +239,8 @@ export default function DonationConfigView({ showNotification }) {
               </div>
               <div className="bg-zinc-50 dark:bg-zinc-900 rounded p-3 text-center">
                 {method.qrImage ? (
-                  <img 
-                    src={method.qrImage} 
+                  <img
+                    src={method.qrImage}
                     alt={`QR ${method.name}`}
                     className="w-32 h-32 object-contain mx-auto"
                   />

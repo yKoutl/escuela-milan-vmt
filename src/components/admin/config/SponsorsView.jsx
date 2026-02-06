@@ -1,17 +1,17 @@
 import React, { useState, useEffect } from 'react';
 import { Users, Save, Upload, Trash2, Eye, CheckCircle2 } from 'lucide-react';
 import { doc, getDoc, setDoc } from 'firebase/firestore';
-import { db, appId } from '../../firebase';
-import { uploadImage, deleteImage } from '../../utils/imageUpload';
-import ImagePreviewModal from '../../shared/ImagePreviewModal';
+import { db, appId } from '../../../firebase';
+import { uploadImage, deleteImage } from '../../../utils/imageUpload';
+import ImagePreviewModal from '../../../shared/ImagePreviewModal';
 
 // Definición de los datos por defecto con los textos solicitados
 const DEFAULT_TIERS = [
-  { 
-    id: '1', 
+  {
+    id: '1',
     name: 'Sponsor Principal', // Antes Gold
-    tier: 'gold', 
-    logo: '', 
+    tier: 'gold',
+    logo: '',
     visible: true,
     description: `Máxima visibilidad y exclusividad
 
@@ -22,11 +22,11 @@ const DEFAULT_TIERS = [
 • Entradas VIP para todos los partidos
 • Acceso a base de datos de familias socias`
   },
-  { 
-    id: '2', 
+  {
+    id: '2',
     name: 'Sponsor Oficial', // Antes Silver
-    tier: 'silver', 
-    logo: '', 
+    tier: 'silver',
+    logo: '',
     visible: true,
     description: `Excelente presencia y alcance
 
@@ -36,11 +36,11 @@ const DEFAULT_TIERS = [
 • Stand en eventos principales
 • Entradas preferenciales a partidos`
   },
-  { 
-    id: '3', 
+  {
+    id: '3',
     name: 'Aliado Estratégico', // Antes Bronze
-    tier: 'bronze', 
-    logo: '', 
+    tier: 'bronze',
+    logo: '',
     visible: true,
     description: `Visibilidad estratégica y valor
 
@@ -66,12 +66,12 @@ export default function SponsorsView({ showNotification }) {
     try {
       const docRef = doc(db, 'artifacts', appId, 'public', 'data', 'config', 'sponsors');
       const docSnap = await getDoc(docRef);
-      
+
       if (docSnap.exists()) {
         const data = docSnap.data().items;
         // Si ya existen datos, los usamos, si no, usamos los default con los textos nuevos
         if (data && data.length > 0) {
-            setSponsors(data);
+          setSponsors(data);
         }
       }
     } catch (error) {
@@ -101,17 +101,17 @@ export default function SponsorsView({ showNotification }) {
     setUploading({ ...uploading, [sponsorId]: true });
     try {
       const sponsorIndex = sponsors.findIndex(s => s.id === sponsorId);
-      
+
       if (sponsors[sponsorIndex].logo) {
         await deleteImage(sponsors[sponsorIndex].logo);
       }
 
       const imageUrl = await uploadImage(file, 'sponsors');
-      
+
       const newSponsors = [...sponsors];
       newSponsors[sponsorIndex].logo = imageUrl;
       setSponsors(newSponsors);
-      
+
       showNotification('Logo actualizado correctamente');
     } catch (error) {
       console.error('Error:', error);
@@ -129,20 +129,20 @@ export default function SponsorsView({ showNotification }) {
 
   // Función para obtener estilos según el nivel (Tier)
   const getTierStyles = (tier) => {
-    switch(tier) {
-      case 'gold': 
+    switch (tier) {
+      case 'gold':
         return {
           container: 'border-yellow-400 dark:border-yellow-600 ring-1 ring-yellow-400 dark:ring-yellow-600 shadow-xl',
           badge: 'bg-gradient-to-r from-yellow-400 to-yellow-600 text-white',
           title: 'text-yellow-700 dark:text-yellow-500'
         };
-      case 'silver': 
+      case 'silver':
         return {
           container: 'border-zinc-300 dark:border-zinc-600 shadow-lg',
           badge: 'bg-gradient-to-r from-zinc-400 to-zinc-600 text-white',
           title: 'text-zinc-700 dark:text-zinc-300'
         };
-      case 'bronze': 
+      case 'bronze':
         return {
           container: 'border-amber-700/30 dark:border-amber-700/50 shadow-md',
           badge: 'bg-gradient-to-r from-amber-600 to-amber-800 text-white',
@@ -187,10 +187,10 @@ export default function SponsorsView({ showNotification }) {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
         {sponsors.map((sponsor, idx) => {
           const styles = getTierStyles(sponsor.tier);
-          
+
           return (
-            <div 
-              key={sponsor.id} 
+            <div
+              key={sponsor.id}
               className={`bg-white dark:bg-zinc-800 rounded-xl p-0 overflow-hidden border transition-all duration-300 hover:-translate-y-1 ${styles.container}`}
             >
               {/* Encabezado de la tarjeta */}
@@ -201,20 +201,19 @@ export default function SponsorsView({ showNotification }) {
               </div>
 
               <div className="p-6 space-y-6">
-                
+
                 {/* Control de Visibilidad */}
                 <div className="flex justify-center">
-                    <button
-                        onClick={() => updateSponsor(idx, 'visible', !sponsor.visible)}
-                        className={`text-xs font-bold px-3 py-1 rounded-full flex items-center gap-1 transition-colors ${
-                        sponsor.visible 
-                            ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400' 
-                            : 'bg-zinc-100 text-zinc-500 dark:bg-zinc-700 dark:text-zinc-400'
-                        }`}
-                    >
-                        <Eye className="h-3 w-3" />
-                        {sponsor.visible ? 'Visible al público' : 'Oculto al público'}
-                    </button>
+                  <button
+                    onClick={() => updateSponsor(idx, 'visible', !sponsor.visible)}
+                    className={`text-xs font-bold px-3 py-1 rounded-full flex items-center gap-1 transition-colors ${sponsor.visible
+                        ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400'
+                        : 'bg-zinc-100 text-zinc-500 dark:bg-zinc-700 dark:text-zinc-400'
+                      }`}
+                  >
+                    <Eye className="h-3 w-3" />
+                    {sponsor.visible ? 'Visible al público' : 'Oculto al público'}
+                  </button>
                 </div>
 
                 {/* Área de Logo (MODIFICADO PARA SER CÍRCULO) */}
@@ -222,7 +221,7 @@ export default function SponsorsView({ showNotification }) {
                   <label className="block text-xs font-bold text-zinc-500 uppercase mb-2 text-center">
                     Logo del Auspiciador
                   </label>
-                  
+
                   {sponsor.logo ? (
                     <div className="relative group w-32 h-32 mx-auto">
                       <img
@@ -254,7 +253,7 @@ export default function SponsorsView({ showNotification }) {
                         ) : (
                           <>
                             <Upload className="h-6 w-6 text-zinc-400 group-hover:text-red-500 transition-colors mb-1" />
-                            <span className="text-[10px] font-bold text-zinc-500 group-hover:text-red-600 text-center uppercase leading-tight">Subir<br/>Logo</span>
+                            <span className="text-[10px] font-bold text-zinc-500 group-hover:text-red-600 text-center uppercase leading-tight">Subir<br />Logo</span>
                           </>
                         )}
                       </div>

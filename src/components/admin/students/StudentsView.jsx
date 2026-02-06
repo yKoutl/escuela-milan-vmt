@@ -1,9 +1,10 @@
 import React, { useState, useMemo } from 'react';
 import { Plus, Search, Filter, Trash2, Edit, ChevronDown } from 'lucide-react';
-import { THEME_CLASSES } from '../../utils/theme';
-import GenericTable from './GenericTable';
-import Modal from '../../shared/Modal';
-import { usePaginatedQuery } from '../../hooks/usePaginatedQuery'; // Importar Hook
+import { THEME_CLASSES } from '../../../utils/theme';
+import GenericTable from '../GenericTable';
+import Modal from '../../../shared/Modal';
+import CustomDatePicker from '../../../shared/CustomDatePicker';
+import { usePaginatedQuery } from '../../../hooks/usePaginatedQuery'; // Importar Hook
 // import { useCollection } from '../../hooks/useCollection';
 
 export default function StudentsView({ categories, handleAdd, handleDelete }) {
@@ -139,12 +140,10 @@ export default function StudentsView({ categories, handleAdd, handleDelete }) {
 
             {/* INPUT FECHA CON LÓGICA AUTOMÁTICA */}
             <div>
-              <input
-                required
-                type="date"
-                className={INPUT_STYLE}
+              <CustomDatePicker
                 value={newStudent.dob}
                 onChange={handleDateChange} // <--- Aquí usamos la nueva función
+                placeholder="Fecha Nacimiento"
               />
               <p className="text-xs text-zinc-400 mt-1 ml-1">La categoría se seleccionará automáticamente.</p>
             </div>
@@ -330,9 +329,7 @@ export default function StudentsView({ categories, handleAdd, handleDelete }) {
             </div>
             <div>
               <label className="block text-sm font-bold text-zinc-700 dark:text-zinc-300 mb-1">Fecha de Nacimiento</label>
-              <input
-                type="date"
-                className={INPUT_STYLE}
+              <CustomDatePicker
                 value={editingStudent.dob || ''}
                 onChange={(e) => {
                   const dateValue = e.target.value;

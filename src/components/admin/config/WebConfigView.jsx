@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import { Upload, X, Eye, EyeOff, Pencil, Trash2, ArrowUp, ArrowDown, Share2 } from 'lucide-react';
-import Modal from '../../shared/Modal';
-import { uploadImage } from '../../utils/imageUpload'; // Asegúrate de que la ruta sea correcta
-import ImagePreviewModal from '../../shared/ImagePreviewModal';
+import Modal from '../../../shared/Modal';
+import { uploadImage } from '../../../utils/imageUpload'; // Asegúrate de que la ruta sea correcta
+import ImagePreviewModal from '../../../shared/ImagePreviewModal';
 
 export default function WebConfigView({
   news,
@@ -324,7 +324,7 @@ export default function WebConfigView({
             onClick={async () => {
               if (schedules.length > 0 && !window.confirm("Ya tienes horarios. ¿Deseas agregar los predeterminados de todas formas?")) return;
 
-              const { DEFAULT_SCHEDULE } = await import('../../utils/constants');
+              const { DEFAULT_SCHEDULE } = await import('../../../utils/constants');
 
               const daysList = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes'];
 
