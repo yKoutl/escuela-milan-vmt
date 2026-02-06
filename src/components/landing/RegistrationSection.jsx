@@ -2,12 +2,15 @@ import React, { useState } from 'react';
 import { addDoc, collection, serverTimestamp } from 'firebase/firestore';
 import { db, appId } from '../../firebase';
 import { LOGO_URL } from '../../utils/constants';
+import CustomDatePicker from '../../shared/CustomDatePicker';
+import SuccessModal from '../../shared/SuccessModal';
 
 export default function RegistrationSection({ user, showNotification }) {
   const [formData, setFormData] = useState({
     childName: '', birthDate: '', parentName: '', phone: '', email: '', category: '', notes: ''
   });
   const [loading, setLoading] = useState(false);
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
 
   // Generamos la lista de años para el Select (Ej: De 2009 a 2023)
   const currentYear = new Date().getFullYear();
@@ -18,6 +21,7 @@ export default function RegistrationSection({ user, showNotification }) {
 
   // --- LÓGICA AUTOMÁTICA ---
   const handleDateChange = (e) => {
+    // CustomDatePicker sends { target: { value: 'YYYY-MM-DD' } }
     const dateValue = e.target.value;
     let autoCategory = '';
 
@@ -32,17 +36,19 @@ export default function RegistrationSection({ user, showNotification }) {
       }
     }
 
-    setFormData({ 
-      ...formData, 
-      birthDate: dateValue, 
+    setFormData({
+      ...formData,
+      birthDate: dateValue,
       category: autoCategory // Asignación automática
     });
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if(!user) return;
+    if (!user) return;
     setLoading(true);
+    setShowSuccessModal(true); // Open immediately in loading state
+
     try {
       await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'registrations'), {
         ...formData,
@@ -50,101 +56,108 @@ export default function RegistrationSection({ user, showNotification }) {
         status: 'Pendiente',
         year: new Date().getFullYear()
       });
-      showNotification('¡Pre-inscripción enviada! Te contactaremos.');
+      // Success: loading will become false in finally, showing the checkmark
       setFormData({ childName: '', birthDate: '', parentName: '', phone: '', email: '', category: '', notes: '' });
     } catch (_error) {
+      setShowSuccessModal(false); // Close modal if error, so we can show the toast
       showNotification('Error al enviar.', 'error');
     } finally {
       setLoading(false);
     }
   };
-  
+
   return (
     <section id="matricula" className="pt-20 bg-gradient-to-br from-red-700 to-red-900 text-white">
+
+      <SuccessModal
+        isOpen={showSuccessModal}
+        onClose={() => setShowSuccessModal(false)}
+        title="¡Solicitud Recibida!"
+        message="Hemos recibido tu pre-inscripción correctamente. Nos pondremos en contacto contigo a la brevedad."
+        isLoading={loading}
+      />
 
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
 
         {/* CARD */}
         <div className="relative z-20 bg-white/70 dark:bg-zinc-800/70 backdrop-blur-md 
         text-zinc-900 dark:text-white rounded-2xl shadow-2xl 
-        overflow-hidden flex flex-col md:flex-row transition-colors duration-300">
-          <div className="md:w-1/3 bg-black/60 text-white p-8 flex flex-col justify-between">
-              <div>
-                <h3 className="text-2xl font-bold mb-4">Matrícula 2026</h3>
-                <p className="text-zinc-400 text-sm mb-6">Asegura tu vacante en la mejor escuela de SJM. Cupos limitados.</p>
+        flex flex-col md:flex-row transition-colors duration-300">
+          <div className="md:w-1/3 bg-black/60 text-white p-8 flex flex-col justify-between rounded-t-2xl md:rounded-l-2xl md:rounded-tr-none">
+            <div>
+              <h3 className="text-2xl font-bold mb-4">Matrícula 2026</h3>
+              <p className="text-zinc-400 text-sm mb-6">Asegura tu vacante en la mejor escuela de SJM. Cupos limitados.</p>
+            </div>
+            <img
+              src={LOGO_URL}
+              alt="Milan Logo"
+              className="h-40 w-40 mx-auto object-contain"
+            />
+          </div>
+          <div className="md:w-2/3 p-8 rounded-b-2xl md:rounded-r-2xl md:rounded-bl-none">
+            <h3 className="text-2xl font-bold text-red-600 mb-6">Formulario de Inscripción</h3>
+            <form onSubmit={handleSubmit} className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {/* Nombre Alumno */}
+                <div className="flex flex-col justify-end">
+                  <input required className="w-full p-2 border rounded dark:bg-zinc-900 dark:border-zinc-700 placeholder:text-zinc-600 dark:placeholder:text-zinc-400" placeholder="Nombre Alumno" value={formData.childName} onChange={e => setFormData({ ...formData, childName: e.target.value })} />
+                </div>
+
+                {/* Fecha de Nacimiento con Etiqueta */}
+                <div>
+                  <label className="block text-xs font-bold text-zinc-600 dark:text-zinc-400 mb-1 ml-1">
+                    Fecha de Nacimiento
+                  </label>
+                  <CustomDatePicker
+                    value={formData.birthDate}
+                    onChange={handleDateChange}
+                    placeholder="Seleccionar Fecha"
+                  />
+                </div>
               </div>
-              <img
-                src={LOGO_URL}
-                alt="Milan Logo"
-                className="h-40 w-40 mx-auto object-contain"
-              />
-           </div>
-           <div className="md:w-2/3 p-8">
-             <h3 className="text-2xl font-bold text-red-600 mb-6">Formulario de Inscripción</h3>
-             <form onSubmit={handleSubmit} className="space-y-4">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {/* Nombre Alumno */}
-                  <div className="flex flex-col justify-end">
-                    <input required className="w-full p-2 border rounded dark:bg-zinc-900 dark:border-zinc-700 placeholder:text-zinc-600 dark:placeholder:text-zinc-400" placeholder="Nombre Alumno" value={formData.childName} onChange={e=>setFormData({...formData, childName:e.target.value})} />
-                  </div>
-                  
-                  {/* Fecha de Nacimiento con Etiqueta */}
-                  <div>
-                    <label className="block text-xs font-bold text-zinc-600 dark:text-zinc-400 mb-1 ml-1">
-                      Fecha de Nacimiento
-                    </label>
-                    <input 
-                      required 
-                      type="date" 
-                      className="w-full p-2 border rounded dark:bg-zinc-900 dark:border-zinc-700 dark:text-white" 
-                      value={formData.birthDate} 
-                      onChange={handleDateChange} 
-                    />
-                  </div>
+
+              <input required className="w-full p-2 border rounded dark:bg-zinc-900 dark:border-zinc-700 placeholder:text-zinc-600 dark:placeholder:text-zinc-400" placeholder="Nombre Apoderado" value={formData.parentName} onChange={e => setFormData({ ...formData, parentName: e.target.value })} />
+
+              <div className="grid grid-cols-2 gap-4">
+                <div className="flex flex-col justify-end">
+                  <input required className="p-2 border rounded dark:bg-zinc-900 dark:border-zinc-700 w-full placeholder:text-zinc-600 dark:placeholder:text-zinc-400" placeholder="Teléfono" value={formData.phone} onChange={e => setFormData({ ...formData, phone: e.target.value })} />
                 </div>
 
-                <input required className="w-full p-2 border rounded dark:bg-zinc-900 dark:border-zinc-700 placeholder:text-zinc-600 dark:placeholder:text-zinc-400" placeholder="Nombre Apoderado" value={formData.parentName} onChange={e=>setFormData({...formData, parentName:e.target.value})} />
-                
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="flex flex-col justify-end">
-                    <input required className="p-2 border rounded dark:bg-zinc-900 dark:border-zinc-700 w-full placeholder:text-zinc-600 dark:placeholder:text-zinc-400" placeholder="Teléfono" value={formData.phone} onChange={e=>setFormData({...formData, phone:e.target.value})} />
-                  </div>
-                  
-                  {/* Categoría con Etiqueta Arriba */}
-                  <div>
-                    <label className="block text-xs font-bold text-zinc-600 dark:text-zinc-400 mb-1 ml-1">
-                      Categoría
-                    </label>
-                    <select 
-                      className="w-full p-2 border rounded dark:bg-zinc-900 dark:border-zinc-700" 
-                      value={formData.category} 
-                      onChange={e=>setFormData({...formData, category:e.target.value})}
-                    >
-                      <option value="">Seleccionar...</option>
-                      <option value="2008+">2008+</option>
-                      {yearsList.map(year => (
-                        <option key={year} value={year}>{year}</option>
-                      ))}
-                    </select>
-                  </div>
+                {/* Categoría con Etiqueta Arriba */}
+                <div>
+                  <label className="block text-xs font-bold text-zinc-600 dark:text-zinc-400 mb-1 ml-1">
+                    Categoría
+                  </label>
+                  <select
+                    className="w-full p-2 border rounded dark:bg-zinc-900 dark:border-zinc-700"
+                    value={formData.category}
+                    onChange={e => setFormData({ ...formData, category: e.target.value })}
+                  >
+                    <option value="">Seleccionar...</option>
+                    <option value="2008+">2008+</option>
+                    {yearsList.map(year => (
+                      <option key={year} value={year}>{year}</option>
+                    ))}
+                  </select>
                 </div>
-                
+              </div>
 
-                <button type="submit" disabled={loading} className="w-full bg-red-600 text-white font-bold py-3 rounded hover:bg-red-700 transition">Enviar</button>
-             </form>
-           </div>
-         </div>
+
+              <button type="submit" disabled={loading} className="w-full bg-red-600 text-white font-bold py-3 rounded hover:bg-red-700 transition">Enviar</button>
+            </form>
+          </div>
+        </div>
       </div>
-      
-  {/* SVG WAVE */}
+
+      {/* SVG WAVE */}
       <svg xmlns="http://www.w3.org/2000/svg" className="w-full -mt-60 relative z-0" viewBox="0 0 1440 320">
-        <path 
+        <path
           /* fill-[#FFF4F0] -> Color crema suave para Modo Día
              dark:fill-[#18181C] -> Color gris oscuro para Modo Noche
           */
           className="fill-[#FFF4F0] dark:fill-[#18181C] transition-colors duration-300"
         >
-          <animate 
+          <animate
             attributeName="d"
             dur="6s"
             repeatCount="indefinite"
