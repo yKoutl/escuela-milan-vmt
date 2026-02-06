@@ -14,6 +14,7 @@ export default defineConfig({
           pdf: ['@react-pdf/renderer']
         }
       }
-    }
+    },
+    chunkSizeWarningLimit: 2000
   }
 })
