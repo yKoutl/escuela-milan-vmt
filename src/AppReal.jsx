@@ -76,11 +76,13 @@ export default function App() {
 
   // Auth & Theme
   useEffect(() => {
-    const initAuth = async () => {
-      await signInAnonymously(auth);
-    };
-    initAuth();
-    const unsubscribe = onAuthStateChanged(auth, setUser);
+    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+      if (currentUser) {
+        setUser(currentUser);
+      } else {
+        signInAnonymously(auth).catch(err => console.error("Auth error:", err));
+      }
+    });
     return () => unsubscribe();
   }, []);
 
@@ -100,7 +102,7 @@ export default function App() {
 
     if (!user) return;
 
-   
+
 
     const setupListener = (colName, setState) => {
 
@@ -186,7 +188,7 @@ export default function App() {
 
           </div>
 
-         
+
 
           <div className="hidden md:flex space-x-6 items-center">
 
@@ -196,7 +198,7 @@ export default function App() {
 
                 key={item}
 
-                onClick={() => { setView('landing'); setTimeout(() => document.getElementById(item.toLowerCase())?.scrollIntoView({behavior: 'smooth'}), 100); }}
+                onClick={() => { setView('landing'); setTimeout(() => document.getElementById(item.toLowerCase())?.scrollIntoView({ behavior: 'smooth' }), 100); }}
 
                 className="text-zinc-600 dark:text-zinc-300 hover:text-red-600 font-medium transition"
 
@@ -210,7 +212,7 @@ export default function App() {
 
             <button
 
-              onClick={() => { setView('landing'); setTimeout(() => document.getElementById('matricula')?.scrollIntoView({behavior: 'smooth'}), 100); }}
+              onClick={() => { setView('landing'); setTimeout(() => document.getElementById('matricula')?.scrollIntoView({ behavior: 'smooth' }), 100); }}
 
               className="bg-red-600 hover:bg-red-700 text-white px-5 py-2 rounded-full font-bold transition transform hover:scale-105 shadow-md flex items-center"
 
@@ -240,11 +242,11 @@ export default function App() {
 
           <div className="md:hidden flex items-center gap-4">
 
-             <button onClick={() => setIsDarkMode(!isDarkMode)} className="text-zinc-500 dark:text-zinc-400">
+            <button onClick={() => setIsDarkMode(!isDarkMode)} className="text-zinc-500 dark:text-zinc-400">
 
-                {isDarkMode ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
+              {isDarkMode ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
 
-             </button>
+            </button>
 
             <button onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)} className="text-zinc-900 dark:text-white hover:text-red-500">
 
@@ -268,7 +270,7 @@ export default function App() {
 
           <button onClick={() => { setView('admin-login'); setIsMobileMenuOpen(false); }} className="block py-3 w-full text-left font-medium text-zinc-500 text-sm flex items-center">
 
-            <Lock className="h-4 w-4 mr-2"/> Acceso Admin
+            <Lock className="h-4 w-4 mr-2" /> Acceso Admin
 
           </button>
 
@@ -364,7 +366,7 @@ export default function App() {
 
     const displayData = sourceData.filter(item => item.visible !== false);
 
-   
+
 
     return (
 
@@ -408,21 +410,21 @@ export default function App() {
 
             <div className="relative h-full min-h-[400px] rounded-2xl overflow-hidden shadow-2xl border-4 border-zinc-800">
 
-                <img src="https://images.unsplash.com/photo-1551958219-acbc608c6377?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" alt="Soccer field" className="absolute inset-0 w-full h-full object-cover opacity-60"/>
+              <img src="https://images.unsplash.com/photo-1551958219-acbc608c6377?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" alt="Soccer field" className="absolute inset-0 w-full h-full object-cover opacity-60" />
 
-                <div className="absolute inset-0 flex items-center justify-center p-8 bg-gradient-to-t from-black/80 to-transparent">
+              <div className="absolute inset-0 flex items-center justify-center p-8 bg-gradient-to-t from-black/80 to-transparent">
 
-                  <div className="text-center">
+                <div className="text-center">
 
-                    <MapPin className="h-12 w-12 text-red-600 mx-auto mb-4" />
+                  <MapPin className="h-12 w-12 text-red-600 mx-auto mb-4" />
 
-                    <h3 className="text-2xl font-bold">Campo Deportivo "Héroes del Cenepa"</h3>
+                  <h3 className="text-2xl font-bold">Campo Deportivo "Héroes del Cenepa"</h3>
 
-                    <p className="text-zinc-300 mt-2">Av. Los Héroes 123, San Juan de Miraflores</p>
-
-                  </div>
+                  <p className="text-zinc-300 mt-2">Av. Los Héroes 123, San Juan de Miraflores</p>
 
                 </div>
+
+              </div>
 
             </div>
 
@@ -548,9 +550,9 @@ export default function App() {
 
                 <div className="absolute inset-0 flex items-center justify-between p-4 opacity-0 group-hover:opacity-100 transition-opacity">
 
-                  <button onClick={prev} className="bg-black/50 text-white p-2 rounded-full hover:bg-black/80"><ChevronLeft className="h-6 w-6"/></button>
+                  <button onClick={prev} className="bg-black/50 text-white p-2 rounded-full hover:bg-black/80"><ChevronLeft className="h-6 w-6" /></button>
 
-                  <button onClick={next} className="bg-black/50 text-white p-2 rounded-full hover:bg-black/80"><ChevronRight className="h-6 w-6"/></button>
+                  <button onClick={next} className="bg-black/50 text-white p-2 rounded-full hover:bg-black/80"><ChevronRight className="h-6 w-6" /></button>
 
                 </div>
 
@@ -572,7 +574,7 @@ export default function App() {
 
               <h2 className="text-red-600 font-bold tracking-widest uppercase mb-2">Sobre Nosotros</h2>
 
-              <h3 className="text-4xl font-black text-zinc-900 dark:text-white mb-6">Más que una escuela,<br/>una familia deportiva.</h3>
+              <h3 className="text-4xl font-black text-zinc-900 dark:text-white mb-6">Más que una escuela,<br />una familia deportiva.</h3>
 
               <p className="text-zinc-600 dark:text-zinc-400 text-lg mb-6 leading-relaxed">
 
@@ -630,7 +632,7 @@ export default function App() {
 
       e.preventDefault();
 
-      if(!user) return;
+      if (!user) return;
 
       setLoading(true);
 
@@ -661,7 +663,7 @@ export default function App() {
 
     };
 
-   
+
 
     return (
 
@@ -669,63 +671,63 @@ export default function App() {
 
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
 
-           <div className="bg-white dark:bg-zinc-800 text-zinc-900 dark:text-white rounded-2xl shadow-2xl overflow-hidden flex flex-col md:flex-row transition-colors duration-300">
+          <div className="bg-white dark:bg-zinc-800 text-zinc-900 dark:text-white rounded-2xl shadow-2xl overflow-hidden flex flex-col md:flex-row transition-colors duration-300">
 
-             <div className="md:w-1/3 bg-black text-white p-8 flex flex-col justify-between">
+            <div className="md:w-1/3 bg-black text-white p-8 flex flex-col justify-between">
 
-                <div>
+              <div>
 
-                  <h3 className="text-2xl font-bold mb-4">Matrícula 2026</h3>
+                <h3 className="text-2xl font-bold mb-4">Matrícula 2026</h3>
 
-                  <p className="text-zinc-400 text-sm mb-6">Asegura tu vacante en la mejor escuela de SJM. Cupos limitados.</p>
+                <p className="text-zinc-400 text-sm mb-6">Asegura tu vacante en la mejor escuela de SJM. Cupos limitados.</p>
+
+              </div>
+
+              <Dribbble className="h-24 w-24 text-zinc-800 mx-auto" />
+
+            </div>
+
+            <div className="md:w-2/3 p-8">
+
+              <h3 className="text-2xl font-bold text-red-600 mb-6">Formulario de Inscripción</h3>
+
+              <form onSubmit={handleSubmit} className="space-y-4">
+
+                <div className="grid grid-cols-2 gap-4">
+
+                  <input required className="p-2 border rounded dark:bg-zinc-900 dark:border-zinc-700" placeholder="Nombre Alumno" value={formData.childName} onChange={e => setFormData({ ...formData, childName: e.target.value })} />
+
+                  <input required type="date" className="p-2 border rounded dark:bg-zinc-900 dark:border-zinc-700 dark:text-white" value={formData.birthDate} onChange={e => setFormData({ ...formData, birthDate: e.target.value })} />
 
                 </div>
 
-                <Dribbble className="h-24 w-24 text-zinc-800 mx-auto" />
+                <input required className="w-full p-2 border rounded dark:bg-zinc-900 dark:border-zinc-700" placeholder="Nombre Apoderado" value={formData.parentName} onChange={e => setFormData({ ...formData, parentName: e.target.value })} />
 
-             </div>
+                <div className="grid grid-cols-2 gap-4">
 
-             <div className="md:w-2/3 p-8">
+                  <input required className="p-2 border rounded dark:bg-zinc-900 dark:border-zinc-700" placeholder="Teléfono" value={formData.phone} onChange={e => setFormData({ ...formData, phone: e.target.value })} />
 
-               <h3 className="text-2xl font-bold text-red-600 mb-6">Formulario de Inscripción</h3>
+                  <select className="p-2 border rounded dark:bg-zinc-900 dark:border-zinc-700" value={formData.category} onChange={e => setFormData({ ...formData, category: e.target.value })}>
 
-               <form onSubmit={handleSubmit} className="space-y-4">
+                    <option value="2017-2019">Sub-6/8 (2017-2019)</option>
 
-                  <div className="grid grid-cols-2 gap-4">
+                    <option value="2014-2016">Sub-10/12 (2014-2016)</option>
 
-                    <input required className="p-2 border rounded dark:bg-zinc-900 dark:border-zinc-700" placeholder="Nombre Alumno" value={formData.childName} onChange={e=>setFormData({...formData, childName:e.target.value})} />
+                    <option value="2010-2013">Sub-14/16 (2010-2013)</option>
 
-                    <input required type="date" className="p-2 border rounded dark:bg-zinc-900 dark:border-zinc-700 dark:text-white" value={formData.birthDate} onChange={e=>setFormData({...formData, birthDate:e.target.value})} />
+                    <option value="Arqueros">Arqueros</option>
 
-                  </div>
+                  </select>
 
-                  <input required className="w-full p-2 border rounded dark:bg-zinc-900 dark:border-zinc-700" placeholder="Nombre Apoderado" value={formData.parentName} onChange={e=>setFormData({...formData, parentName:e.target.value})} />
+                </div>
 
-                  <div className="grid grid-cols-2 gap-4">
+                <button type="submit" disabled={loading} className="w-full bg-red-600 text-white font-bold py-3 rounded hover:bg-red-700 transition">Enviar</button>
 
-                    <input required className="p-2 border rounded dark:bg-zinc-900 dark:border-zinc-700" placeholder="Teléfono" value={formData.phone} onChange={e=>setFormData({...formData, phone:e.target.value})} />
+              </form>
 
-                    <select className="p-2 border rounded dark:bg-zinc-900 dark:border-zinc-700" value={formData.category} onChange={e=>setFormData({...formData, category:e.target.value})}>
+            </div>
 
-                      <option value="2017-2019">Sub-6/8 (2017-2019)</option>
-
-                      <option value="2014-2016">Sub-10/12 (2014-2016)</option>
-
-                      <option value="2010-2013">Sub-14/16 (2010-2013)</option>
-
-                      <option value="Arqueros">Arqueros</option>
-
-                    </select>
-
-                  </div>
-
-                  <button type="submit" disabled={loading} className="w-full bg-red-600 text-white font-bold py-3 rounded hover:bg-red-700 transition">Enviar</button>
-
-               </form>
-
-             </div>
-
-           </div>
+          </div>
 
         </div>
 
@@ -847,7 +849,7 @@ export default function App() {
 
           <div className="mt-4 text-center">
 
-            <p className="text-xs text-zinc-400">Credenciales Demo: <br/>Usuario: <span className="font-mono font-bold">admin</span> / Clave: <span className="font-mono font-bold">milan123</span></p>
+            <p className="text-xs text-zinc-400">Credenciales Demo: <br />Usuario: <span className="font-mono font-bold">admin</span> / Clave: <span className="font-mono font-bold">milan123</span></p>
 
           </div>
 
@@ -865,7 +867,7 @@ export default function App() {
 
     const [sidebarOpen, setSidebarOpen] = useState(false);
 
-   
+
 
     // Generic handlers
 
@@ -1013,13 +1015,13 @@ export default function App() {
 
                           <button onClick={() => { onDelete(row.id); setConfirmId(null); }} className="text-red-600 font-bold text-xs">Confirmar</button>
 
-                          <button onClick={() => setConfirmId(null)} className="text-zinc-400"><X className="h-4 w-4"/></button>
+                          <button onClick={() => setConfirmId(null)} className="text-zinc-400"><X className="h-4 w-4" /></button>
 
                         </div>
 
                       ) : (
 
-                        <button onClick={() => setConfirmId(row.id)} className="text-red-600 hover:bg-red-50 p-2 rounded"><Trash2 className="h-4 w-4"/></button>
+                        <button onClick={() => setConfirmId(row.id)} className="text-red-600 hover:bg-red-50 p-2 rounded"><Trash2 className="h-4 w-4" /></button>
 
                       )}
 
@@ -1055,7 +1057,7 @@ export default function App() {
 
       const [newStudent, setNewStudent] = useState({ name: '', dob: '', category: '', parent: '', phone: '', status: 'Activo' });
 
-     
+
 
       const submitStudent = (e) => {
 
@@ -1079,7 +1081,7 @@ export default function App() {
 
             <h2 className="text-2xl font-bold text-zinc-800 dark:text-white">Directorio de Alumnos</h2>
 
-            <button onClick={() => setShowForm(!showForm)} className="bg-red-600 text-white px-4 py-2 rounded-lg flex items-center hover:bg-red-700 font-bold text-sm"><Plus className="h-4 w-4 mr-2"/> Nuevo Alumno</button>
+            <button onClick={() => setShowForm(!showForm)} className="bg-red-600 text-white px-4 py-2 rounded-lg flex items-center hover:bg-red-700 font-bold text-sm"><Plus className="h-4 w-4 mr-2" /> Nuevo Alumno</button>
 
           </div>
 
@@ -1091,11 +1093,11 @@ export default function App() {
 
               <form onSubmit={submitStudent} className="grid grid-cols-1 md:grid-cols-2 gap-4">
 
-                <input required placeholder="Nombre Completo" className="p-2 rounded border dark:bg-zinc-900 dark:border-zinc-700" value={newStudent.name} onChange={e => setNewStudent({...newStudent, name: e.target.value})} />
+                <input required placeholder="Nombre Completo" className="p-2 rounded border dark:bg-zinc-900 dark:border-zinc-700" value={newStudent.name} onChange={e => setNewStudent({ ...newStudent, name: e.target.value })} />
 
-                <input required type="date" className="p-2 rounded border dark:bg-zinc-900 dark:border-zinc-700 dark:text-white" value={newStudent.dob} onChange={e => setNewStudent({...newStudent, dob: e.target.value})} />
+                <input required type="date" className="p-2 rounded border dark:bg-zinc-900 dark:border-zinc-700 dark:text-white" value={newStudent.dob} onChange={e => setNewStudent({ ...newStudent, dob: e.target.value })} />
 
-                <select className="p-2 rounded border dark:bg-zinc-900 dark:border-zinc-700" value={newStudent.category} onChange={e => setNewStudent({...newStudent, category: e.target.value})}>
+                <select className="p-2 rounded border dark:bg-zinc-900 dark:border-zinc-700" value={newStudent.category} onChange={e => setNewStudent({ ...newStudent, category: e.target.value })}>
 
                   <option value="">Seleccionar Categoría</option>
 
@@ -1103,15 +1105,15 @@ export default function App() {
 
                 </select>
 
-                <input required placeholder="Apoderado" className="p-2 rounded border dark:bg-zinc-900 dark:border-zinc-700" value={newStudent.parent} onChange={e => setNewStudent({...newStudent, parent: e.target.value})} />
+                <input required placeholder="Apoderado" className="p-2 rounded border dark:bg-zinc-900 dark:border-zinc-700" value={newStudent.parent} onChange={e => setNewStudent({ ...newStudent, parent: e.target.value })} />
 
-                <input required placeholder="Teléfono" className="p-2 rounded border dark:bg-zinc-900 dark:border-zinc-700" value={newStudent.phone} onChange={e => setNewStudent({...newStudent, phone: e.target.value})} />
+                <input required placeholder="Teléfono" className="p-2 rounded border dark:bg-zinc-900 dark:border-zinc-700" value={newStudent.phone} onChange={e => setNewStudent({ ...newStudent, phone: e.target.value })} />
 
                 <div className="col-span-1 md:col-span-2 flex justify-end gap-2 mt-2">
 
-                    <button type="button" onClick={() => setShowForm(false)} className="px-4 py-2 bg-zinc-300 dark:bg-zinc-700 rounded font-bold">Cancelar</button>
+                  <button type="button" onClick={() => setShowForm(false)} className="px-4 py-2 bg-zinc-300 dark:bg-zinc-700 rounded font-bold">Cancelar</button>
 
-                    <button type="submit" className="px-4 py-2 bg-zinc-900 dark:bg-white dark:text-black text-white rounded font-bold">Guardar Alumno</button>
+                  <button type="submit" className="px-4 py-2 bg-zinc-900 dark:bg-white dark:text-black text-white rounded font-bold">Guardar Alumno</button>
 
                 </div>
 
@@ -1167,11 +1169,11 @@ export default function App() {
 
           <div className="bg-zinc-100 dark:bg-zinc-800 p-4 rounded flex flex-col md:flex-row gap-2 border border-zinc-200 dark:border-zinc-700">
 
-            <input placeholder="Nombre (Ej: Sub-12)" className="flex-1 p-2 rounded dark:bg-zinc-900 dark:border-zinc-700 border" value={newCat.name} onChange={e => setNewCat({...newCat, name: e.target.value})} />
+            <input placeholder="Nombre (Ej: Sub-12)" className="flex-1 p-2 rounded dark:bg-zinc-900 dark:border-zinc-700 border" value={newCat.name} onChange={e => setNewCat({ ...newCat, name: e.target.value })} />
 
-            <input placeholder="Rango Edad (Ej: 2014-2016)" className="flex-1 p-2 rounded dark:bg-zinc-900 dark:border-zinc-700 border" value={newCat.range} onChange={e => setNewCat({...newCat, range: e.target.value})} />
+            <input placeholder="Rango Edad (Ej: 2014-2016)" className="flex-1 p-2 rounded dark:bg-zinc-900 dark:border-zinc-700 border" value={newCat.range} onChange={e => setNewCat({ ...newCat, range: e.target.value })} />
 
-            <button onClick={() => { handleAdd('categories', newCat); setNewCat({name:'', range:''}) }} className="bg-red-600 text-white px-4 py-2 rounded font-bold">Crear Categoría</button>
+            <button onClick={() => { handleAdd('categories', newCat); setNewCat({ name: '', range: '' }) }} className="bg-red-600 text-white px-4 py-2 rounded font-bold">Crear Categoría</button>
 
           </div>
 
@@ -1227,9 +1229,9 @@ export default function App() {
 
       const handleRegisterPayment = () => {
 
-        if(!selStudent || !selMonth || !amount) { showNotification('Complete todos los campos', 'error'); return; }
+        if (!selStudent || !selMonth || !amount) { showNotification('Complete todos los campos', 'error'); return; }
 
-       
+
 
         handleAdd('payments', {
 
@@ -1263,83 +1265,83 @@ export default function App() {
 
           <h2 className="text-2xl font-bold text-zinc-800 dark:text-white">Control de Pagos</h2>
 
-         
+
 
           <div className="bg-zinc-100 dark:bg-zinc-800 p-6 rounded-xl border border-zinc-200 dark:border-zinc-700">
 
-             <h3 className="font-bold mb-4 text-zinc-700 dark:text-zinc-300">Registrar Nuevo Pago (Año Actual: {new Date().getFullYear()})</h3>
+            <h3 className="font-bold mb-4 text-zinc-700 dark:text-zinc-300">Registrar Nuevo Pago (Año Actual: {new Date().getFullYear()})</h3>
 
-             <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
 
-                {/* 1. Select Category */}
+              {/* 1. Select Category */}
 
-                <div>
+              <div>
 
-                  <label className="block text-xs font-bold text-zinc-500 mb-1">1. Categoría</label>
+                <label className="block text-xs font-bold text-zinc-500 mb-1">1. Categoría</label>
 
-                  <select className="w-full p-2 rounded border dark:bg-zinc-900 dark:border-zinc-700" value={selCategory} onChange={e => setSelCategory(e.target.value)}>
+                <select className="w-full p-2 rounded border dark:bg-zinc-900 dark:border-zinc-700" value={selCategory} onChange={e => setSelCategory(e.target.value)}>
 
-                    <option value="">Seleccione...</option>
+                  <option value="">Seleccione...</option>
 
-                    {categories.map(c => <option key={c.id} value={c.name}>{c.name}</option>)}
+                  {categories.map(c => <option key={c.id} value={c.name}>{c.name}</option>)}
 
-                  </select>
+                </select>
 
-                </div>
-
-               
-
-                {/* 2. Select Student (Filtered) */}
-
-                <div>
-
-                  <label className="block text-xs font-bold text-zinc-500 mb-1">2. Alumno</label>
-
-                  <select className="w-full p-2 rounded border dark:bg-zinc-900 dark:border-zinc-700" value={selStudent} onChange={e => setSelStudent(e.target.value)} disabled={!selCategory}>
-
-                    <option value="">{selCategory ? 'Seleccione Alumno...' : 'Seleccione Categoría primero'}</option>
-
-                    {filteredStudents.map(s => <option key={s.id} value={s.name}>{s.name}</option>)}
-
-                  </select>
-
-                </div>
+              </div>
 
 
 
-                {/* 3. Month & Amount */}
+              {/* 2. Select Student (Filtered) */}
 
-                <div>
+              <div>
 
-                  <label className="block text-xs font-bold text-zinc-500 mb-1">3. Mes</label>
+                <label className="block text-xs font-bold text-zinc-500 mb-1">2. Alumno</label>
 
-                  <select className="w-full p-2 rounded border dark:bg-zinc-900 dark:border-zinc-700" value={selMonth} onChange={e => setSelMonth(e.target.value)}>
+                <select className="w-full p-2 rounded border dark:bg-zinc-900 dark:border-zinc-700" value={selStudent} onChange={e => setSelStudent(e.target.value)} disabled={!selCategory}>
 
-                    <option value="">Seleccione...</option>
+                  <option value="">{selCategory ? 'Seleccione Alumno...' : 'Seleccione Categoría primero'}</option>
 
-                    {['Enero','Febrero','Marzo','Abril','Mayo','Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'].map(m => <option key={m} value={m}>{m}</option>)}
+                  {filteredStudents.map(s => <option key={s.id} value={s.name}>{s.name}</option>)}
 
-                  </select>
+                </select>
 
-                </div>
+              </div>
 
 
 
-                <div className="flex gap-2 items-end">
+              {/* 3. Month & Amount */}
 
-                   <div className="flex-1">
+              <div>
 
-                      <label className="block text-xs font-bold text-zinc-500 mb-1">Monto (S/.)</label>
+                <label className="block text-xs font-bold text-zinc-500 mb-1">3. Mes</label>
 
-                      <input type="number" className="w-full p-2 rounded border dark:bg-zinc-900 dark:border-zinc-700" value={amount} onChange={e => setAmount(e.target.value)} placeholder="0.00" />
+                <select className="w-full p-2 rounded border dark:bg-zinc-900 dark:border-zinc-700" value={selMonth} onChange={e => setSelMonth(e.target.value)}>
 
-                   </div>
+                  <option value="">Seleccione...</option>
 
-                   <button onClick={handleRegisterPayment} className="bg-green-600 text-white p-2 rounded h-[42px] px-4 hover:bg-green-700 flex items-center justify-center"><Save className="h-5 w-5"/></button>
+                  {['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'].map(m => <option key={m} value={m}>{m}</option>)}
+
+                </select>
+
+              </div>
+
+
+
+              <div className="flex gap-2 items-end">
+
+                <div className="flex-1">
+
+                  <label className="block text-xs font-bold text-zinc-500 mb-1">Monto (S/.)</label>
+
+                  <input type="number" className="w-full p-2 rounded border dark:bg-zinc-900 dark:border-zinc-700" value={amount} onChange={e => setAmount(e.target.value)} placeholder="0.00" />
 
                 </div>
 
-             </div>
+                <button onClick={handleRegisterPayment} className="bg-green-600 text-white p-2 rounded h-[42px] px-4 hover:bg-green-700 flex items-center justify-center"><Save className="h-5 w-5" /></button>
+
+              </div>
+
+            </div>
 
           </div>
 
@@ -1355,7 +1357,7 @@ export default function App() {
 
             columns={[
 
-              { header: 'Fecha Pago', field: 'paymentDate', render: r => r.paymentDate?.seconds ? new Date(r.paymentDate.seconds * 1000).toLocaleDateString() + ' ' + new Date(r.paymentDate.seconds * 1000).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) : 'Hoy' },
+              { header: 'Fecha Pago', field: 'paymentDate', render: r => r.paymentDate?.seconds ? new Date(r.paymentDate.seconds * 1000).toLocaleDateString() + ' ' + new Date(r.paymentDate.seconds * 1000).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : 'Hoy' },
 
               { header: 'Alumno', field: 'studentName' },
 
@@ -1406,13 +1408,13 @@ export default function App() {
 
         const col = collectionMap[modalType];
 
-       
+
 
         const dataToSave = { ...formData };
 
-        if(modalType === 'events') { dataToSave.tag = 'Evento'; dataToSave.isEvent = true; }
+        if (modalType === 'events') { dataToSave.tag = 'Evento'; dataToSave.isEvent = true; }
 
-       
+
 
         handleAdd(col, dataToSave);
 
@@ -1436,67 +1438,67 @@ export default function App() {
 
           <div className="grid md:grid-cols-2 gap-6">
 
-             <div className="bg-blue-50 dark:bg-blue-900/20 p-6 rounded-xl border border-blue-100 dark:border-blue-800">
+            <div className="bg-blue-50 dark:bg-blue-900/20 p-6 rounded-xl border border-blue-100 dark:border-blue-800">
 
-                <div className="flex justify-between items-start mb-4">
+              <div className="flex justify-between items-start mb-4">
 
-                  <div>
+                <div>
 
-                    <h3 className="text-xl font-bold text-blue-800 dark:text-blue-300">Gestión de Eventos</h3>
+                  <h3 className="text-xl font-bold text-blue-800 dark:text-blue-300">Gestión de Eventos</h3>
 
-                    <p className="text-sm text-blue-600 dark:text-blue-400">Convocatorias y actividades especiales.</p>
-
-                  </div>
-
-                  <button onClick={() => openModal('events')} className="bg-blue-600 text-white px-3 py-2 rounded-lg text-sm font-bold shadow hover:bg-blue-700">
-
-                    + Nuevo Evento
-
-                  </button>
+                  <p className="text-sm text-blue-600 dark:text-blue-400">Convocatorias y actividades especiales.</p>
 
                 </div>
 
-                <ul className="space-y-2">
+                <button onClick={() => openModal('events')} className="bg-blue-600 text-white px-3 py-2 rounded-lg text-sm font-bold shadow hover:bg-blue-700">
 
-                   {news.filter(n => n.tag === 'Evento' || n.tag === 'Convocatoria').slice(0, 3).map(e => (
+                  + Nuevo Evento
 
-                     <li key={e.id} className="bg-white dark:bg-zinc-800 p-2 rounded border border-zinc-200 dark:border-zinc-700 text-sm flex justify-between">
+                </button>
 
-                       <span>{e.title}</span>
+              </div>
 
-                       <span className={`text-xs px-2 py-0.5 rounded ${e.visible !== false ? 'bg-green-100 text-green-800' : 'bg-gray-200'}`}>{e.visible !== false ? 'Activo' : 'Oculto'}</span>
+              <ul className="space-y-2">
 
-                     </li>
+                {news.filter(n => n.tag === 'Evento' || n.tag === 'Convocatoria').slice(0, 3).map(e => (
 
-                   ))}
+                  <li key={e.id} className="bg-white dark:bg-zinc-800 p-2 rounded border border-zinc-200 dark:border-zinc-700 text-sm flex justify-between">
 
-                </ul>
+                    <span>{e.title}</span>
 
-             </div>
+                    <span className={`text-xs px-2 py-0.5 rounded ${e.visible !== false ? 'bg-green-100 text-green-800' : 'bg-gray-200'}`}>{e.visible !== false ? 'Activo' : 'Oculto'}</span>
+
+                  </li>
+
+                ))}
+
+              </ul>
+
+            </div>
 
 
 
-             <div className="bg-red-50 dark:bg-red-900/20 p-6 rounded-xl border border-red-100 dark:border-red-800">
+            <div className="bg-red-50 dark:bg-red-900/20 p-6 rounded-xl border border-red-100 dark:border-red-800">
 
-                <div className="flex justify-between items-start mb-4">
+              <div className="flex justify-between items-start mb-4">
 
-                  <div>
+                <div>
 
-                    <h3 className="text-xl font-bold text-red-800 dark:text-red-300">Noticias Generales</h3>
+                  <h3 className="text-xl font-bold text-red-800 dark:text-red-300">Noticias Generales</h3>
 
-                    <p className="text-sm text-red-600 dark:text-red-400">Artículos del blog y novedades.</p>
-
-                  </div>
-
-                  <button onClick={() => openModal('news')} className="bg-red-600 text-white px-3 py-2 rounded-lg text-sm font-bold shadow hover:bg-red-700">
-
-                    + Nueva Noticia
-
-                  </button>
+                  <p className="text-sm text-red-600 dark:text-red-400">Artículos del blog y novedades.</p>
 
                 </div>
 
-             </div>
+                <button onClick={() => openModal('news')} className="bg-red-600 text-white px-3 py-2 rounded-lg text-sm font-bold shadow hover:bg-red-700">
+
+                  + Nueva Noticia
+
+                </button>
+
+              </div>
+
+            </div>
 
           </div>
 
@@ -1512,7 +1514,7 @@ export default function App() {
 
             onDelete={id => handleDelete('news', id)}
 
-            columns={[{header:'Título', field:'title'}, {header:'Etiqueta', field:'tag'}]}
+            columns={[{ header: 'Título', field: 'title' }, { header: 'Etiqueta', field: 'tag' }]}
 
           />
 
@@ -1520,9 +1522,9 @@ export default function App() {
 
           <div className="flex justify-between items-center pt-8 border-t dark:border-zinc-800">
 
-             <h3 className="text-xl font-bold">Logros Deportivos</h3>
+            <h3 className="text-xl font-bold">Logros Deportivos</h3>
 
-             <button onClick={() => openModal('achievements')} className="bg-zinc-900 dark:bg-white dark:text-black text-white px-3 py-2 rounded-lg text-sm font-bold">+ Agregar Logro</button>
+            <button onClick={() => openModal('achievements')} className="bg-zinc-900 dark:bg-white dark:text-black text-white px-3 py-2 rounded-lg text-sm font-bold">+ Agregar Logro</button>
 
           </div>
 
@@ -1536,17 +1538,17 @@ export default function App() {
 
             onDelete={id => handleDelete('achievements', id)}
 
-            columns={[{header:'Título', field:'title'}, {header:'Año', field:'year'}]}
+            columns={[{ header: 'Título', field: 'title' }, { header: 'Año', field: 'year' }]}
 
           />
 
-         
+
 
           <div className="flex justify-between items-center pt-8 border-t dark:border-zinc-800">
 
-             <h3 className="text-xl font-bold">Horarios</h3>
+            <h3 className="text-xl font-bold">Horarios</h3>
 
-             <button onClick={() => openModal('schedules')} className="bg-zinc-900 dark:bg-white dark:text-black text-white px-3 py-2 rounded-lg text-sm font-bold">+ Agregar Horario</button>
+            <button onClick={() => openModal('schedules')} className="bg-zinc-900 dark:bg-white dark:text-black text-white px-3 py-2 rounded-lg text-sm font-bold">+ Agregar Horario</button>
 
           </div>
 
@@ -1560,7 +1562,7 @@ export default function App() {
 
             onDelete={id => handleDelete('schedules', id)}
 
-            columns={[{header:'Categoría', field:'cat'}, {header:'Horario', field:'time'}]}
+            columns={[{ header: 'Categoría', field: 'cat' }, { header: 'Horario', field: 'time' }]}
 
           />
 
@@ -1568,51 +1570,51 @@ export default function App() {
 
           <Modal isOpen={modalOpen} onClose={() => setModalOpen(false)} title={modalType === 'events' ? 'Nuevo Evento' : modalType === 'news' ? 'Nueva Noticia' : modalType === 'achievements' ? 'Nuevo Logro' : 'Nuevo Horario'}>
 
-             <div className="space-y-4">
+            <div className="space-y-4">
 
-               {(modalType === 'news' || modalType === 'events') && (
+              {(modalType === 'news' || modalType === 'events') && (
 
-                 <>
+                <>
 
-                   <input className="w-full p-2 border rounded dark:bg-zinc-800" placeholder="Título" value={formData.title || ''} onChange={e => setFormData({...formData, title: e.target.value})} />
+                  <input className="w-full p-2 border rounded dark:bg-zinc-800" placeholder="Título" value={formData.title || ''} onChange={e => setFormData({ ...formData, title: e.target.value })} />
 
-                   <textarea className="w-full p-2 border rounded dark:bg-zinc-800" placeholder="Descripción" rows="3" value={formData.desc || ''} onChange={e => setFormData({...formData, desc: e.target.value})} />
+                  <textarea className="w-full p-2 border rounded dark:bg-zinc-800" placeholder="Descripción" rows="3" value={formData.desc || ''} onChange={e => setFormData({ ...formData, desc: e.target.value })} />
 
-                   {modalType === 'news' && <input className="w-full p-2 border rounded dark:bg-zinc-800" placeholder="Etiqueta (Ej: Social, Torneo)" value={formData.tag || ''} onChange={e => setFormData({...formData, tag: e.target.value})} />}
+                  {modalType === 'news' && <input className="w-full p-2 border rounded dark:bg-zinc-800" placeholder="Etiqueta (Ej: Social, Torneo)" value={formData.tag || ''} onChange={e => setFormData({ ...formData, tag: e.target.value })} />}
 
-                 </>
+                </>
 
-               )}
+              )}
 
-               {modalType === 'achievements' && (
+              {modalType === 'achievements' && (
 
-                 <>
+                <>
 
-                   <input className="w-full p-2 border rounded dark:bg-zinc-800" placeholder="Título del Logro" value={formData.title || ''} onChange={e => setFormData({...formData, title: e.target.value})} />
+                  <input className="w-full p-2 border rounded dark:bg-zinc-800" placeholder="Título del Logro" value={formData.title || ''} onChange={e => setFormData({ ...formData, title: e.target.value })} />
 
-                   <input className="w-full p-2 border rounded dark:bg-zinc-800" type="number" placeholder="Año" value={formData.year || ''} onChange={e => setFormData({...formData, year: e.target.value})} />
+                  <input className="w-full p-2 border rounded dark:bg-zinc-800" type="number" placeholder="Año" value={formData.year || ''} onChange={e => setFormData({ ...formData, year: e.target.value })} />
 
-                   <input className="w-full p-2 border rounded dark:bg-zinc-800" placeholder="Descripción corta" value={formData.desc || ''} onChange={e => setFormData({...formData, desc: e.target.value})} />
+                  <input className="w-full p-2 border rounded dark:bg-zinc-800" placeholder="Descripción corta" value={formData.desc || ''} onChange={e => setFormData({ ...formData, desc: e.target.value })} />
 
-                 </>
+                </>
 
-               )}
+              )}
 
-               {modalType === 'schedules' && (
+              {modalType === 'schedules' && (
 
-                 <>
+                <>
 
-                   <input className="w-full p-2 border rounded dark:bg-zinc-800" placeholder="Categoría (Ej: Sub-12)" value={formData.cat || ''} onChange={e => setFormData({...formData, cat: e.target.value})} />
+                  <input className="w-full p-2 border rounded dark:bg-zinc-800" placeholder="Categoría (Ej: Sub-12)" value={formData.cat || ''} onChange={e => setFormData({ ...formData, cat: e.target.value })} />
 
-                   <input className="w-full p-2 border rounded dark:bg-zinc-800" placeholder="Horario (Ej: Lun-Vie 4pm)" value={formData.time || ''} onChange={e => setFormData({...formData, time: e.target.value})} />
+                  <input className="w-full p-2 border rounded dark:bg-zinc-800" placeholder="Horario (Ej: Lun-Vie 4pm)" value={formData.time || ''} onChange={e => setFormData({ ...formData, time: e.target.value })} />
 
-                 </>
+                </>
 
-               )}
+              )}
 
-               <button onClick={handleSave} className="w-full bg-red-600 text-white font-bold py-2 rounded hover:bg-red-700">Guardar</button>
+              <button onClick={handleSave} className="w-full bg-red-600 text-white font-bold py-2 rounded hover:bg-red-700">Guardar</button>
 
-             </div>
+            </div>
 
           </Modal>
 
@@ -1632,7 +1634,7 @@ export default function App() {
 
         const q = query(collection(db, 'artifacts', appId, 'public', 'data', 'registrations'), orderBy('createdAt', 'desc'));
 
-        const unsub = onSnapshot(q, snap => setRegs(snap.docs.map(d => ({id: d.id, ...d.data()}))));
+        const unsub = onSnapshot(q, snap => setRegs(snap.docs.map(d => ({ id: d.id, ...d.data() }))));
 
         return () => unsub();
 
@@ -1654,27 +1656,28 @@ export default function App() {
 
         <div>
 
-           <h2 className="text-2xl font-bold mb-6 text-zinc-800 dark:text-white">Solicitudes de Matrícula</h2>
+          <h2 className="text-2xl font-bold mb-6 text-zinc-800 dark:text-white">Solicitudes de Matrícula</h2>
 
-           <GenericTable
+          <GenericTable
 
-             title="Inscripciones Web"
+            title="Inscripciones Web"
 
-             data={regs}
+            data={regs}
 
-             onDelete={id => handleDelete('registrations', id)}
+            onDelete={id => handleDelete('registrations', id)}
 
-             columns={[
+            columns={[
 
-               { header: 'Fecha', field: 'createdAt', render: r => r.createdAt?.seconds ? new Date(r.createdAt.seconds * 1000).toLocaleDateString() + ' ' + new Date(r.createdAt.seconds * 1000).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) : '-' },
+              { header: 'Fecha', field: 'createdAt', render: r => r.createdAt?.seconds ? new Date(r.createdAt.seconds * 1000).toLocaleDateString() + ' ' + new Date(r.createdAt.seconds * 1000).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '-' },
 
-               { header: 'Alumno', field: 'childName' },
+              { header: 'Alumno', field: 'childName' },
 
-               { header: 'Categoría', field: 'category' },
+              { header: 'Categoría', field: 'category' },
 
-               { header: 'Contacto', field: 'phone' },
+              { header: 'Contacto', field: 'phone' },
 
-               { header: 'Estado', field: 'status', render: r => (
+              {
+                header: 'Estado', field: 'status', render: r => (
 
                   <select value={r.status} onChange={(e) => updateStatus(r.id, e.target.value)} className="text-xs p-1 rounded border dark:bg-zinc-800">
 
@@ -1682,11 +1685,12 @@ export default function App() {
 
                   </select>
 
-               )}
+                )
+              }
 
-             ]}
+            ]}
 
-           />
+          />
 
         </div>
 
@@ -1746,61 +1750,61 @@ export default function App() {
 
           <div className="p-6 flex items-center border-b border-zinc-200 dark:border-zinc-800">
 
-             <div className="bg-red-600 rounded-full p-1 mr-2"><Dribbble className="h-6 w-6 text-white" /></div>
+            <div className="bg-red-600 rounded-full p-1 mr-2"><Dribbble className="h-6 w-6 text-white" /></div>
 
-             <span className="font-black text-lg text-zinc-800 dark:text-white tracking-widest">ADMIN</span>
+            <span className="font-black text-lg text-zinc-800 dark:text-white tracking-widest">ADMIN</span>
 
           </div>
 
           <div className="p-4 space-y-2 overflow-y-auto h-[calc(100%-80px)]">
 
-             {menuItems.map((item, idx) => (
+            {menuItems.map((item, idx) => (
 
-               <div key={idx}>
+              <div key={idx}>
 
-                 {item.subItems ? (
+                {item.subItems ? (
 
-                   <div className="mb-2">
+                  <div className="mb-2">
 
-                     <div className="px-3 py-2 text-xs font-bold text-zinc-400 uppercase tracking-wider flex items-center gap-2"><item.icon className="h-4 w-4"/> {item.text}</div>
+                    <div className="px-3 py-2 text-xs font-bold text-zinc-400 uppercase tracking-wider flex items-center gap-2"><item.icon className="h-4 w-4" /> {item.text}</div>
 
-                     {item.subItems.map(sub => (
+                    {item.subItems.map(sub => (
 
-                       <button key={sub.id} onClick={() => { setAdminTab(sub.id); setSidebarOpen(false); }} className={`w-full text-left px-3 py-2 rounded-lg text-sm mb-1 transition-colors ${adminTab === sub.id ? 'bg-red-50 text-red-600 font-bold dark:bg-red-900/20' : 'text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800'}`}>
+                      <button key={sub.id} onClick={() => { setAdminTab(sub.id); setSidebarOpen(false); }} className={`w-full text-left px-3 py-2 rounded-lg text-sm mb-1 transition-colors ${adminTab === sub.id ? 'bg-red-50 text-red-600 font-bold dark:bg-red-900/20' : 'text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800'}`}>
 
-                         {sub.text}
+                        {sub.text}
 
-                       </button>
+                      </button>
 
-                     ))}
+                    ))}
 
-                   </div>
+                  </div>
 
-                 ) : (
+                ) : (
 
-                   <button onClick={() => { setAdminTab(item.id); setSidebarOpen(false); }} className={`flex items-center gap-3 w-full px-3 py-2 rounded-lg text-sm font-medium transition-colors ${adminTab === item.id ? 'bg-red-600 text-white shadow-lg shadow-red-600/30' : 'text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800'}`}>
+                  <button onClick={() => { setAdminTab(item.id); setSidebarOpen(false); }} className={`flex items-center gap-3 w-full px-3 py-2 rounded-lg text-sm font-medium transition-colors ${adminTab === item.id ? 'bg-red-600 text-white shadow-lg shadow-red-600/30' : 'text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800'}`}>
 
-                     <item.icon className="h-5 w-5" /> {item.text}
+                    <item.icon className="h-5 w-5" /> {item.text}
 
-                   </button>
+                  </button>
 
-                 )}
+                )}
 
-               </div>
+              </div>
 
-             ))}
+            ))}
 
-             <button onClick={() => setView('landing')} className="flex items-center gap-3 w-full px-3 py-2 rounded-lg text-sm font-medium text-zinc-500 hover:text-red-600 mt-8">
+            <button onClick={() => setView('landing')} className="flex items-center gap-3 w-full px-3 py-2 rounded-lg text-sm font-medium text-zinc-500 hover:text-red-600 mt-8">
 
-               <LogOut className="h-5 w-5" /> Salir
+              <LogOut className="h-5 w-5" /> Salir
 
-             </button>
+            </button>
 
           </div>
 
         </div>
 
-       
+
 
         {/* Main Content */}
 
@@ -1808,41 +1812,41 @@ export default function App() {
 
           <header className="h-16 bg-white dark:bg-zinc-900 border-b border-zinc-200 dark:border-zinc-800 flex items-center justify-between px-6 flex-shrink-0">
 
-             <button className="md:hidden" onClick={() => setSidebarOpen(!sidebarOpen)}><Menu className="h-6 w-6 text-zinc-600 dark:text-zinc-300" /></button>
+            <button className="md:hidden" onClick={() => setSidebarOpen(!sidebarOpen)}><Menu className="h-6 w-6 text-zinc-600 dark:text-zinc-300" /></button>
 
-             <h1 className="text-xl font-bold text-zinc-800 dark:text-white capitalize ml-2 md:ml-0">
+            <h1 className="text-xl font-bold text-zinc-800 dark:text-white capitalize ml-2 md:ml-0">
 
-               {adminTab === 'overview' ? 'Resumen General' : adminTab}
+              {adminTab === 'overview' ? 'Resumen General' : adminTab}
 
-             </h1>
+            </h1>
 
           </header>
 
           <main className="flex-1 overflow-auto p-6">
 
-             {adminTab === 'overview' && (
+            {adminTab === 'overview' && (
 
-               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
 
-                 <div className="bg-white dark:bg-zinc-900 p-6 rounded-xl shadow-sm border dark:border-zinc-800"><h3 className="text-zinc-500 text-sm font-bold uppercase">Alumnos Activos</h3><p className="text-4xl font-black text-zinc-900 dark:text-white mt-2">{students.length}</p></div>
+                <div className="bg-white dark:bg-zinc-900 p-6 rounded-xl shadow-sm border dark:border-zinc-800"><h3 className="text-zinc-500 text-sm font-bold uppercase">Alumnos Activos</h3><p className="text-4xl font-black text-zinc-900 dark:text-white mt-2">{students.length}</p></div>
 
-                 <div className="bg-white dark:bg-zinc-900 p-6 rounded-xl shadow-sm border dark:border-zinc-800"><h3 className="text-zinc-500 text-sm font-bold uppercase">Pagos Recibidos</h3><p className="text-4xl font-black text-green-600 mt-2">{payments.length}</p></div>
+                <div className="bg-white dark:bg-zinc-900 p-6 rounded-xl shadow-sm border dark:border-zinc-800"><h3 className="text-zinc-500 text-sm font-bold uppercase">Pagos Recibidos</h3><p className="text-4xl font-black text-green-600 mt-2">{payments.length}</p></div>
 
-                 <div className="bg-white dark:bg-zinc-900 p-6 rounded-xl shadow-sm border dark:border-zinc-800"><h3 className="text-zinc-500 text-sm font-bold uppercase">Noticias Visibles</h3><p className="text-4xl font-black text-blue-600 mt-2">{news.filter(n => n.visible !== false).length}</p></div>
+                <div className="bg-white dark:bg-zinc-900 p-6 rounded-xl shadow-sm border dark:border-zinc-800"><h3 className="text-zinc-500 text-sm font-bold uppercase">Noticias Visibles</h3><p className="text-4xl font-black text-blue-600 mt-2">{news.filter(n => n.visible !== false).length}</p></div>
 
-               </div>
+              </div>
 
-             )}
+            )}
 
-             {adminTab === 'students-list' && <StudentsView />}
+            {adminTab === 'students-list' && <StudentsView />}
 
-             {adminTab === 'students-cats' && <CategoriesView />}
+            {adminTab === 'students-cats' && <CategoriesView />}
 
-             {adminTab === 'students-pay' && <PaymentsView />}
+            {adminTab === 'students-pay' && <PaymentsView />}
 
-             {adminTab === 'config-web' && <WebConfigView />}
+            {adminTab === 'config-web' && <WebConfigView />}
 
-             {adminTab === 'requests' && <RequestsView />}
+            {adminTab === 'requests' && <RequestsView />}
 
           </main>
 
@@ -1862,7 +1866,7 @@ export default function App() {
 
     <div className={`fixed top-4 right-4 z-[60] px-6 py-3 rounded-lg shadow-xl text-white font-bold transition-all transform duration-300 flex items-center ${notification.type === 'error' ? 'bg-red-600' : 'bg-green-600'}`}>
 
-      {notification.type === 'error' ? <AlertCircle className="mr-2 h-5 w-5"/> : <CheckCircle className="mr-2 h-5 w-5"/>}
+      {notification.type === 'error' ? <AlertCircle className="mr-2 h-5 w-5" /> : <CheckCircle className="mr-2 h-5 w-5" />}
 
       {notification.message}
 
@@ -1878,7 +1882,7 @@ export default function App() {
 
       <div className="absolute inset-0 opacity-40">
 
-        <img src="https://images.unsplash.com/photo-1517466787929-bc90951d0974" className="w-full h-full object-cover"/>
+        <img src="https://images.unsplash.com/photo-1517466787929-bc90951d0974" className="w-full h-full object-cover" />
 
       </div>
 
@@ -1890,11 +1894,11 @@ export default function App() {
 
           <span className="inline-block py-1 px-3 rounded-full bg-red-600 text-white text-sm font-bold tracking-wider mb-4 uppercase">Liga Amateur 1.ª División SJM</span>
 
-          <h1 className="text-5xl md:text-7xl font-black text-white leading-tight mb-6">FORMANDO <br/><span className="text-transparent bg-clip-text bg-gradient-to-r from-red-600 to-red-400">FUTUROS CAMPEONES</span></h1>
+          <h1 className="text-5xl md:text-7xl font-black text-white leading-tight mb-6">FORMANDO <br /><span className="text-transparent bg-clip-text bg-gradient-to-r from-red-600 to-red-400">FUTUROS CAMPEONES</span></h1>
 
           <div className="flex flex-col sm:flex-row gap-4">
 
-            <button onClick={() => document.getElementById('matricula').scrollIntoView({behavior: 'smooth'})} className="bg-red-600 text-white px-8 py-4 rounded-lg font-bold text-lg hover:bg-red-700 transition shadow-[0_0_20px_rgba(220,38,38,0.5)] flex justify-center items-center">Inscríbete Ahora <ArrowRight className="ml-2" /></button>
+            <button onClick={() => document.getElementById('matricula').scrollIntoView({ behavior: 'smooth' })} className="bg-red-600 text-white px-8 py-4 rounded-lg font-bold text-lg hover:bg-red-700 transition shadow-[0_0_20px_rgba(220,38,38,0.5)] flex justify-center items-center">Inscríbete Ahora <ArrowRight className="ml-2" /></button>
 
           </div>
 
@@ -1914,7 +1918,7 @@ export default function App() {
 
       {notification && <Notification />}
 
-     
+
 
       {view === 'landing' && (
 

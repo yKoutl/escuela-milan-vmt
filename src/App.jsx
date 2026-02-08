@@ -38,22 +38,24 @@ function AppContent() {
 
   // Auth
   useEffect(() => {
-    const initAuth = async () => {
-      try {
-        await signInAnonymously(auth);
-      } catch (error) {
-        console.error("Auth Error:", error);
-        // If anonymous auth is disabled/fails, we might still want to allow viewing public data 
-        // if the security rules allow it (usually they require auth, but let's not crash the app logic).
-        if (error.code === 'auth/admin-restricted-operation') {
-          console.warn("Please enable Anonymous Authentication in the Firebase Console.");
-        }
-        // Fallback: Enable UI even if auth fails
-        setUser({ uid: 'guest', isAnonymous: true });
+    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+      if (currentUser) {
+        // Si ya hay un usuario (anónimo o no), lo usamos y NO creamos uno nuevo.
+        setUser(currentUser);
+      } else {
+        // Solo si NO hay usuario, iniciamos sesión anónima.
+        console.log("No user detected, signing in anonymously...");
+        signInAnonymously(auth).catch((error) => {
+          console.error("Auth Error:", error);
+          if (error.code === 'auth/admin-restricted-operation') {
+            console.warn("Please enable Anonymous Authentication in the Firebase Console.");
+          }
+          // Fallback UI (opcional)
+          setUser({ uid: 'guest', isAnonymous: true });
+        });
       }
-    };
-    initAuth();
-    const unsubscribe = onAuthStateChanged(auth, setUser);
+    });
+
     return () => unsubscribe();
   }, []);
 
