@@ -11,18 +11,21 @@ const AdminDashboard = React.lazy(() => import('./screens/AdminDashboard'));
 import Notification from './shared/Notification';
 import WelcomeModal from './shared/WelcomeModal';
 
+import { BrowserRouter as Router, Routes, Route, Navigate, useNavigate, useLocation } from 'react-router-dom';
+
 function AppContent() {
   const [user, setUser] = useState(null);
-  const [view, setView] = useState('landing');
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [notification, setNotification] = useState(null);
+  const navigate = useNavigate();
+  const location = useLocation();
 
   // --- Dynamic Data State ---
   const [news, setNews] = useState([]);
   const [achievements, setAchievements] = useState([]);
   const [schedules, setSchedules] = useState([]);
 
-  // Global loading state for initial data fetch (Landing FOUC prevention)
+  // Global loading state
   const [loadingData, setLoadingData] = useState(true);
 
   // Friendly loading phrases
@@ -40,17 +43,11 @@ function AppContent() {
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
       if (currentUser) {
-        // Si ya hay un usuario (anónimo o no), lo usamos y NO creamos uno nuevo.
         setUser(currentUser);
       } else {
-        // Solo si NO hay usuario, iniciamos sesión anónima.
         console.log("No user detected, signing in anonymously...");
         signInAnonymously(auth).catch((error) => {
           console.error("Auth Error:", error);
-          if (error.code === 'auth/admin-restricted-operation') {
-            console.warn("Please enable Anonymous Authentication in the Firebase Console.");
-          }
-          // Fallback UI (opcional)
           setUser({ uid: 'guest', isAnonymous: true });
         });
       }
@@ -73,14 +70,9 @@ function AppContent() {
 
   // --- Data Fetching (PUBLIC ONLY) ---
   useEffect(() => {
-    // If we require auth for data, checking !user here blocks everything if auth fails.
-    // For now, we'll keep it, assuming user fixes Auth in console.
     if (!user) return;
 
-    // Track loading status of each collection
     const loadStatus = { news: false, achievements: false, schedules: false };
-
-    // Safety timeout to ensure app always loads eventually
     const safetyTimeout = setTimeout(() => {
       setLoadingData(false);
     }, 1500);
@@ -101,15 +93,12 @@ function AppContent() {
       return onSnapshot(q, (snapshot) => {
         const data = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
         setState(data);
-
-        // Mark this collection as loaded on first fetch
         if (!loadStatus[colName]) {
           loadStatus[colName] = true;
           checkAllLoaded();
         }
       }, (err) => {
         console.error(`Error fetching ${colName}:`, err);
-        // Even on error, mark as "processed" to not block app
         if (!loadStatus[colName]) {
           loadStatus[colName] = true;
           checkAllLoaded();
@@ -134,12 +123,7 @@ function AppContent() {
     setTimeout(() => setNotification(null), 3000);
   };
 
-  if (view === 'landing' && (loadingData || !user)) {
-    // If auth failed, user might be null forever. 
-    // We should probably show the landing anyway after timeout if user is null but auth failed?
-    // For now, let's stick to original logic but we might need to revisit if auth never succeeds.
-    // However, the error handling above prevents the CRASH, but user state remains null.
-
+  if (loadingData || !user) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center bg-white dark:bg-black transition-colors">
         <Loader2 className="w-12 h-12 text-red-600 animate-spin mb-4" />
@@ -154,38 +138,48 @@ function AppContent() {
   return (
     <div className="font-sans min-h-screen">
       <Notification notification={notification} />
-      {view === 'landing' && <WelcomeModal />}
 
-      {view === 'landing' && (
-        <LandingScreen
-          setView={setView}
-          isMobileMenuOpen={isMobileMenuOpen}
-          setIsMobileMenuOpen={setIsMobileMenuOpen}
-          achievements={achievements}
-          schedules={schedules}
-          news={news}
-          user={user}
-          showNotification={showNotification}
-        />
-      )}
+      <Routes>
+        <Route path="/" element={
+          <>
+            <WelcomeModal />
+            <LandingScreen
+              setView={(v) => {
+                if (v === 'admin-login') navigate('/login');
+                if (v === 'admin-dashboard') navigate('/admin');
+              }}
+              isMobileMenuOpen={isMobileMenuOpen}
+              setIsMobileMenuOpen={setIsMobileMenuOpen}
+              achievements={achievements}
+              schedules={schedules}
+              news={news}
+              user={user}
+              showNotification={showNotification}
+            />
+          </>
+        } />
 
-      <React.Suspense fallback={
-        <div className="min-h-screen flex items-center justify-center">
-          <Loader2 className="w-8 h-8 animate-spin text-red-600" />
-        </div>
-      }>
-        {view === 'admin-login' && <LoginScreen setView={setView} />}
+        <Route path="/login" element={
+          <React.Suspense fallback={<div className="min-h-screen flex items-center justify-center"><Loader2 className="w-8 h-8 animate-spin text-red-600" /></div>}>
+            <LoginScreen setView={(v) => navigate(v === 'admin-dashboard' ? '/admin' : '/')} />
+          </React.Suspense>
+        } />
 
-        {view === 'admin-dashboard' && (
-          <AdminDashboard
-            setView={setView}
-            news={news}
-            achievements={achievements}
-            schedules={schedules}
-            showNotification={showNotification}
-          />
-        )}
-      </React.Suspense>
+        <Route path="/admin/*" element={
+          <React.Suspense fallback={<div className="min-h-screen flex items-center justify-center"><Loader2 className="w-8 h-8 animate-spin text-red-600" /></div>}>
+            <AdminDashboard
+              setView={(v) => navigate('/')}
+              news={news}
+              achievements={achievements}
+              schedules={schedules}
+              showNotification={showNotification}
+            />
+          </React.Suspense>
+        } />
+
+        {/* Catch-all redirect */}
+        <Route path="*" element={<Navigate to="/" replace />} />
+      </Routes>
     </div>
   );
 }
@@ -193,7 +187,9 @@ function AppContent() {
 export default function App() {
   return (
     <ThemeProvider>
-      <AppContent />
+      <Router>
+        <AppContent />
+      </Router>
     </ThemeProvider>
   );
 }

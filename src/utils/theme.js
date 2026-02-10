@@ -47,7 +47,7 @@ export const THEME_CLASSES = {
     secondary: 'border-zinc-300 dark:border-zinc-700',
   },
   // Inputs
-  input: 'border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-zinc-900 dark:text-white',
+  input: 'border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-zinc-900 dark:text-white dark:[color-scheme:dark]',
   // Buttons
   button: {
     primary: 'bg-red-600 hover:bg-red-700 text-white',

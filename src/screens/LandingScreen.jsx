@@ -9,6 +9,7 @@ import News from '../components/landing/News';
 import Sponsors from '../components/landing/Sponsors';
 import DonationSection from '../components/landing/DonationSection';
 import RegistrationSection from '../components/landing/RegistrationSection';
+import ContactSection from '../components/landing/ContactSection';
 import Navbar from '../shared/Navbar';
 import Footer from '../shared/Footer';
 import FloatingWhatsApp from '../shared/FloatingWhatsApp';
@@ -25,7 +26,7 @@ export default function LandingScreen({
 }) {
   return (
     <div className="bg-zinc-50 dark:bg-black transition-colors duration-300 min-h-screen">
-      <Navbar 
+      <Navbar
         setView={setView}
         isMobileMenuOpen={isMobileMenuOpen}
         setIsMobileMenuOpen={setIsMobileMenuOpen}
@@ -40,6 +41,7 @@ export default function LandingScreen({
       <Sponsors sponsors={[]} />
       <News news={news} />
       <RegistrationSection user={user} showNotification={showNotification} />
+      <ContactSection />
       <Footer />
       <FloatingWhatsApp />
     </div>
