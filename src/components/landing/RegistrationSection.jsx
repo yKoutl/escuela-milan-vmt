@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { addDoc, collection, serverTimestamp } from 'firebase/firestore';
-import { db, appId } from '../../firebase';
+import { auth, db, appId } from '../../firebase';
+import { signInAnonymously } from 'firebase/auth';
 import { LOGO_URL } from '../../utils/constants';
 import CustomDatePicker from '../../shared/CustomDatePicker';
 import SuccessModal from '../../shared/SuccessModal';
@@ -50,6 +51,15 @@ export default function RegistrationSection({ user, showNotification }) {
     setShowSuccessModal(true); // Open immediately in loading state
 
     try {
+      // Si el usuario es un invitado, intentamos sesión anónima antes de escribir
+      if (user.isGuest) {
+        try {
+          await signInAnonymously(auth);
+        } catch (authErr) {
+          console.error("Lazy Auth Error:", authErr);
+        }
+      }
+
       await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'registrations'), {
         ...formData,
         createdAt: serverTimestamp(),
@@ -60,7 +70,7 @@ export default function RegistrationSection({ user, showNotification }) {
       setFormData({ childName: '', birthDate: '', parentName: '', phone: '', email: '', category: '', notes: '' });
     } catch (_error) {
       setShowSuccessModal(false); // Close modal if error, so we can show the toast
-      showNotification('Error al enviar.', 'error');
+      showNotification('Error al enviar: ' + _error.message, 'error');
     } finally {
       setLoading(false);
     }

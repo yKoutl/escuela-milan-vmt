@@ -45,11 +45,9 @@ function AppContent() {
       if (currentUser) {
         setUser(currentUser);
       } else {
-        console.log("No user detected, signing in anonymously...");
-        signInAnonymously(auth).catch((error) => {
-          console.error("Auth Error:", error);
-          setUser({ uid: 'guest', isAnonymous: true });
-        });
+        // No iniciamos sesión de forma anónima automáticamente
+        // para evitar llenar la consola de Firebase con usuarios "anónimos"
+        setUser({ uid: 'guest', isAnonymous: true, isGuest: true });
       }
     });
 

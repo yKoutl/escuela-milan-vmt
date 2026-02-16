@@ -1,5 +1,5 @@
 import React, { useState, useMemo, useEffect } from 'react';
-import { Menu, LayoutDashboard, Users, Settings, LogOut, Image, Sun, Moon, BookOpen, Trophy, CalendarDays, FileText, Inbox, DollarSign, CreditCard, Heart, AlertCircle, History, Loader2 } from 'lucide-react';
+import { Menu, LayoutDashboard, Users, Settings, LogOut, Image, Sun, Moon, BookOpen, Trophy, CalendarDays, FileText, Inbox, DollarSign, CreditCard, Heart, AlertCircle, History, Loader2, ChevronDown, ChevronRight } from 'lucide-react';
 import { addDoc, collection, serverTimestamp, deleteDoc, doc, updateDoc, getCountFromServer, query, where, Timestamp, getAggregateFromServer, sum, getDocs, orderBy } from 'firebase/firestore';
 import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend, PieChart, Pie, Cell } from 'recharts';
 import { db, appId } from "../firebase";
@@ -41,6 +41,20 @@ export default function AdminDashboard({
   const currentPath = location.pathname.replace('/admin', '') || '/';
   // Map current path to adminTab for title and helper logic
   const adminTab = currentPath === '/' ? 'overview' : currentPath.substring(1);
+
+  // --- ESTADO PARA SECCIONES COLAPSABLES DEL SIDEBAR ---
+  const [expandedSections, setExpandedSections] = useState({
+    'Gestión Alumnos': true,
+    'Pagos y Mensualidades': false,
+    'Configuración Web': false
+  });
+
+  const toggleSection = (sectionText) => {
+    setExpandedSections(prev => ({
+      ...prev,
+      [sectionText]: !prev[sectionText]
+    }));
+  };
 
   // --- ESTADOS PARA ESTADÍSTICAS ---
   const [stats, setStats] = useState({
@@ -220,6 +234,7 @@ export default function AdminDashboard({
       subItems: [
         { text: 'Directorio', id: 'students-list', icon: Users, path: '/students-list' },
         { text: 'Categorías', id: 'students-cats', icon: BookOpen, path: '/students-cats' },
+        { text: 'Solicitudes Web', id: 'requests', icon: Inbox, badge: pendingRequests, path: '/requests' }
       ]
     },
     {
@@ -239,8 +254,7 @@ export default function AdminDashboard({
         { text: 'Costos e Inscripciones', id: 'config-pricing', icon: DollarSign, path: '/config-pricing' },
         { text: 'Membresías', id: 'config-memberships', icon: CreditCard, path: '/config-memberships' },
         { text: 'Auspiciadores', id: 'config-sponsors', icon: Trophy, path: '/config-sponsors' },
-        { text: 'Donaciones (QR)', id: 'config-donations', icon: Heart, path: '/config-donations' },
-        { text: 'Solicitudes Web', id: 'requests', icon: Inbox, badge: pendingRequests, path: '/requests' }
+        { text: 'Donaciones (QR)', id: 'config-donations', icon: Heart, path: '/config-donations' }
       ]
     }
   ];
@@ -263,24 +277,45 @@ export default function AdminDashboard({
             <div key={idx}>
               {item.subItems ? (
                 <div className="mb-2">
-                  <div className={`px-3 py-2 text-xs font-bold ${THEME_CLASSES.text.tertiary} uppercase tracking-wider flex items-center gap-2`}><item.icon className="h-4 w-4" /> {item.text}</div>
-                  {item.subItems.map(sub => {
-                    const SubIcon = sub.icon;
-                    const isActive = currentPath === sub.path;
-                    return (
-                      <button key={sub.id} onClick={() => { navigate(`/admin${sub.path}`); setSidebarOpen(false); }} className={`w-full text-left px-3 py-2 rounded-lg text-sm mb-1 transition-colors flex items-center justify-between ${isActive ? 'bg-red-50 text-red-600 font-bold dark:bg-red-900/20' : `${THEME_CLASSES.text.secondary} hover:bg-zinc-100 dark:hover:bg-zinc-800`}`}>
-                        <div className="flex items-center gap-2">
-                          {SubIcon && <SubIcon className="h-4 w-4" />}
-                          {sub.text}
-                        </div>
-                        {sub.badge > 0 && (
-                          <span className="bg-red-600 text-white text-[10px] font-bold px-2 py-0.5 rounded-full">
-                            {sub.badge}
-                          </span>
-                        )}
-                      </button>
-                    );
-                  })}
+                  <button
+                    onClick={() => toggleSection(item.text)}
+                    className={`w-full px-3 py-2 text-xs font-bold ${THEME_CLASSES.text.tertiary} uppercase tracking-wider flex items-center justify-between hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-lg transition-colors group`}
+                  >
+                    <div className="flex items-center gap-2">
+                      <item.icon className="h-4 w-4" />
+                      {item.text}
+                    </div>
+                    {expandedSections[item.text] ? (
+                      <ChevronDown className="h-3 w-3 opacity-50 group-hover:opacity-100 transition-opacity" />
+                    ) : (
+                      <ChevronRight className="h-3 w-3 opacity-50 group-hover:opacity-100 transition-opacity" />
+                    )}
+                  </button>
+                  {expandedSections[item.text] && (
+                    <div className="mt-1 animate-in fade-in slide-in-from-top-2 duration-200">
+                      {item.subItems.map(sub => {
+                        const SubIcon = sub.icon;
+                        const isActive = currentPath === sub.path;
+                        return (
+                          <button
+                            key={sub.id}
+                            onClick={() => { navigate(`/admin${sub.path}`); setSidebarOpen(false); }}
+                            className={`w-full text-left px-3 py-2 rounded-lg text-sm mb-1 transition-colors flex items-center justify-between ${isActive ? 'bg-red-50 text-red-600 font-bold dark:bg-red-900/20' : `${THEME_CLASSES.text.secondary} hover:bg-zinc-100 dark:hover:bg-zinc-800`}`}
+                          >
+                            <div className="flex items-center gap-2">
+                              {SubIcon && <SubIcon className="h-4 w-4" />}
+                              {sub.text}
+                            </div>
+                            {sub.badge > 0 && (
+                              <span className="bg-red-600 text-white text-[10px] font-bold px-2 py-0.5 rounded-full">
+                                {sub.badge}
+                              </span>
+                            )}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  )}
                 </div>
               ) : (
                 <button onClick={() => { navigate(`/admin${item.path}`); setSidebarOpen(false); }} className={`flex items-center gap-3 w-full px-3 py-2 rounded-lg text-sm font-medium transition-colors ${currentPath === item.path ? 'bg-red-600 text-white shadow-lg shadow-red-600/30' : `${THEME_CLASSES.text.secondary} hover:bg-zinc-100 dark:hover:bg-zinc-800`}`}>
