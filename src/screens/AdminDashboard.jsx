@@ -279,20 +279,20 @@ export default function AdminDashboard({
                 <div className="mb-2">
                   <button
                     onClick={() => toggleSection(item.text)}
-                    className={`w-full px-3 py-2 text-xs font-bold ${THEME_CLASSES.text.tertiary} uppercase tracking-wider flex items-center justify-between hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-lg transition-colors group`}
+                    className={`w-full px-3 py-2 text-[10px] font-black ${THEME_CLASSES.text.tertiary} uppercase tracking-[0.2em] flex items-center justify-between hover:bg-red-50 dark:hover:bg-red-900/10 hover:text-red-600 rounded-lg transition-all duration-300 group`}
                   >
                     <div className="flex items-center gap-2">
-                      <item.icon className="h-4 w-4" />
+                      <item.icon className="h-4 w-4 transition-transform group-hover:scale-110" />
                       {item.text}
                     </div>
                     {expandedSections[item.text] ? (
-                      <ChevronDown className="h-3 w-3 opacity-50 group-hover:opacity-100 transition-opacity" />
+                      <ChevronDown className="h-3 w-3 opacity-50 group-hover:opacity-100 group-hover:text-red-600 transition-all" />
                     ) : (
-                      <ChevronRight className="h-3 w-3 opacity-50 group-hover:opacity-100 transition-opacity" />
+                      <ChevronRight className="h-3 w-3 opacity-50 group-hover:opacity-100 group-hover:text-red-600 transition-all" />
                     )}
                   </button>
                   {expandedSections[item.text] && (
-                    <div className="mt-1 animate-in fade-in slide-in-from-top-2 duration-200">
+                    <div className="mt-1 ml-2 pl-2 border-l border-zinc-100 dark:border-zinc-800 animate-in fade-in slide-in-from-top-2 duration-200">
                       {item.subItems.map(sub => {
                         const SubIcon = sub.icon;
                         const isActive = currentPath === sub.path;
@@ -300,14 +300,14 @@ export default function AdminDashboard({
                           <button
                             key={sub.id}
                             onClick={() => { navigate(`/admin${sub.path}`); setSidebarOpen(false); }}
-                            className={`w-full text-left px-3 py-2 rounded-lg text-sm mb-1 transition-colors flex items-center justify-between ${isActive ? 'bg-red-50 text-red-600 font-bold dark:bg-red-900/20' : `${THEME_CLASSES.text.secondary} hover:bg-zinc-100 dark:hover:bg-zinc-800`}`}
+                            className={`w-full text-left px-3 py-2 rounded-lg text-sm mb-1 transition-all flex items-center justify-between ${isActive ? 'bg-red-600 text-white font-bold shadow-md shadow-red-600/20' : `${THEME_CLASSES.text.secondary} hover:bg-zinc-100 dark:hover:bg-zinc-800 hover:translate-x-1`}`}
                           >
                             <div className="flex items-center gap-2">
-                              {SubIcon && <SubIcon className="h-4 w-4" />}
+                              {SubIcon && <SubIcon className={`h-4 w-4 ${isActive ? 'text-white' : 'text-zinc-400'}`} />}
                               {sub.text}
                             </div>
                             {sub.badge > 0 && (
-                              <span className="bg-red-600 text-white text-[10px] font-bold px-2 py-0.5 rounded-full">
+                              <span className={`${isActive ? 'bg-white text-red-600' : 'bg-red-600 text-white'} text-[10px] font-bold px-2 py-0.5 rounded-full transition-colors`}>
                                 {sub.badge}
                               </span>
                             )}
@@ -318,8 +318,11 @@ export default function AdminDashboard({
                   )}
                 </div>
               ) : (
-                <button onClick={() => { navigate(`/admin${item.path}`); setSidebarOpen(false); }} className={`flex items-center gap-3 w-full px-3 py-2 rounded-lg text-sm font-medium transition-colors ${currentPath === item.path ? 'bg-red-600 text-white shadow-lg shadow-red-600/30' : `${THEME_CLASSES.text.secondary} hover:bg-zinc-100 dark:hover:bg-zinc-800`}`}>
-                  <item.icon className="h-5 w-5" /> {item.text}
+                <button
+                  onClick={() => { navigate(`/admin${item.path}`); setSidebarOpen(false); }}
+                  className={`flex items-center gap-3 w-full px-3 py-2 rounded-lg text-sm font-bold transition-all ${currentPath === item.path ? 'bg-red-600 text-white shadow-lg shadow-red-600/30' : `${THEME_CLASSES.text.secondary} hover:bg-zinc-100 dark:hover:bg-zinc-800 hover:translate-x-1`}`}
+                >
+                  <item.icon className="h-5 w-5 transition-transform group-hover:scale-110" /> {item.text}
                 </button>
               )}
             </div>
@@ -331,23 +334,26 @@ export default function AdminDashboard({
           {/* Botón de tema */}
           <button
             onClick={toggleTheme}
-            className={`flex items-center gap-3 w-full px-3 py-2 rounded-lg text-sm font-medium ${THEME_CLASSES.text.secondary} hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors`}
+            className={`flex items-center gap-3 w-full px-3 py-2 rounded-lg text-sm font-medium ${THEME_CLASSES.text.secondary} hover:bg-zinc-100 dark:hover:bg-zinc-800 hover:translate-x-1 transition-all group`}
           >
             {isDarkMode ? (
               <>
-                <Sun className="h-5 w-5 text-yellow-500" />
+                <Sun className="h-5 w-5 text-yellow-500 transition-transform group-hover:rotate-90" />
                 <span>Modo Claro</span>
               </>
             ) : (
               <>
-                <Moon className="h-5 w-5 text-indigo-500" />
+                <Moon className="h-5 w-5 text-indigo-500 transition-transform group-hover:-rotate-12" />
                 <span>Modo Oscuro</span>
               </>
             )}
           </button>
 
-          <button onClick={() => navigate('/')} className="flex items-center gap-3 w-full px-3 py-2 rounded-lg text-sm font-medium text-zinc-500 hover:text-red-600 transition-colors">
-            <LogOut className="h-5 w-5" /> Salir
+          <button
+            onClick={() => navigate('/')}
+            className={`flex items-center gap-3 w-full px-3 py-2 rounded-lg text-sm font-medium text-zinc-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/10 hover:translate-x-1 transition-all group`}
+          >
+            <LogOut className="h-5 w-5 transition-transform group-hover:scale-110" /> Salir
           </button>
         </div>
       </div>
