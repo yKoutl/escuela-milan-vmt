@@ -283,7 +283,14 @@ export default function PaymentHistoryView({ showNotification, categories = [] }
               customActions={(row) => {
                 const phone = selectedStudent?.phone?.replace(/\D/g, '');
                 const finalPhone = phone?.length === 9 ? `51${phone}` : phone;
-                const message = `Hola ${selectedStudent?.parent || ''}, le escribimos de la Escuela Milan para recordarle el pago de ${row.month} ${row.year} de su menor hijo(a) ${selectedStudent?.name || ''}. Monto pendiente: S/. ${row.amount}.`;
+
+                let message = '';
+                if (row.status === 'Pagado' || row.status === 'Pago Parcial') {
+                  const dateStr = row.paymentDate?.seconds ? new Date(row.paymentDate.seconds * 1000).toLocaleDateString('es-PE') : 'Hoy';
+                  message = `*COMPROBANTE DE PAGO - ESCUELA MILAN*\n--------------------------------\n*Alumno:* ${selectedStudent?.name}\n*Concepto:* ${row.month} ${row.year}\n*Monto:* S/. ${parseFloat(row.amount || 0).toFixed(2)}\n*Fecha:* ${dateStr}\n*Estado:* ${row.status}\n--------------------------------\nGracias por su pago.`;
+                } else {
+                  message = `Hola ${selectedStudent?.parent || ''}, le escribimos de la Escuela Milan para recordarle el pago de ${row.month} ${row.year} de su menor hijo(a) ${selectedStudent?.name || ''}. Monto pendiente: S/. ${row.amount}.`;
+                }
 
                 return (
                   <>
@@ -296,13 +303,13 @@ export default function PaymentHistoryView({ showNotification, categories = [] }
                       {({ loading }) => (loading ? <FileText className="h-4 w-4 animate-pulse" /> : <FileText className="h-4 w-4" />)}
                     </PDFDownloadLink>
 
-                    {(row.status === 'Vencido' || row.status === 'Pendiente') && finalPhone && (
+                    {finalPhone && (
                       <a
                         href={`https://wa.me/${finalPhone}?text=${encodeURIComponent(message)}`}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="text-green-600 hover:bg-green-50 dark:hover:bg-green-950 p-2 rounded inline-flex"
-                        title="Enviar recordatorio por WhatsApp"
+                        className="text-green-600 hover:bg-green-50 dark:hover:bg-green-950 p-2 rounded inline-flex ml-1"
+                        title="Enviar por WhatsApp"
                       >
                         <MessageCircle className="h-4 w-4" />
                       </a>

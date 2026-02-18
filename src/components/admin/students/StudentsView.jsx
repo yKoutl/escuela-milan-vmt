@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { Plus, Search, Filter, Trash2, Edit, ChevronDown } from 'lucide-react';
+import { Plus, Search, Filter, Trash2, Edit, ChevronDown, MessageCircle, User, Calendar, Tag, Phone, Activity } from 'lucide-react';
 import { THEME_CLASSES } from '../../../utils/theme';
 import GenericTable from '../GenericTable';
 import Modal from '../../../shared/Modal';
@@ -14,7 +14,16 @@ export default function StudentsView({ categories, handleAdd, handleDelete }) {
 
   const [showForm, setShowForm] = useState(false);
   const [showFilters, setShowFilters] = useState(false);
-  const [newStudent, setNewStudent] = useState({ name: '', dob: '', category: '', parent: '', phone: '', status: 'Activo' });
+  // Se agrega registrationDate al estado inicial
+  const [newStudent, setNewStudent] = useState({
+    name: '',
+    dob: '',
+    category: '',
+    parent: '',
+    phone: '',
+    status: 'Activo',
+    registrationDate: ''
+  });
   const [deleteConfirmId, setDeleteConfirmId] = useState(null);
   const [editModalOpen, setEditModalOpen] = useState(false);
   const [editingStudent, setEditingStudent] = useState(null);
@@ -60,16 +69,26 @@ export default function StudentsView({ categories, handleAdd, handleDelete }) {
       const matchContact = !filterContact || (student.phone && student.phone.includes(filterContact));
 
       let matchDate = true;
-      if ((filterStartDate || filterEndDate) && student.createdAt?.seconds) {
-        const studentDate = new Date(student.createdAt.seconds * 1000);
-        if (filterStartDate) {
-          const startDate = new Date(filterStartDate);
-          matchDate = matchDate && studentDate >= startDate;
+      // Ajuste para filtrar también por registrationDate si existe
+      if (filterStartDate || filterEndDate) {
+        let studentDateVal = null;
+
+        if (student.registrationDate) {
+          studentDateVal = new Date(student.registrationDate);
+        } else if (student.createdAt?.seconds) {
+          studentDateVal = new Date(student.createdAt.seconds * 1000);
         }
-        if (filterEndDate) {
-          const endDate = new Date(filterEndDate);
-          endDate.setHours(23, 59, 59, 999);
-          matchDate = matchDate && studentDate <= endDate;
+
+        if (studentDateVal) {
+          if (filterStartDate) {
+            const startDate = new Date(filterStartDate);
+            matchDate = matchDate && studentDateVal >= startDate;
+          }
+          if (filterEndDate) {
+            const endDate = new Date(filterEndDate);
+            endDate.setHours(23, 59, 59, 999);
+            matchDate = matchDate && studentDateVal <= endDate;
+          }
         }
       }
 
@@ -79,9 +98,12 @@ export default function StudentsView({ categories, handleAdd, handleDelete }) {
 
   const submitStudent = (e) => {
     e.preventDefault();
+    // Si no se especifica fecha de registro, se podría poner la fecha actual o dejar que el backend ponga createdAt
+    // Pero si el usuario la deja vacía, asumimos que es HOY o dejamos vacio y usamos createdAt.
+    // Para consistencia con el pedido, enviamos lo que haya.
     handleAdd('students', newStudent);
     setShowForm(false);
-    setNewStudent({ name: '', dob: '', category: '', parent: '', phone: '', status: 'Activo' });
+    setNewStudent({ name: '', dob: '', category: '', parent: '', phone: '', status: 'Activo', registrationDate: '' });
   };
 
   const handleDeleteWithConfirmation = (id) => {
@@ -98,9 +120,16 @@ export default function StudentsView({ categories, handleAdd, handleDelete }) {
     setFilterEndDate('');
   };
 
+  const handleWhatsApp = (phone) => {
+    if (!phone) return;
+    const cleanPhone = phone.replace(/\D/g, '');
+    window.open(`https://wa.me/${cleanPhone}`, '_blank');
+  };
+
   // Clases de estilo
   const CARD_STYLE = "bg-white dark:bg-zinc-900 rounded-lg shadow border border-zinc-200 dark:border-zinc-800 p-4";
   const INPUT_STYLE = "p-2 rounded border dark:bg-zinc-800 dark:border-zinc-700 dark:text-white text-sm w-full";
+  const LABEL_STYLE = "block text-xs font-bold text-zinc-600 dark:text-zinc-400 mb-1 flex items-center gap-1";
 
   return (
     <div className="space-y-6">
@@ -157,6 +186,15 @@ export default function StudentsView({ categories, handleAdd, handleDelete }) {
 
             <input required placeholder="Apoderado" className={INPUT_STYLE} value={newStudent.parent} onChange={e => setNewStudent({ ...newStudent, parent: e.target.value })} />
             <input required placeholder="Teléfono" className={INPUT_STYLE} value={newStudent.phone} onChange={e => setNewStudent({ ...newStudent, phone: e.target.value })} />
+
+            {/* NUEVO CAMPO: Fecha de Inscripción */}
+            <div>
+              <CustomDatePicker
+                value={newStudent.registrationDate}
+                onChange={e => setNewStudent({ ...newStudent, registrationDate: e.target.value })}
+                placeholder="Fecha de Inscripción"
+              />
+            </div>
 
             <div className="col-span-1 md:col-span-2 flex justify-end gap-2 mt-2">
               <button type="button" onClick={() => setShowForm(false)} className={`px-4 py-2 ${THEME_CLASSES.button.secondary} rounded font-bold`}>Cancelar</button>
@@ -244,16 +282,25 @@ export default function StudentsView({ categories, handleAdd, handleDelete }) {
         data={filteredStudents}
         onDelete={setDeleteConfirmId}
         customActions={(row) => (
-          <button
-            onClick={() => {
-              setEditingStudent(row);
-              setEditModalOpen(true);
-            }}
-            className="text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-950 p-2 rounded"
-            title="Editar alumno"
-          >
-            <Edit className="h-4 w-4" />
-          </button>
+          <div className="flex items-center gap-1">
+            <button
+              onClick={() => handleWhatsApp(row.phone)}
+              className="text-green-600 hover:bg-green-50 dark:hover:bg-green-950 p-2 rounded transition-colors"
+              title="Contactar por WhatsApp"
+            >
+              <MessageCircle className="h-4 w-4" />
+            </button>
+            <button
+              onClick={() => {
+                setEditingStudent(row);
+                setEditModalOpen(true);
+              }}
+              className="text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-950 p-2 rounded transition-colors"
+              title="Editar alumno"
+            >
+              <Edit className="h-4 w-4" />
+            </button>
+          </div>
         )}
         columns={[
           { header: 'Nombre', field: 'name', render: (r) => <div className="font-bold text-zinc-900 dark:text-white">{r.name}</div> },
@@ -262,11 +309,17 @@ export default function StudentsView({ categories, handleAdd, handleDelete }) {
           { header: 'Contacto', field: 'phone' },
           { header: 'Estado', field: 'status', render: (r) => <span className={`text-xs px-2 py-1 rounded ${r.status === 'Activo' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>{r.status}</span> },
           {
-            header: 'Fecha de Registro', field: 'createdAt', render: (r) => {
+            header: 'Fecha Inscripción', field: 'createdAt', render: (r) => {
+              // Prioridad: registrationDate
+              if (r.registrationDate) {
+                const part = r.registrationDate.split('-');
+                if (part.length === 3) return `${part[2]}/${part[1]}/${part[0]}`;
+                return r.registrationDate;
+              }
+              // Fallback: createdAt (Timestamp)
               if (!r.createdAt?.seconds) return 'Sin fecha';
               const date = new Date(r.createdAt.seconds * 1000);
-              return date.toLocaleDateString('es-PE', { day: '2-digit', month: '2-digit', year: 'numeric' }) + ' ' +
-                date.toLocaleTimeString('es-PE', { hour: '2-digit', minute: '2-digit' });
+              return date.toLocaleDateString('es-PE', { day: '2-digit', month: '2-digit', year: 'numeric' });
             }
           }
         ]}
@@ -317,9 +370,9 @@ export default function StudentsView({ categories, handleAdd, handleDelete }) {
         title="Editar Alumno"
       >
         {editingStudent && (
-          <div className="space-y-4">
-            <div>
-              <label className="block text-sm font-bold text-zinc-700 dark:text-zinc-300 mb-1">Nombre Completo</label>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="md:col-span-2">
+              <label className={LABEL_STYLE}><User className="h-3 w-3" /> Nombre Completo</label>
               <input
                 type="text"
                 className={INPUT_STYLE}
@@ -327,8 +380,9 @@ export default function StudentsView({ categories, handleAdd, handleDelete }) {
                 onChange={(e) => setEditingStudent({ ...editingStudent, name: e.target.value })}
               />
             </div>
+
             <div>
-              <label className="block text-sm font-bold text-zinc-700 dark:text-zinc-300 mb-1">Fecha de Nacimiento</label>
+              <label className={LABEL_STYLE}><Calendar className="h-3 w-3" /> Fecha de Nacimiento</label>
               <CustomDatePicker
                 value={editingStudent.dob || ''}
                 onChange={(e) => {
@@ -342,8 +396,9 @@ export default function StudentsView({ categories, handleAdd, handleDelete }) {
                 }}
               />
             </div>
+
             <div>
-              <label className="block text-sm font-bold text-zinc-700 dark:text-zinc-300 mb-1">Categoría</label>
+              <label className={LABEL_STYLE}><Tag className="h-3 w-3" /> Categoría</label>
               <select
                 className={INPUT_STYLE}
                 value={editingStudent.category}
@@ -354,8 +409,9 @@ export default function StudentsView({ categories, handleAdd, handleDelete }) {
                 {categories.map(c => <option key={c.id} value={c.name}>{c.name}</option>)}
               </select>
             </div>
-            <div>
-              <label className="block text-sm font-bold text-zinc-700 dark:text-zinc-300 mb-1">Apoderado</label>
+
+            <div className="md:col-span-2">
+              <label className={LABEL_STYLE}><User className="h-3 w-3" /> Apoderado</label>
               <input
                 type="text"
                 className={INPUT_STYLE}
@@ -363,8 +419,9 @@ export default function StudentsView({ categories, handleAdd, handleDelete }) {
                 onChange={(e) => setEditingStudent({ ...editingStudent, parent: e.target.value })}
               />
             </div>
+
             <div>
-              <label className="block text-sm font-bold text-zinc-700 dark:text-zinc-300 mb-1">Teléfono</label>
+              <label className={LABEL_STYLE}><Phone className="h-3 w-3" /> Teléfono</label>
               <input
                 type="text"
                 className={INPUT_STYLE}
@@ -372,8 +429,9 @@ export default function StudentsView({ categories, handleAdd, handleDelete }) {
                 onChange={(e) => setEditingStudent({ ...editingStudent, phone: e.target.value })}
               />
             </div>
+
             <div>
-              <label className="block text-sm font-bold text-zinc-700 dark:text-zinc-300 mb-1">Estado</label>
+              <label className={LABEL_STYLE}><Activity className="h-3 w-3" /> Estado</label>
               <select
                 className={INPUT_STYLE}
                 value={editingStudent.status}
@@ -383,10 +441,19 @@ export default function StudentsView({ categories, handleAdd, handleDelete }) {
                 <option value="Inactivo">Inactivo</option>
               </select>
             </div>
-            <div className="flex justify-end gap-3 mt-6">
+
+            <div className="md:col-span-2">
+              <label className={LABEL_STYLE}><Calendar className="h-3 w-3" /> Fecha de Inscripción - (En el sistema)</label>
+              <CustomDatePicker
+                value={editingStudent.registrationDate || ''}
+                onChange={(e) => setEditingStudent({ ...editingStudent, registrationDate: e.target.value })}
+              />
+            </div>
+
+            <div className="md:col-span-2 flex justify-end gap-3 mt-4 pt-4 border-t border-zinc-100 dark:border-zinc-800">
               <button
                 onClick={() => setEditModalOpen(false)}
-                className="px-4 py-2 bg-zinc-200 dark:bg-zinc-700 text-zinc-800 dark:text-zinc-200 rounded hover:bg-zinc-300 dark:hover:bg-zinc-600 font-bold"
+                className="px-4 py-2 bg-zinc-200 dark:bg-zinc-700 text-zinc-800 dark:text-zinc-200 rounded hover:bg-zinc-300 dark:hover:bg-zinc-600 font-bold text-sm"
               >
                 Cancelar
               </button>
@@ -396,7 +463,7 @@ export default function StudentsView({ categories, handleAdd, handleDelete }) {
                   setEditModalOpen(false);
                   setEditingStudent(null);
                 }}
-                className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 font-bold"
+                className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 font-bold text-sm"
               >
                 Guardar Cambios
               </button>

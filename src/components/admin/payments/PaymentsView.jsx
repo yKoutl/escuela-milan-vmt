@@ -1,7 +1,7 @@
 import React, { useState, useMemo } from 'react';
-import { Save, FileText, Download, Edit, Search, X, Trash2, ChevronDown } from 'lucide-react';
+import { Save, FileText, Download, Edit, Search, X, Trash2, ChevronDown, Share2 } from 'lucide-react';
 import { serverTimestamp, Timestamp } from 'firebase/firestore';
-import { PDFDownloadLink } from '@react-pdf/renderer';
+import { PDFDownloadLink, pdf } from '@react-pdf/renderer';
 import { THEME_CLASSES } from '../../../utils/theme';
 import GenericTable from '../GenericTable';
 import Modal from '../../../shared/Modal';
@@ -116,6 +116,30 @@ export default function PaymentsView({ categories, handleAdd, handleDelete, hand
     setFilterMonth('');
     setFilterStartDate('');
     setFilterEndDate('');
+  };
+
+  const handleShare = async (payment) => {
+    // 1. Intentar compartir PDF
+    try {
+      const blob = await pdf(<PDFReceipt payment={payment} />).toBlob();
+      const file = new File([blob], `Boleta-${payment.studentName}-${payment.month}.pdf`, { type: 'application/pdf' });
+
+      if (navigator.canShare && navigator.canShare({ files: [file] })) {
+        await navigator.share({
+          files: [file],
+          title: 'Boleta de Pago - Escuela Milan',
+          text: `Adjunto boleta de pago de ${payment.studentName}`,
+        });
+      } else {
+        // Si no soporta compartir archivos nativamente (ej: Desktop Chrome)
+        showNotification('Tu navegador no soporta compartir archivos directamente. Descarga el PDF y envíalo manualmente.', 'info');
+      }
+    } catch (error) {
+      if (error.name !== 'AbortError') {
+        console.error('Error compartiendo PDF:', error);
+        showNotification('Error al intentar compartir el PDF', 'error');
+      }
+    }
   };
 
   // Filtrar pagos - SOLO EL ÚLTIMO PAGO DE CADA ALUMNO (sin repetir alumnos)
@@ -324,6 +348,13 @@ export default function PaymentsView({ categories, handleAdd, handleDelete, hand
               title="Editar pago"
             >
               <Edit className="h-4 w-4" />
+            </button>
+            <button
+              onClick={() => handleShare(row)}
+              className="text-green-600 hover:bg-green-50 dark:hover:bg-green-950 p-2 rounded inline-flex ml-1"
+              title="Compartir Boleta (PDF/WhatsApp)"
+            >
+              <Share2 className="h-4 w-4" />
             </button>
             <PDFDownloadLink
               document={<PDFReceipt payment={row} />}
