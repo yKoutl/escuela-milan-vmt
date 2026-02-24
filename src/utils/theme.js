@@ -47,11 +47,20 @@ export const THEME_CLASSES = {
     secondary: 'border-zinc-300 dark:border-zinc-700',
   },
   // Inputs
-  input: 'border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-zinc-900 dark:text-white dark:[color-scheme:dark]',
+  input: 'w-full px-4 py-2.5 rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-zinc-900 dark:text-white dark:[color-scheme:dark] outline-none focus:ring-2 focus:ring-red-500/20 focus:border-red-500 transition-all shadow-sm',
   // Buttons
   button: {
     primary: 'bg-red-600 hover:bg-red-700 text-white',
     secondary: 'bg-zinc-200 hover:bg-zinc-300 dark:bg-zinc-700 dark:hover:bg-zinc-600 text-zinc-900 dark:text-white',
+  },
+  // Badges / Etiquetas
+  badge: {
+    base: 'px-2.5 py-1 rounded-xl text-[10px] font-black uppercase tracking-wider border transition-all',
+    success: 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-500/10 dark:text-emerald-400 dark:border-emerald-500/20',
+    warning: 'bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-500/10 dark:text-amber-400 dark:border-amber-500/20',
+    error: 'bg-rose-50 text-rose-700 border-rose-200 dark:bg-rose-500/10 dark:text-rose-400 dark:border-rose-500/20',
+    info: 'bg-sky-50 text-sky-700 border-sky-200 dark:bg-sky-500/10 dark:text-sky-400 dark:border-sky-500/20',
+    neutral: 'bg-zinc-50 text-zinc-600 border-zinc-200 dark:bg-zinc-500/10 dark:text-zinc-400 dark:border-zinc-500/20',
   }
 };
 

@@ -158,19 +158,20 @@ function AppContent() {
         } />
 
         <Route path="/login" element={
-          <React.Suspense fallback={<div className="min-h-screen flex items-center justify-center"><Loader2 className="w-8 h-8 animate-spin text-red-600" /></div>}>
+          <React.Suspense fallback={<div className="min-h-screen flex flex-col items-center justify-center gap-2"><Loader2 className="w-8 h-8 animate-spin text-red-600" /><p className="text-zinc-500 font-medium">Cargando...</p></div>}>
             <LoginScreen setView={(v) => navigate(v === 'admin-dashboard' ? '/admin' : '/')} />
           </React.Suspense>
         } />
 
         <Route path="/admin/*" element={
-          <React.Suspense fallback={<div className="min-h-screen flex items-center justify-center"><Loader2 className="w-8 h-8 animate-spin text-red-600" /></div>}>
+          <React.Suspense fallback={<div className="min-h-screen flex flex-col items-center justify-center gap-2"><Loader2 className="w-8 h-8 animate-spin text-red-600" /><p className="text-zinc-500 font-medium">Cargando...</p></div>}>
             <AdminDashboard
               setView={(v) => navigate('/')}
               news={news}
               achievements={achievements}
               schedules={schedules}
               showNotification={showNotification}
+              user={user}
             />
           </React.Suspense>
         } />

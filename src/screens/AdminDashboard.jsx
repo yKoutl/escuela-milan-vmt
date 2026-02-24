@@ -30,17 +30,35 @@ export default function AdminDashboard({
   news,
   achievements,
   schedules,
-  showNotification
+  showNotification,
+  user
 }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
   const { isDarkMode, toggleTheme } = useTheme();
 
+  const PAGE_TITLES = {
+    'inicio': 'Resumen General',
+    'directorio-alumnos': 'Directorio de Alumnos',
+    'categorias': 'Categorías de Alumnos',
+    'solicitudes': 'Solicitudes Web',
+    'control-pagos': 'Control de Pagos',
+    'pagos-pendientes': 'Pagos Pendientes',
+    'historial-pagos': 'Historial de Pagos',
+    'egresos': 'Gestión de Egresos',
+    'contenidos-web': 'Configuración de Contenidos',
+    'imagenes': 'Galería de Imágenes',
+    'precios': 'Costos e Inscripciones',
+    'membresias': 'Gestión de Membresías',
+    'auspiciadores': 'Nuestros Auspiciadores',
+    'donaciones': 'Donaciones y QR',
+  };
+
   // Get current active tab from pathname
   const currentPath = location.pathname.replace('/admin', '') || '/';
   // Map current path to adminTab for title and helper logic
-  const adminTab = currentPath === '/' ? 'overview' : currentPath.substring(1);
+  const adminTab = currentPath === '/' ? 'inicio' : currentPath.substring(1);
 
   // --- ESTADO PARA SECCIONES COLAPSABLES DEL SIDEBAR ---
   const [expandedSections, setExpandedSections] = useState({
@@ -228,33 +246,33 @@ export default function AdminDashboard({
   };
 
   const menuItems = [
-    { text: 'Dashboard', icon: LayoutDashboard, id: 'overview', path: '/' },
+    { text: 'Inicio', icon: LayoutDashboard, id: 'inicio', path: '/' },
     {
       text: 'Gestión Alumnos', icon: Users,
       subItems: [
-        { text: 'Directorio', id: 'students-list', icon: Users, path: '/students-list' },
-        { text: 'Categorías', id: 'students-cats', icon: BookOpen, path: '/students-cats' },
-        { text: 'Solicitudes Web', id: 'requests', icon: Inbox, badge: pendingRequests, path: '/requests' }
+        { text: 'Directorio', id: 'directorio-alumnos', icon: Users, path: '/directorio-alumnos' },
+        { text: 'Categorías', id: 'categorias', icon: BookOpen, path: '/categorias' },
+        { text: 'Solicitudes Web', id: 'solicitudes', icon: Inbox, badge: pendingRequests, path: '/solicitudes' }
       ]
     },
     {
       text: 'Pagos y Mensualidades', icon: CalendarDays,
       subItems: [
-        { text: 'Control de Pagos', id: 'payments-control', icon: DollarSign, path: '/payments-control' },
-        { text: 'Pagos Pendientes', id: 'payments-pending', icon: AlertCircle, badge: totalProblems, path: '/payments-pending' },
-        { text: 'Historial de Pagos', id: 'payments-history', icon: History, path: '/payments-history' },
-        { text: 'Egresos', id: 'payments-expenses', icon: DollarSign, path: '/payments-expenses' },
+        { text: 'Control de Pagos', id: 'control-pagos', icon: DollarSign, path: '/control-pagos' },
+        { text: 'Pagos Pendientes', id: 'pagos-pendientes', icon: AlertCircle, badge: totalProblems, path: '/pagos-pendientes' },
+        { text: 'Historial de Pagos', id: 'historial-pagos', icon: History, path: '/historial-pagos' },
+        { text: 'Egresos', id: 'egresos', icon: DollarSign, path: '/egresos' },
       ]
     },
     {
       text: 'Configuración Web', icon: Settings,
       subItems: [
-        { text: 'Contenidos', id: 'config-web', icon: FileText, path: '/config-web' },
-        { text: 'Imágenes', id: 'config-images', icon: Image, path: '/config-images' },
-        { text: 'Costos e Inscripciones', id: 'config-pricing', icon: DollarSign, path: '/config-pricing' },
-        { text: 'Membresías', id: 'config-memberships', icon: CreditCard, path: '/config-memberships' },
-        { text: 'Auspiciadores', id: 'config-sponsors', icon: Trophy, path: '/config-sponsors' },
-        { text: 'Donaciones (QR)', id: 'config-donations', icon: Heart, path: '/config-donations' }
+        { text: 'Contenidos', id: 'contenidos-web', icon: FileText, path: '/contenidos-web' },
+        { text: 'Imágenes', id: 'imagenes', icon: Image, path: '/imagenes' },
+        { text: 'Costos e Inscripciones', id: 'precios', icon: DollarSign, path: '/precios' },
+        { text: 'Membresías', id: 'membresias', icon: CreditCard, path: '/membresias' },
+        { text: 'Auspiciadores', id: 'auspiciadores', icon: Trophy, path: '/auspiciadores' },
+        { text: 'Donaciones (QR)', id: 'donaciones', icon: Heart, path: '/donaciones' }
       ]
     }
   ];
@@ -263,14 +281,26 @@ export default function AdminDashboard({
   const daysOrder = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'];
 
   return (
-    <div className={`flex h-screen ${THEME_CLASSES.bg.secondary} transition-colors duration-300 overflow-hidden`}>
+    <div className={`flex h-screen ${THEME_CLASSES.bg.secondary} overflow-hidden`}>
       {/* Sidebar */}
       <div className={`fixed inset-y-0 left-0 z-30 w-64 ${THEME_CLASSES.bg.surface} ${THEME_CLASSES.border.primary} border-r transform transition-transform duration-300 md:relative md:translate-x-0 ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}>
         <div className={`p-6 flex items-center ${THEME_CLASSES.border.primary} border-b`}>
           <div className="bg-white rounded-full p-1 mr-2 border-2 border-red-600 overflow-hidden">
             <img src={LOGO_URL} alt="Milan Logo" className="h-8 w-8 object-contain" />
           </div>
-          <span className={`font-black text-lg ${THEME_CLASSES.text.primary} tracking-widest`}>ADMIN</span>
+          <div className="flex flex-col">
+            <span className={`font-black text-lg ${THEME_CLASSES.text.primary} tracking-widest leading-none`}>ADMIN</span>
+            {user && (
+              <div className="mt-1">
+                <p className="text-[10px] font-bold text-zinc-500 truncate w-32 uppercase tracking-tighter">
+                  {user.displayName || 'Administrador'}
+                </p>
+                <p className="text-[9px] text-zinc-400 truncate w-32 lowercase font-medium">
+                  {user.email}
+                </p>
+              </div>
+            )}
+          </div>
         </div>
         <div className="p-4 space-y-2 overflow-y-auto h-[calc(100%-80px)]">
           {menuItems.map((item, idx) => (
@@ -362,8 +392,8 @@ export default function AdminDashboard({
       <div className="flex-1 flex flex-col h-full overflow-hidden">
         <header className={`h-16 ${THEME_CLASSES.bg.surface} ${THEME_CLASSES.border.primary} border-b flex items-center justify-between px-6 flex-shrink-0`}>
           <button className="md:hidden" onClick={() => setSidebarOpen(!sidebarOpen)}><Menu className={`h-6 w-6 ${THEME_CLASSES.text.secondary}`} /></button>
-          <h1 className={`text-xl font-bold ${THEME_CLASSES.text.primary} capitalize ml-2 md:ml-0`}>
-            {adminTab === 'overview' ? 'Resumen General' : adminTab.replace('-', ' ')}
+          <h1 className={`text-xl font-bold ${THEME_CLASSES.text.primary} ml-2 md:ml-0`}>
+            {PAGE_TITLES[adminTab] || 'Panel Administrativo'}
           </h1>
         </header>
         <main className="flex-1 overflow-auto p-6">
@@ -501,19 +531,19 @@ export default function AdminDashboard({
                 </div>
               )
             } />
-            <Route path="/students-list" element={<StudentsView categories={categories} handleAdd={handleAdd} handleDelete={handleDelete} />} />
-            <Route path="/students-cats" element={<CategoriesView categories={categories} handleAdd={handleAdd} handleDelete={handleDelete} handleUpdate={handleUpdate} />} />
-            <Route path="/payments-control" element={<PaymentsView categories={categories} handleAdd={handleAdd} handleDelete={handleDelete} handleUpdate={handleUpdate} showNotification={showNotification} />} />
-            <Route path="/payments-pending" element={<PendingPaymentsView showNotification={showNotification} />} />
-            <Route path="/payments-history" element={<PaymentHistoryView categories={categories} showNotification={showNotification} />} />
-            <Route path="/payments-expenses" element={<ExpensesView showNotification={showNotification} />} />
-            <Route path="/config-web" element={<WebConfigView news={news} achievements={achievements} schedules={schedules} handleAdd={handleAdd} handleDelete={handleDelete} handleUpdate={handleUpdate} toggleVisibility={toggleVisibility} showNotification={showNotification} handleReorder={handleReorder} />} />
-            <Route path="/config-images" element={<SiteImagesView showNotification={showNotification} />} />
-            <Route path="/config-pricing" element={<PricingConfigView showNotification={showNotification} />} />
-            <Route path="/config-memberships" element={<MembershipsView showNotification={showNotification} />} />
-            <Route path="/config-sponsors" element={<SponsorsView showNotification={showNotification} />} />
-            <Route path="/config-donations" element={<DonationConfigView showNotification={showNotification} />} />
-            <Route path="/requests" element={<RequestsView handleDelete={handleDelete} showNotification={showNotification} />} />
+            <Route path="/directorio-alumnos" element={<StudentsView categories={categories} handleAdd={handleAdd} handleDelete={handleDelete} />} />
+            <Route path="/categorias" element={<CategoriesView categories={categories} handleAdd={handleAdd} handleDelete={handleDelete} handleUpdate={handleUpdate} />} />
+            <Route path="/control-pagos" element={<PaymentsView categories={categories} handleAdd={handleAdd} handleDelete={handleDelete} handleUpdate={handleUpdate} showNotification={showNotification} />} />
+            <Route path="/pagos-pendientes" element={<PendingPaymentsView showNotification={showNotification} />} />
+            <Route path="/historial-pagos" element={<PaymentHistoryView categories={categories} showNotification={showNotification} />} />
+            <Route path="/egresos" element={<ExpensesView showNotification={showNotification} />} />
+            <Route path="/contenidos-web" element={<WebConfigView news={news} achievements={achievements} schedules={schedules} handleAdd={handleAdd} handleDelete={handleDelete} handleUpdate={handleUpdate} toggleVisibility={toggleVisibility} showNotification={showNotification} handleReorder={handleReorder} />} />
+            <Route path="/imagenes" element={<SiteImagesView showNotification={showNotification} />} />
+            <Route path="/precios" element={<PricingConfigView showNotification={showNotification} />} />
+            <Route path="/membresias" element={<MembershipsView showNotification={showNotification} />} />
+            <Route path="/auspiciadores" element={<SponsorsView showNotification={showNotification} />} />
+            <Route path="/donaciones" element={<DonationConfigView showNotification={showNotification} />} />
+            <Route path="/solicitudes" element={<RequestsView handleDelete={handleDelete} showNotification={showNotification} />} />
             <Route path="*" element={<Navigate to="/admin" replace />} />
           </Routes>
         </main>

@@ -10,6 +10,7 @@ import PDFBatchReport from '../PDFBatchReport';
 import { MONTHS } from '../../../utils/constants';
 import { usePaginatedQuery } from '../../../hooks/usePaginatedQuery';
 import { useCollection } from '../../../hooks/useCollection';
+import Badge from '../../shared/Badge';
 
 export default function PaymentsView({ categories, handleAdd, handleDelete, handleUpdate, showNotification }) {
   // Datos locales
@@ -207,81 +208,81 @@ export default function PaymentsView({ categories, handleAdd, handleDelete, hand
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
-        <h2 className="text-2xl font-bold text-zinc-800 dark:text-white">Último Pago por Alumno</h2>
-        <div className="text-sm text-zinc-600 dark:text-zinc-400">
-          Mostrando solo el pago más reciente de cada alumno
-        </div>
+        <h2 className="text-2xl font-bold text-zinc-800 dark:text-white uppercase tracking-tight">Último Pago por Alumno</h2>
+        <Badge variant="neutral">Filtro de 30 días activos</Badge>
       </div>
 
-      <div className="bg-zinc-100 dark:bg-zinc-800 p-6 rounded-xl border border-zinc-200 dark:border-zinc-700">
-        <h3 className="font-bold mb-4 text-zinc-700 dark:text-zinc-300">Registrar Nuevo Pago (Año Actual: {new Date().getFullYear()})</h3>
+      <div className={`${THEME_CLASSES.bg.surface} p-6 rounded-2xl border ${THEME_CLASSES.border.primary} shadow-sm`}>
+        <h3 className={`font-black uppercase tracking-widest text-[10px] ${THEME_CLASSES.text.tertiary} mb-4`}>Registrar Nuevo Pago (Año Actual: {new Date().getFullYear()})</h3>
         <div className="grid grid-cols-1 md:grid-cols-6 gap-4">
-          <div>
-            <label className="block text-xs font-bold text-zinc-500 mb-1">1. Categoría</label>
-            <select className={`w-full p-2 rounded border ${THEME_CLASSES.input}`} value={selCategory} onChange={e => setSelCategory(e.target.value)}>
+          <div className="md:col-span-1">
+            <label className="block text-[10px] font-black text-zinc-500 uppercase tracking-widest ml-1 mb-1.5">1. Categoría</label>
+            <select className={THEME_CLASSES.input} value={selCategory} onChange={e => setSelCategory(e.target.value)}>
               <option value="">Seleccione...</option>
               {categories.map(c => <option key={c.id} value={c.name}>{c.name}</option>)}
             </select>
           </div>
 
-          <div>
-            <label className="block text-xs font-bold text-zinc-500 mb-1">2. Alumno</label>
-            <select className={`w-full p-2 rounded border ${THEME_CLASSES.input}`} value={selStudent} onChange={e => setSelStudent(e.target.value)} disabled={!selCategory}>
-              <option value="">{selCategory ? 'Seleccione Alumno...' : 'Seleccione Categoría primero'}</option>
+          <div className="md:col-span-1">
+            <label className="block text-[10px] font-black text-zinc-500 uppercase tracking-widest ml-1 mb-1.5">2. Alumno</label>
+            <select className={THEME_CLASSES.input} value={selStudent} onChange={e => setSelStudent(e.target.value)} disabled={!selCategory}>
+              <option value="">{selCategory ? 'Alumno...' : '---'}</option>
               {filteredStudents.map(s => <option key={s.id} value={s.name}>{s.name}</option>)}
             </select>
           </div>
 
-          <div>
-            <label className="block text-xs font-bold text-zinc-500 mb-1">3. Mes</label>
-            <select className={`w-full p-2 rounded border ${THEME_CLASSES.input}`} value={selMonth} onChange={e => setSelMonth(e.target.value)}>
-              <option value="">Seleccione...</option>
+          <div className="md:col-span-1">
+            <label className="block text-[10px] font-black text-zinc-500 uppercase tracking-widest ml-1 mb-1.5">3. Mes</label>
+            <select className={THEME_CLASSES.input} value={selMonth} onChange={e => setSelMonth(e.target.value)}>
+              <option value="">Mes...</option>
               {MONTHS.map(m => <option key={m} value={m}>{m}</option>)}
             </select>
           </div>
 
-          <div>
-            <label className="block text-xs font-bold text-zinc-500 mb-1">4. Fecha de Pago</label>
+          <div className="md:col-span-1">
+            <label className="block text-[10px] font-black text-zinc-500 uppercase tracking-widest ml-1 mb-1.5">4. Fecha Pago</label>
             <input
               type="date"
-              className={`w-full p-2 rounded border ${THEME_CLASSES.input}`}
+              className={THEME_CLASSES.input}
               value={paymentDate}
               onChange={e => setPaymentDate(e.target.value)}
             />
           </div>
 
-          <div>
-            <label className="block text-xs font-bold text-zinc-500 mb-1">5. Monto (S/.)</label>
-            <input type="number" className={`w-full p-2 rounded border ${THEME_CLASSES.input}`} value={amount} onChange={e => setAmount(e.target.value)} placeholder="0.00" />
+          <div className="md:col-span-1">
+            <label className="block text-[10px] font-black text-zinc-500 uppercase tracking-widest ml-1 mb-1.5">5. Monto (S/.)</label>
+            <input type="number" className={THEME_CLASSES.input} value={amount} onChange={e => setAmount(e.target.value)} placeholder="0.00" />
           </div>
 
-          <div className="flex gap-2 items-end">
-            <div className="flex-1">
-              <label className="block text-xs font-bold text-zinc-500 mb-1">6. Estado</label>
-              <select className={`w-full p-2 rounded border ${THEME_CLASSES.input}`} value={paymentStatus} onChange={e => setPaymentStatus(e.target.value)}>
+          <div className="md:col-span-1">
+            <label className="block text-[10px] font-black text-zinc-500 uppercase tracking-widest ml-1 mb-1.5">6. Estado</label>
+            <div className="flex gap-2">
+              <select className={THEME_CLASSES.input} value={paymentStatus} onChange={e => setPaymentStatus(e.target.value)}>
                 <option value="Pagado">Pagado</option>
                 <option value="Pago Parcial">Pago Parcial</option>
                 <option value="Vencido">Vencido</option>
               </select>
+              <button
+                onClick={handleRegisterPayment}
+                className="bg-red-600 text-white p-2.5 rounded-xl hover:bg-red-700 shadow-lg shadow-red-500/20 active:scale-90 transition-all"
+              >
+                <Save className="h-5 w-5" />
+              </button>
             </div>
-            <button onClick={handleRegisterPayment} className="bg-green-600 text-white p-2 rounded h-[42px] px-4 hover:bg-green-700 flex items-center justify-center"><Save className="h-5 w-5" /></button>
           </div>
         </div>
-        <p className="text-xs text-zinc-500 mt-2">
-          <strong>Nota:</strong> "Pago Parcial" permite registrar pagos en múltiples partes. Use "Vencido" para pagos atrasados.
-        </p>
       </div>
 
       {/* Barra de Filtros Avanzados */}
-      <div className="bg-white dark:bg-zinc-900 rounded-lg shadow border border-zinc-200 dark:border-zinc-800 p-4">
-        <div className="flex items-center justify-between mb-3">
-          <div className="flex items-center gap-2">
-            <Search className="h-5 w-5 text-zinc-500" />
-            <h3 className="font-bold text-zinc-800 dark:text-white">Filtros de Búsqueda</h3>
+      <div className={`${THEME_CLASSES.bg.surface} rounded-2xl shadow-sm border ${THEME_CLASSES.border.primary} p-5`}>
+        <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center gap-2 text-red-600 drop-shadow-sm">
+            <Search className="h-4 w-4" />
+            <h3 className="font-black text-[10px] uppercase tracking-[0.2em]">Filtros de Búsqueda</h3>
           </div>
           <button
             onClick={clearFilters}
-            className="text-xs text-red-600 hover:text-red-700 font-bold flex items-center gap-1 transition-colors"
+            className="text-[10px] text-red-600 hover:text-red-700 font-bold flex items-center gap-1 transition-colors uppercase tracking-widest"
           >
             <Trash2 className="h-3 w-3" /> Limpiar
           </button>
@@ -289,51 +290,43 @@ export default function PaymentsView({ categories, handleAdd, handleDelete, hand
         <div className="grid grid-cols-1 md:grid-cols-5 gap-3">
           <input
             type="text"
-            placeholder="Buscar por nombre de alumno..."
-            className={`p-2 rounded border text-sm ${THEME_CLASSES.input}`}
+            placeholder="Alumno..."
+            className={THEME_CLASSES.input}
             value={filterStudentName}
             onChange={e => setFilterStudentName(e.target.value)}
           />
           <select
-            className={`p-2 rounded border text-sm ${THEME_CLASSES.input}`}
+            className={THEME_CLASSES.input}
             value={filterStatus}
             onChange={e => setFilterStatus(e.target.value)}
           >
-            <option value="">Todos los estados</option>
+            <option value="">Estados...</option>
             <option value="Pagado">Pagado</option>
             <option value="Pago Parcial">Pago Parcial</option>
             <option value="Vencido">Vencido</option>
             <option value="Pendiente">Pendiente</option>
           </select>
           <select
-            className={`p-2 rounded border text-sm ${THEME_CLASSES.input}`}
+            className={THEME_CLASSES.input}
             value={filterMonth}
             onChange={e => setFilterMonth(e.target.value)}
           >
-            <option value="">Todos los meses</option>
+            <option value="">Meses...</option>
             {MONTHS.map(m => <option key={m} value={m}>{m}</option>)}
           </select>
-          <div>
-            <label className="block text-xs text-zinc-600 dark:text-zinc-400 mb-1">Desde</label>
-            <input
-              type="date"
-              className={`p-2 rounded border text-sm w-full ${THEME_CLASSES.input}`}
-              value={filterStartDate}
-              onChange={e => setFilterStartDate(e.target.value)}
-            />
-          </div>
-          <div>
-            <label className="block text-xs text-zinc-600 dark:text-zinc-400 mb-1">Hasta</label>
-            <input
-              type="date"
-              className={`p-2 rounded border text-sm w-full ${THEME_CLASSES.input}`}
-              value={filterEndDate}
-              onChange={e => setFilterEndDate(e.target.value)}
-            />
-          </div>
+          <input
+            type="date"
+            className={THEME_CLASSES.input}
+            value={filterStartDate}
+            onChange={e => setFilterStartDate(e.target.value)}
+          />
+          <input
+            type="date"
+            className={THEME_CLASSES.input}
+            value={filterEndDate}
+            onChange={e => setFilterEndDate(e.target.value)}
+          />
         </div>
-
-        {/* Exportación PDF por estudiante filtrado REMOVIDO: Se movió a Historial */}
       </div>
 
       <GenericTable
@@ -344,79 +337,77 @@ export default function PaymentsView({ categories, handleAdd, handleDelete, hand
           <>
             <button
               onClick={() => handleEdit(row)}
-              className="text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-950 p-2 rounded inline-flex"
+              className="text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-950/40 p-2 rounded-xl inline-flex transition-all"
               title="Editar pago"
             >
               <Edit className="h-4 w-4" />
             </button>
-            <button
-              onClick={() => handleShare(row)}
-              className="text-green-600 hover:bg-green-50 dark:hover:bg-green-950 p-2 rounded inline-flex ml-1"
-              title="Compartir Boleta (PDF/WhatsApp)"
-            >
-              <Share2 className="h-4 w-4" />
-            </button>
+
             <PDFDownloadLink
               document={<PDFReceipt payment={row} />}
               fileName={`boleta-${row.studentName}-${row.month}-${row.year}.pdf`}
-              className="text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-950 p-2 rounded inline-flex"
+              className="text-orange-600 hover:bg-orange-50 dark:hover:bg-orange-950/40 p-2 rounded-xl inline-flex ml-1 transition-all"
+              title="Descargar/Ver Boleta"
             >
-              {({ loading }) => (
-                loading ? <FileText className="h-4 w-4 animate-pulse" /> : <FileText className="h-4 w-4" />
-              )}
+              {({ loading }) => (loading ? <FileText className="h-4 w-4 animate-pulse" /> : <FileText className="h-4 w-4" />)}
             </PDFDownloadLink>
+
+            <button
+              onClick={() => handleShare(row)}
+              className="text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-950/40 p-2 rounded-xl inline-flex ml-1 transition-all"
+              title="Compartir Boleta"
+            >
+              <Share2 className="h-4 w-4" />
+            </button>
           </>
         )}
         columns={[
           {
-            header: 'Fecha Registro', field: 'createdAt', render: r => {
-              if (!r.createdAt?.seconds) return 'Hoy';
+            header: 'Fecha Reg', field: 'createdAt', render: r => {
+              if (!r.createdAt?.seconds) return <Badge variant="neutral">Hoy</Badge>;
               const date = new Date(r.createdAt.seconds * 1000);
-              return date.toLocaleDateString('es-PE', { day: '2-digit', month: '2-digit', year: 'numeric' }) + ' ' +
-                date.toLocaleTimeString('es-PE', { hour: '2-digit', minute: '2-digit' });
+              return (
+                <div className="flex flex-col">
+                  <span className="font-bold text-xs">{date.toLocaleDateString('es-PE')}</span>
+                  <span className="text-[10px] opacity-50 font-black">{date.toLocaleTimeString('es-PE', { hour: '2-digit', minute: '2-digit' })}</span>
+                </div>
+              );
             }
           },
           {
             header: 'Fecha Pago', field: 'paymentDate', render: r => {
-              if (!r.paymentDate?.seconds) return 'Hoy';
+              if (!r.paymentDate?.seconds) return <Badge variant="neutral">Hoy</Badge>;
               const date = new Date(r.paymentDate.seconds * 1000);
-              return date.toLocaleDateString('es-PE', { day: '2-digit', month: '2-digit', year: 'numeric' });
+              return <span className="text-xs font-bold text-zinc-600">{date.toLocaleDateString('es-PE')}</span>;
             }
           },
-          { header: 'Alumno', field: 'studentName' },
-          { header: 'Concepto', field: 'month', render: r => `${r.month} ${r.year}` },
-          { header: 'Monto', field: 'amount', render: r => `S/. ${r.amount}` },
+          { header: 'Categoría', field: 'category', render: r => <Badge variant="info">{r.category || '-'}</Badge> },
+          { header: 'Alumno', field: 'studentName', render: r => <div className="font-black uppercase tracking-tight text-xs">{r.studentName}</div> },
+          { header: 'Concepto', field: 'month', render: r => <span className="text-xs font-bold">{r.month} {r.year}</span> },
+          { header: 'Monto', field: 'amount', render: r => <span className="font-black text-rose-600">S/. {r.amount}</span> },
           {
             header: 'Estado', field: 'status', render: (r) => {
-              const statusColors = {
-                'Pagado': 'bg-green-100 text-green-800',
-                'Pago Parcial': 'bg-yellow-100 text-yellow-800',
-                'Vencido': 'bg-red-100 text-red-800',
-                'Pendiente': 'bg-orange-100 text-orange-800'
-              };
-              return (
-                <span className={`text-xs px-2 py-1 rounded font-bold ${statusColors[r.status] || 'bg-zinc-100 text-zinc-800'}`}>
-                  {r.status || 'Pagado'}
-                </span>
-              );
+              let variant = 'neutral';
+              if (r.status === 'Pagado') variant = 'success';
+              if (r.status === 'Pago Parcial') variant = 'info';
+              if (r.status === 'Vencido') variant = 'error';
+              if (r.status === 'Pendiente') variant = 'warning';
+              return <Badge variant={variant}>{r.status || 'Pagado'}</Badge>;
             }
           }
         ]}
       />
 
-      {/* --- PAGINACIÓN (50 en 50) --- */}
-      <div className="flex flex-col items-center justify-center py-4 gap-2">
-        {loading && <p className="text-zinc-500 animate-pulse text-sm">Cargando pagos...</p>}
+      {/* --- PAGINACIÓN --- */}
+      <div className="flex flex-col items-center justify-center py-8 gap-2">
+        {loading && <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-red-600" />}
         {!loading && hasMore && (
           <button
             onClick={loadMore}
-            className="flex items-center gap-2 px-6 py-2 bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-300 rounded-full hover:bg-zinc-200 dark:hover:bg-zinc-700 transition font-bold text-sm"
+            className="flex items-center gap-2 px-8 py-3 bg-white dark:bg-zinc-800 text-zinc-600 dark:text-zinc-300 rounded-2xl hover:bg-zinc-50 dark:hover:bg-zinc-750 transition-all font-black text-xs uppercase tracking-widest border border-zinc-200 dark:border-zinc-700 shadow-sm"
           >
-            <ChevronDown className="h-4 w-4" /> Ver anteriores (Lote de 50)
+            <ChevronDown className="h-4 w-4" /> Cargar más registros
           </button>
-        )}
-        {!hasMore && payments.length > 0 && (
-          <p className="text-xs text-zinc-400">No hay más registros.</p>
         )}
       </div>
 
@@ -424,23 +415,23 @@ export default function PaymentsView({ categories, handleAdd, handleDelete, hand
       <Modal
         isOpen={deleteConfirmId !== null}
         onClose={() => setDeleteConfirmId(null)}
-        title="Confirmar Eliminación"
+        title="Eliminar Registro"
       >
-        <p className="text-zinc-700 dark:text-zinc-300 mb-6">
-          ¿Estás seguro de que deseas eliminar este registro de pago? Esta acción no se puede deshacer.
+        <p className="text-zinc-500 font-medium mb-8 leading-relaxed">
+          ¿Estás seguro de que deseas eliminar este registro de pago? Esta acción es irreversible y afectará los reportes financieros.
         </p>
         <div className="flex justify-end gap-3">
           <button
             onClick={() => setDeleteConfirmId(null)}
-            className="px-4 py-2 bg-zinc-200 dark:bg-zinc-700 text-zinc-800 dark:text-zinc-200 rounded hover:bg-zinc-300 dark:hover:bg-zinc-600 font-bold"
+            className="px-6 py-2.5 bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 rounded-xl hover:bg-zinc-200 font-black uppercase tracking-widest text-[10px] transition-all"
           >
             Cancelar
           </button>
           <button
             onClick={() => handleDeleteWithConfirmation(deleteConfirmId)}
-            className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 font-bold"
+            className="px-6 py-2.5 bg-red-600 text-white rounded-xl hover:bg-red-700 font-black uppercase tracking-widest text-[10px] shadow-lg shadow-red-500/20 transition-all active:scale-95"
           >
-            Eliminar
+            Eliminar permanentemente
           </button>
         </div>
       </Modal>
@@ -450,19 +441,17 @@ export default function PaymentsView({ categories, handleAdd, handleDelete, hand
         {editingPayment && (
           <div className="space-y-4">
             <div>
-              <label className="block text-sm font-bold text-zinc-700 dark:text-zinc-300 mb-1">Alumno</label>
-              <input
-                type="text"
-                className="w-full p-2 rounded border dark:bg-zinc-800 dark:border-zinc-700 dark:text-white bg-zinc-100 cursor-not-allowed"
-                value={editingPayment.studentName}
-                disabled
-              />
+              <label className="block text-[10px] font-black uppercase tracking-widest text-zinc-500 ml-1 mb-1.5">Alumno</label>
+              <div className="w-full p-3 rounded-xl border border-zinc-100 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900/50 text-zinc-500 font-bold text-sm">
+                {editingPayment.studentName}
+              </div>
             </div>
-            <div className="grid grid-cols-2 gap-3">
+
+            <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-bold text-zinc-700 dark:text-zinc-300 mb-1">Mes</label>
+                <label className="block text-[10px] font-black uppercase tracking-widest text-zinc-500 ml-1 mb-1.5">Mes</label>
                 <select
-                  className={`w-full p-2 rounded border ${THEME_CLASSES.input}`}
+                  className={THEME_CLASSES.input}
                   value={editingPayment.month}
                   onChange={(e) => setEditingPayment({ ...editingPayment, month: e.target.value })}
                 >
@@ -470,60 +459,62 @@ export default function PaymentsView({ categories, handleAdd, handleDelete, hand
                 </select>
               </div>
               <div>
-                <label className="block text-sm font-bold text-zinc-700 dark:text-zinc-300 mb-1">Año</label>
+                <label className="block text-[10px] font-black uppercase tracking-widest text-zinc-500 ml-1 mb-1.5">Año</label>
                 <input
                   type="number"
-                  className={`w-full p-2 rounded border ${THEME_CLASSES.input}`}
+                  className={THEME_CLASSES.input}
                   value={editingPayment.year}
                   onChange={(e) => setEditingPayment({ ...editingPayment, year: e.target.value })}
                 />
               </div>
             </div>
-            <div>
-              <label className="block text-sm font-bold text-zinc-700 dark:text-zinc-300 mb-1">Monto (S/.)</label>
-              <input
-                type="number"
-                step="0.01"
-                className={`w-full p-2 rounded border ${THEME_CLASSES.input}`}
-                value={editingPayment.amount}
-                onChange={(e) => setEditingPayment({ ...editingPayment, amount: e.target.value })}
-              />
+
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="block text-[10px] font-black uppercase tracking-widest text-zinc-500 ml-1 mb-1.5">Monto (S/.)</label>
+                <input
+                  type="number"
+                  step="0.01"
+                  className={THEME_CLASSES.input}
+                  value={editingPayment.amount}
+                  onChange={(e) => setEditingPayment({ ...editingPayment, amount: e.target.value })}
+                />
+              </div>
+              <div>
+                <label className="block text-[10px] font-black uppercase tracking-widest text-zinc-500 ml-1 mb-1.5">Estado</label>
+                <select
+                  className={THEME_CLASSES.input}
+                  value={editingPayment.status || 'Pagado'}
+                  onChange={(e) => setEditingPayment({ ...editingPayment, status: e.target.value })}
+                >
+                  <option value="Pagado">Pagado</option>
+                  <option value="Pago Parcial">Pago Parcial</option>
+                  <option value="Vencido">Vencido</option>
+                  <option value="Pendiente">Pendiente</option>
+                </select>
+              </div>
             </div>
+
             <div>
-              <label className="block text-sm font-bold text-zinc-700 dark:text-zinc-300 mb-1">Fecha de Pago</label>
+              <label className="block text-[10px] font-black uppercase tracking-widest text-zinc-500 ml-1 mb-1.5">Fecha de Pago</label>
               <input
                 type="date"
-                className={`w-full p-2 rounded border ${THEME_CLASSES.input}`}
+                className={THEME_CLASSES.input}
                 value={editingPayment.paymentDateFormatted}
                 onChange={(e) => setEditingPayment({ ...editingPayment, paymentDateFormatted: e.target.value })}
               />
             </div>
-            <div>
-              <label className="block text-sm font-bold text-zinc-700 dark:text-zinc-300 mb-1">Estado</label>
-              <select
-                className={`w-full p-2 rounded border ${THEME_CLASSES.input}`}
-                value={editingPayment.status || 'Pagado'}
-                onChange={(e) => setEditingPayment({ ...editingPayment, status: e.target.value })}
-              >
-                <option value="Pagado">Pagado</option>
-                <option value="Pago Parcial">Pago Parcial</option>
-                <option value="Vencido">Vencido</option>
-                <option value="Pendiente">Pendiente</option>
-              </select>
-              <p className="text-xs text-zinc-500 mt-1">
-                Usa "Pago Parcial" para pagos en múltiples partes
-              </p>
-            </div>
-            <div className="flex justify-end gap-3 mt-6">
+
+            <div className="flex justify-end gap-3 mt-8">
               <button
                 onClick={() => setEditModalOpen(false)}
-                className="px-4 py-2 bg-zinc-200 dark:bg-zinc-700 text-zinc-800 dark:text-zinc-200 rounded hover:bg-zinc-300 dark:hover:bg-zinc-600 font-bold"
+                className="px-6 py-2.5 bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 rounded-xl hover:bg-zinc-200 dark:hover:bg-zinc-750 font-black uppercase tracking-widest text-[10px] transition-all"
               >
                 Cancelar
               </button>
               <button
                 onClick={saveEdit}
-                className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 font-bold"
+                className="px-6 py-2.5 bg-red-600 text-white rounded-xl hover:bg-red-700 font-black uppercase tracking-widest text-[10px] shadow-lg shadow-red-500/20 transition-all active:scale-95"
               >
                 Guardar Cambios
               </button>

@@ -4,17 +4,14 @@ import { THEME_CLASSES } from '../../../utils/theme';
 import GenericTable from '../GenericTable';
 import Modal from '../../../shared/Modal';
 import CustomDatePicker from '../../../shared/CustomDatePicker';
-import { usePaginatedQuery } from '../../../hooks/usePaginatedQuery'; // Importar Hook
-// import { useCollection } from '../../hooks/useCollection';
+import { usePaginatedQuery } from '../../../hooks/usePaginatedQuery';
+import Badge from '../../shared/Badge';
 
 export default function StudentsView({ categories, handleAdd, handleDelete }) {
-  // --- CARGA DE DATOS PAGINADA ---
-  // --- CARGA DE DATOS PAGINADA (50 items) ---
   const { data: students, loading, loadMore, hasMore } = usePaginatedQuery('students', 50);
 
   const [showForm, setShowForm] = useState(false);
   const [showFilters, setShowFilters] = useState(false);
-  // Se agrega registrationDate al estado inicial
   const [newStudent, setNewStudent] = useState({
     name: '',
     dob: '',
@@ -28,7 +25,6 @@ export default function StudentsView({ categories, handleAdd, handleDelete }) {
   const [editModalOpen, setEditModalOpen] = useState(false);
   const [editingStudent, setEditingStudent] = useState(null);
 
-  // Filtros
   const [filterName, setFilterName] = useState('');
   const [filterCategory, setFilterCategory] = useState('');
   const [filterStatus, setFilterStatus] = useState('');
@@ -36,54 +32,29 @@ export default function StudentsView({ categories, handleAdd, handleDelete }) {
   const [filterStartDate, setFilterStartDate] = useState('');
   const [filterEndDate, setFilterEndDate] = useState('');
 
-  // --- LÓGICA DE CÁLCULO DE CATEGORÍA AUTOMÁTICA ---
   const handleDateChange = (e) => {
     const dateValue = e.target.value;
     let autoCategory = '';
-
     if (dateValue) {
-      const year = parseInt(dateValue.split('-')[0]); // Extraemos el año (ej: "2005-01-20" -> 2005)
-
-      // LÓGICA: Si es 2008 o ANTES (son mayores de edad o seniors), ponemos "2008+"
-      // Si nacieron después (ej: 2010), ponemos el año tal cual.
-      if (year <= 2008) {
-        autoCategory = '2008+';
-      } else {
-        autoCategory = year.toString();
-      }
+      const year = parseInt(dateValue.split('-')[0]);
+      autoCategory = year <= 2008 ? '2008+' : year.toString();
     }
-
-    setNewStudent({
-      ...newStudent,
-      dob: dateValue,
-      category: autoCategory // Actualizamos la categoría automáticamente
-    });
+    setNewStudent({ ...newStudent, dob: dateValue, category: autoCategory });
   };
 
-  // Lógica de filtrado (Aplica sobre los datos YA CARGADOS)
   const filteredStudents = useMemo(() => {
     return students.filter(student => {
       const matchName = !filterName || student.name.toLowerCase().includes(filterName.toLowerCase());
       const matchCategory = !filterCategory || student.category === filterCategory;
       const matchStatus = !filterStatus || student.status === filterStatus;
       const matchContact = !filterContact || (student.phone && student.phone.includes(filterContact));
-
       let matchDate = true;
-      // Ajuste para filtrar también por registrationDate si existe
       if (filterStartDate || filterEndDate) {
         let studentDateVal = null;
-
-        if (student.registrationDate) {
-          studentDateVal = new Date(student.registrationDate);
-        } else if (student.createdAt?.seconds) {
-          studentDateVal = new Date(student.createdAt.seconds * 1000);
-        }
-
+        if (student.registrationDate) studentDateVal = new Date(student.registrationDate);
+        else if (student.createdAt?.seconds) studentDateVal = new Date(student.createdAt.seconds * 1000);
         if (studentDateVal) {
-          if (filterStartDate) {
-            const startDate = new Date(filterStartDate);
-            matchDate = matchDate && studentDateVal >= startDate;
-          }
+          if (filterStartDate) matchDate = matchDate && studentDateVal >= new Date(filterStartDate);
           if (filterEndDate) {
             const endDate = new Date(filterEndDate);
             endDate.setHours(23, 59, 59, 999);
@@ -91,16 +62,12 @@ export default function StudentsView({ categories, handleAdd, handleDelete }) {
           }
         }
       }
-
       return matchName && matchCategory && matchStatus && matchContact && matchDate;
     });
   }, [students, filterName, filterCategory, filterStatus, filterContact, filterStartDate, filterEndDate]);
 
   const submitStudent = (e) => {
     e.preventDefault();
-    // Si no se especifica fecha de registro, se podría poner la fecha actual o dejar que el backend ponga createdAt
-    // Pero si el usuario la deja vacía, asumimos que es HOY o dejamos vacio y usamos createdAt.
-    // Para consistencia con el pedido, enviamos lo que haya.
     handleAdd('students', newStudent);
     setShowForm(false);
     setNewStudent({ name: '', dob: '', category: '', parent: '', phone: '', status: 'Activo', registrationDate: '' });
@@ -126,347 +93,179 @@ export default function StudentsView({ categories, handleAdd, handleDelete }) {
     window.open(`https://wa.me/${cleanPhone}`, '_blank');
   };
 
-  // Clases de estilo
-  const CARD_STYLE = "bg-white dark:bg-zinc-900 rounded-lg shadow border border-zinc-200 dark:border-zinc-800 p-4";
-  const INPUT_STYLE = "p-2 rounded border dark:bg-zinc-800 dark:border-zinc-700 dark:text-white text-sm w-full";
-  const LABEL_STYLE = "block text-xs font-bold text-zinc-600 dark:text-zinc-400 mb-1 flex items-center gap-1";
+  const INPUT_STYLE = THEME_CLASSES.input;
+  const LABEL_STYLE = "block text-[10px] font-black uppercase tracking-widest text-zinc-500 mb-1.5 flex items-center gap-1.5 ml-1";
 
   return (
     <div className="space-y-6">
-      {/* --- CABECERA --- */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-        <h2 className="text-2xl font-bold text-zinc-800 dark:text-white">Directorio de Alumnos</h2>
-
-        {/* BOTONES DE ACCIÓN */}
+        <h2 className={`text-2xl font-black uppercase tracking-tight ${THEME_CLASSES.text.primary}`}>Directorio de Alumnos</h2>
         <div className="flex gap-2 w-full md:w-auto">
           <button
             onClick={() => setShowFilters(!showFilters)}
-            className={`flex-1 md:flex-none px-4 py-2 rounded-lg flex items-center justify-center font-bold text-sm border transition
+            className={`flex-1 md:flex-none px-4 py-2 rounded-xl flex items-center justify-center font-black uppercase tracking-wider text-xs border transition-all active:scale-95
               ${showFilters
                 ? 'bg-zinc-200 text-zinc-800 border-zinc-300 dark:bg-zinc-700 dark:text-white dark:border-zinc-600'
-                : 'bg-white text-zinc-600 border-zinc-200 hover:bg-zinc-50 dark:bg-zinc-900 dark:text-zinc-300 dark:border-zinc-800'
+                : 'bg-white text-zinc-600 border-zinc-200 hover:bg-zinc-50 dark:bg-zinc-900 dark:text-zinc-300 dark:border-zinc-800 shadow-sm'
               }`}
           >
             <Filter className="h-4 w-4 mr-2" />
             Filtros
           </button>
-
-          <button
-            onClick={() => setShowForm(!showForm)}
-            className={`flex-1 md:flex-none ${THEME_CLASSES.button.primary} px-4 py-2 rounded-lg flex items-center justify-center font-bold text-sm shadow-md`}
-          >
+          <button onClick={() => setShowForm(!showForm)} className={`flex-1 md:flex-none ${THEME_CLASSES.button.primary} px-4 py-2 rounded-xl flex items-center justify-center font-black uppercase tracking-wider text-xs shadow-lg shadow-red-500/20 transition-all active:scale-95`} >
             <Plus className="h-4 w-4 mr-2" />
             Nuevo Alumno
           </button>
         </div>
       </div>
 
-      {/* --- FORMULARIO DE CREACIÓN (Toggle) --- */}
       {showForm && (
-        <div className={`${THEME_CLASSES.bg.card} p-6 rounded-lg animate-fade-in-up ${THEME_CLASSES.border.primary} border mb-6`}>
+        <div className={`${THEME_CLASSES.bg.surface} p-6 rounded-2xl animate-in slide-in-from-top-4 border ${THEME_CLASSES.border.primary} shadow-sm mb-6`}>
           <form onSubmit={submitStudent} className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <input required placeholder="Nombre Completo" className={INPUT_STYLE} value={newStudent.name} onChange={e => setNewStudent({ ...newStudent, name: e.target.value })} />
-
-            {/* INPUT FECHA CON LÓGICA AUTOMÁTICA */}
             <div>
-              <CustomDatePicker
-                value={newStudent.dob}
-                onChange={handleDateChange} // <--- Aquí usamos la nueva función
-                placeholder="Fecha Nacimiento"
-              />
-              <p className="text-xs text-zinc-400 mt-1 ml-1">La categoría se seleccionará automáticamente.</p>
+              <CustomDatePicker value={newStudent.dob} onChange={handleDateChange} placeholder="Fecha Nacimiento" />
+              <p className="text-[10px] text-zinc-400 mt-1 ml-1 font-medium">Categoría automática por año.</p>
             </div>
-
             <select className={INPUT_STYLE} value={newStudent.category} onChange={e => setNewStudent({ ...newStudent, category: e.target.value })}>
               <option value="">Seleccionar Categoría</option>
-              {/* Opción especial 2008+ por si no viene en las categorias */}
               <option value="2008+">2008+</option>
               {categories.map(c => <option key={c.id} value={c.name}>{c.name}</option>)}
             </select>
-
             <input required placeholder="Apoderado" className={INPUT_STYLE} value={newStudent.parent} onChange={e => setNewStudent({ ...newStudent, parent: e.target.value })} />
             <input required placeholder="Teléfono" className={INPUT_STYLE} value={newStudent.phone} onChange={e => setNewStudent({ ...newStudent, phone: e.target.value })} />
-
-            {/* NUEVO CAMPO: Fecha de Inscripción */}
-            <div>
-              <CustomDatePicker
-                value={newStudent.registrationDate}
-                onChange={e => setNewStudent({ ...newStudent, registrationDate: e.target.value })}
-                placeholder="Fecha de Inscripción"
-              />
-            </div>
-
-            <div className="col-span-1 md:col-span-2 flex justify-end gap-2 mt-2">
-              <button type="button" onClick={() => setShowForm(false)} className={`px-4 py-2 ${THEME_CLASSES.button.secondary} rounded font-bold`}>Cancelar</button>
-              <button type="submit" className={`px-4 py-2 ${THEME_CLASSES.button.primary} rounded font-bold`}>Guardar Alumno</button>
+            <CustomDatePicker value={newStudent.registrationDate} onChange={e => setNewStudent({ ...newStudent, registrationDate: e.target.value })} placeholder="Fecha de Inscripción" />
+            <div className="col-span-1 md:col-span-2 flex justify-end gap-3 mt-2">
+              <button type="button" onClick={() => setShowForm(false)} className="px-4 py-2 text-zinc-500 font-black uppercase tracking-wider text-xs hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-xl transition-all">Cancelar</button>
+              <button type="submit" className={`px-6 py-2 ${THEME_CLASSES.button.primary} rounded-xl font-black uppercase tracking-wider text-xs shadow-lg shadow-red-500/20`}>Guardar Alumno</button>
             </div>
           </form>
         </div>
       )}
 
-      {/* --- TARJETA DE FILTROS --- */}
       {showFilters && (
-        <div className={`${CARD_STYLE} animate-in fade-in slide-in-from-top-2`}>
-          <div className="flex items-center justify-between mb-3">
-            <div className="flex items-center gap-2">
-              <Search className="h-5 w-5 text-zinc-500" />
-              <h3 className="font-bold text-zinc-800 dark:text-white">Filtros de Búsqueda</h3>
-            </div>
-
-            <button
-              onClick={clearFilters}
-              className="text-xs text-red-600 hover:text-red-700 font-bold flex items-center gap-1 transition-colors"
-            >
-              <Trash2 className="h-3 w-3" /> Limpiar
-            </button>
+        <div className={`${THEME_CLASSES.bg.surface} rounded-2xl border ${THEME_CLASSES.border.primary} p-5 shadow-sm animate-in fade-in slide-in-from-top-2`}>
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="font-black uppercase tracking-widest text-xs text-zinc-500 flex items-center gap-2 px-1"><Search size={14} /> Filtros de Búsqueda</h3>
+            <button onClick={clearFilters} className="text-[10px] font-black uppercase tracking-[0.2em] text-red-500 hover:text-red-600 transition-colors">Limpiar Filtros</button>
           </div>
-
           <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-3">
-            <input
-              type="text"
-              placeholder="Buscar por nombre..."
-              className={INPUT_STYLE}
-              value={filterName}
-              onChange={e => setFilterName(e.target.value)}
-            />
-            <select
-              className={INPUT_STYLE}
-              value={filterCategory}
-              onChange={e => setFilterCategory(e.target.value)}
-            >
+            <input type="text" placeholder="Nombre..." className={INPUT_STYLE} value={filterName} onChange={e => setFilterName(e.target.value)} />
+            <select className={INPUT_STYLE} value={filterCategory} onChange={e => setFilterCategory(e.target.value)}>
               <option value="">Todas las categorías</option>
               <option value="2008+">2008+</option>
               {categories.map(c => <option key={c.id} value={c.name}>{c.name}</option>)}
             </select>
-            <select
-              className={INPUT_STYLE}
-              value={filterStatus}
-              onChange={e => setFilterStatus(e.target.value)}
-            >
+            <select className={INPUT_STYLE} value={filterStatus} onChange={e => setFilterStatus(e.target.value)}>
               <option value="">Todos los estados</option>
               <option value="Activo">Activo</option>
               <option value="Inactivo">Inactivo</option>
             </select>
-            <input
-              type="text"
-              placeholder="Buscar por teléfono..."
-              className={INPUT_STYLE}
-              value={filterContact}
-              onChange={e => setFilterContact(e.target.value)}
-            />
-            <div>
-              <label className="block text-xs text-zinc-600 dark:text-zinc-400 mb-1">Desde</label>
-              <input
-                type="date"
-                className={INPUT_STYLE}
-                value={filterStartDate}
-                onChange={e => setFilterStartDate(e.target.value)}
-              />
-            </div>
-            <div>
-              <label className="block text-xs text-zinc-600 dark:text-zinc-400 mb-1">Hasta</label>
-              <input
-                type="date"
-                className={INPUT_STYLE}
-                value={filterEndDate}
-                onChange={e => setFilterEndDate(e.target.value)}
-              />
-            </div>
+            <input type="text" placeholder="Teléfono..." className={INPUT_STYLE} value={filterContact} onChange={e => setFilterContact(e.target.value)} />
+            <input type="date" className={INPUT_STYLE} value={filterStartDate} onChange={e => setFilterStartDate(e.target.value)} />
+            <input type="date" className={INPUT_STYLE} value={filterEndDate} onChange={e => setFilterEndDate(e.target.value)} />
           </div>
         </div>
       )}
 
-      {/* --- TABLA --- */}
       <GenericTable
         title="Lista de Alumnos"
         data={filteredStudents}
         onDelete={setDeleteConfirmId}
         customActions={(row) => (
           <div className="flex items-center gap-1">
-            <button
-              onClick={() => handleWhatsApp(row.phone)}
-              className="text-green-600 hover:bg-green-50 dark:hover:bg-green-950 p-2 rounded transition-colors"
-              title="Contactar por WhatsApp"
-            >
-              <MessageCircle className="h-4 w-4" />
-            </button>
-            <button
-              onClick={() => {
-                setEditingStudent(row);
-                setEditModalOpen(true);
-              }}
-              className="text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-950 p-2 rounded transition-colors"
-              title="Editar alumno"
-            >
-              <Edit className="h-4 w-4" />
-            </button>
+            <button onClick={() => handleWhatsApp(row.phone)} className="text-green-600 hover:bg-green-50 dark:hover:bg-green-950/40 p-2 rounded-xl transition-all" title="WhatsApp"><MessageCircle size={18} /></button>
+            <button onClick={() => { setEditingStudent(row); setEditModalOpen(true); }} className="text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-950/40 p-2 rounded-xl transition-all" title="Editar"><Edit size={18} /></button>
           </div>
         )}
         columns={[
-          { header: 'Nombre', field: 'name', render: (r) => <div className="font-bold text-zinc-900 dark:text-white">{r.name}</div> },
-          { header: 'Categoría', field: 'category', render: (r) => <span className="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded">{r.category || 'Sin Cat'}</span> },
+          { header: 'Nombre', field: 'name', render: (r) => <div className="font-bold text-zinc-900 dark:text-white uppercase tracking-tight">{r.name}</div> },
+          { header: 'Categoría', field: 'category', render: (r) => <Badge variant="info">{r.category || 'N/A'}</Badge> },
           { header: 'Apoderado', field: 'parent' },
           { header: 'Contacto', field: 'phone' },
-          { header: 'Estado', field: 'status', render: (r) => <span className={`text-xs px-2 py-1 rounded ${r.status === 'Activo' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>{r.status}</span> },
+          { header: 'Estado', field: 'status', render: (r) => <Badge variant={r.status === 'Activo' ? 'success' : 'error'}>{r.status}</Badge> },
           {
             header: 'Fecha Inscripción', field: 'createdAt', render: (r) => {
-              // Prioridad: registrationDate
               if (r.registrationDate) {
                 const part = r.registrationDate.split('-');
                 if (part.length === 3) return `${part[2]}/${part[1]}/${part[0]}`;
                 return r.registrationDate;
               }
-              // Fallback: createdAt (Timestamp)
-              if (!r.createdAt?.seconds) return 'Sin fecha';
+              if (!r.createdAt?.seconds) return <span className="opacity-30">---</span>;
               const date = new Date(r.createdAt.seconds * 1000);
-              return date.toLocaleDateString('es-PE', { day: '2-digit', month: '2-digit', year: 'numeric' });
+              return <span className="text-zinc-500 font-medium">{date.toLocaleDateString('es-PE', { day: '2-digit', month: '2-digit', year: 'numeric' })}</span>;
             }
           }
         ]}
       />
 
-      {/* --- PAGINACIÓN --- */}
-      <div className="flex flex-col items-center justify-center py-4 gap-2">
-        {loading && <p className="text-zinc-500 animate-pulse text-sm">Cargando...</p>}
+      <div className="flex flex-col items-center justify-center py-8 gap-4">
+        {loading && <p className="text-zinc-400 animate-pulse text-xs font-black uppercase tracking-[0.2em]">Cargando más...</p>}
         {!loading && hasMore && (
-          <button
-            onClick={loadMore}
-            className="flex items-center gap-2 px-6 py-2 bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-300 rounded-full hover:bg-zinc-200 dark:hover:bg-zinc-700 transition font-bold text-sm"
-          >
-            <ChevronDown className="h-4 w-4" /> Cargar más alumnos (50)
+          <button onClick={loadMore} className="flex items-center gap-2 px-8 py-3 bg-zinc-100 dark:bg-zinc-800 text-zinc-500 dark:text-zinc-400 rounded-2xl hover:bg-zinc-200 dark:hover:bg-zinc-700 transition-all font-black uppercase tracking-widest text-[10px] active:scale-95 shadow-sm">
+            <ChevronDown size={14} /> Cargar más alumnos
           </button>
         )}
       </div>
 
-      {/* Modal de Confirmación de Eliminación */}
-      <Modal
-        isOpen={deleteConfirmId !== null}
-        onClose={() => setDeleteConfirmId(null)}
-        title="Confirmar Eliminación"
-      >
-        <p className="text-zinc-700 dark:text-zinc-300 mb-6">
-          ¿Estás seguro de que deseas eliminar este alumno? Esta acción no se puede deshacer.
-        </p>
+      <Modal isOpen={deleteConfirmId !== null} onClose={() => setDeleteConfirmId(null)} title="Confirmar Eliminación">
+        <p className="text-zinc-600 dark:text-zinc-400 mb-6 font-medium">¿Estás seguro de que deseas eliminar este alumno? Esta acción no se puede deshacer.</p>
         <div className="flex justify-end gap-3">
-          <button
-            onClick={() => setDeleteConfirmId(null)}
-            className="px-4 py-2 bg-zinc-200 dark:bg-zinc-700 text-zinc-800 dark:text-zinc-200 rounded hover:bg-zinc-300 dark:hover:bg-zinc-600 font-bold"
-          >
-            Cancelar
-          </button>
-          <button
-            onClick={() => handleDeleteWithConfirmation(deleteConfirmId)}
-            className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 font-bold"
-          >
-            Eliminar
-          </button>
+          <button onClick={() => setDeleteConfirmId(null)} className="px-4 py-2 text-zinc-500 font-black uppercase tracking-wider text-xs hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-xl transition-all">Cancelar</button>
+          <button onClick={() => handleDeleteWithConfirmation(deleteConfirmId)} className="px-6 py-2 bg-red-600 text-white rounded-xl font-black uppercase tracking-wider text-xs shadow-lg shadow-red-500/20 active:scale-95">Eliminar</button>
         </div>
       </Modal>
 
-      {/* Modal de Edición de Estudiante */}
-      <Modal
-        isOpen={editModalOpen}
-        onClose={() => setEditModalOpen(false)}
-        title="Editar Alumno"
-      >
+      <Modal isOpen={editModalOpen} onClose={() => setEditModalOpen(false)} title="Editar Alumno">
         {editingStudent && (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="md:col-span-2">
-              <label className={LABEL_STYLE}><User className="h-3 w-3" /> Nombre Completo</label>
-              <input
-                type="text"
-                className={INPUT_STYLE}
-                value={editingStudent.name}
-                onChange={(e) => setEditingStudent({ ...editingStudent, name: e.target.value })}
+              <label className={LABEL_STYLE}><User size={12} /> Nombre Completo</label>
+              <input type="text" className={INPUT_STYLE} value={editingStudent.name} onChange={(e) => setEditingStudent({ ...editingStudent, name: e.target.value })} />
+            </div>
+            <div>
+              <label className={LABEL_STYLE}><Calendar size={12} /> Fecha de Nacimiento</label>
+              <CustomDatePicker value={editingStudent.dob || ''} onChange={(e) => {
+                const dateValue = e.target.value;
+                let autoCategory = editingStudent.category;
+                if (dateValue) {
+                  const year = parseInt(dateValue.split('-')[0]);
+                  autoCategory = year <= 2008 ? '2008+' : year.toString();
+                }
+                setEditingStudent({ ...editingStudent, dob: dateValue, category: autoCategory });
+              }}
               />
             </div>
-
             <div>
-              <label className={LABEL_STYLE}><Calendar className="h-3 w-3" /> Fecha de Nacimiento</label>
-              <CustomDatePicker
-                value={editingStudent.dob || ''}
-                onChange={(e) => {
-                  const dateValue = e.target.value;
-                  let autoCategory = editingStudent.category;
-                  if (dateValue) {
-                    const year = parseInt(dateValue.split('-')[0]);
-                    autoCategory = year <= 2008 ? '2008+' : year.toString();
-                  }
-                  setEditingStudent({ ...editingStudent, dob: dateValue, category: autoCategory });
-                }}
-              />
-            </div>
-
-            <div>
-              <label className={LABEL_STYLE}><Tag className="h-3 w-3" /> Categoría</label>
-              <select
-                className={INPUT_STYLE}
-                value={editingStudent.category}
-                onChange={(e) => setEditingStudent({ ...editingStudent, category: e.target.value })}
-              >
+              <label className={LABEL_STYLE}><Tag size={12} /> Categoría</label>
+              <select className={INPUT_STYLE} value={editingStudent.category} onChange={(e) => setEditingStudent({ ...editingStudent, category: e.target.value })}>
                 <option value="">Seleccionar Categoría</option>
                 <option value="2008+">2008+</option>
                 {categories.map(c => <option key={c.id} value={c.name}>{c.name}</option>)}
               </select>
             </div>
-
             <div className="md:col-span-2">
-              <label className={LABEL_STYLE}><User className="h-3 w-3" /> Apoderado</label>
-              <input
-                type="text"
-                className={INPUT_STYLE}
-                value={editingStudent.parent}
-                onChange={(e) => setEditingStudent({ ...editingStudent, parent: e.target.value })}
-              />
+              <label className={LABEL_STYLE}><User size={12} /> Apoderado</label>
+              <input type="text" className={INPUT_STYLE} value={editingStudent.parent} onChange={(e) => setEditingStudent({ ...editingStudent, parent: e.target.value })} />
             </div>
-
             <div>
-              <label className={LABEL_STYLE}><Phone className="h-3 w-3" /> Teléfono</label>
-              <input
-                type="text"
-                className={INPUT_STYLE}
-                value={editingStudent.phone}
-                onChange={(e) => setEditingStudent({ ...editingStudent, phone: e.target.value })}
-              />
+              <label className={LABEL_STYLE}><Phone size={12} /> Teléfono</label>
+              <input type="text" className={INPUT_STYLE} value={editingStudent.phone} onChange={(e) => setEditingStudent({ ...editingStudent, phone: e.target.value })} />
             </div>
-
             <div>
-              <label className={LABEL_STYLE}><Activity className="h-3 w-3" /> Estado</label>
-              <select
-                className={INPUT_STYLE}
-                value={editingStudent.status}
-                onChange={(e) => setEditingStudent({ ...editingStudent, status: e.target.value })}
-              >
+              <label className={LABEL_STYLE}><Activity size={12} /> Estado</label>
+              <select className={INPUT_STYLE} value={editingStudent.status} onChange={(e) => setEditingStudent({ ...editingStudent, status: e.target.value })}>
                 <option value="Activo">Activo</option>
                 <option value="Inactivo">Inactivo</option>
               </select>
             </div>
-
             <div className="md:col-span-2">
-              <label className={LABEL_STYLE}><Calendar className="h-3 w-3" /> Fecha de Inscripción - (En el sistema)</label>
-              <CustomDatePicker
-                value={editingStudent.registrationDate || ''}
-                onChange={(e) => setEditingStudent({ ...editingStudent, registrationDate: e.target.value })}
-              />
+              <label className={LABEL_STYLE}><Calendar size={12} /> Fecha de Inscripción</label>
+              <CustomDatePicker value={editingStudent.registrationDate || ''} onChange={(e) => setEditingStudent({ ...editingStudent, registrationDate: e.target.value })} />
             </div>
-
             <div className="md:col-span-2 flex justify-end gap-3 mt-4 pt-4 border-t border-zinc-100 dark:border-zinc-800">
-              <button
-                onClick={() => setEditModalOpen(false)}
-                className="px-4 py-2 bg-zinc-200 dark:bg-zinc-700 text-zinc-800 dark:text-zinc-200 rounded hover:bg-zinc-300 dark:hover:bg-zinc-600 font-bold text-sm"
-              >
-                Cancelar
-              </button>
-              <button
-                onClick={() => {
-                  handleAdd('students', editingStudent);
-                  setEditModalOpen(false);
-                  setEditingStudent(null);
-                }}
-                className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 font-bold text-sm"
-              >
-                Guardar Cambios
-              </button>
+              <button onClick={() => setEditModalOpen(false)} className="px-4 py-2 text-zinc-500 font-black uppercase tracking-wider text-xs hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-xl transition-all">Cancelar</button>
+              <button onClick={() => { handleAdd('students', editingStudent); setEditModalOpen(false); setEditingStudent(null); }} className="px-6 py-2 bg-blue-600 text-white rounded-xl font-black uppercase tracking-wider text-xs shadow-lg shadow-blue-500/20 active:scale-95">Guardar Cambios</button>
             </div>
           </div>
         )}

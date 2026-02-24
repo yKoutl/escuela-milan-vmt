@@ -9,6 +9,7 @@ import { MONTHS } from '../../../utils/constants';
 import PDFReceipt from '../PDFReceipt';
 import PDFBatchReport from '../PDFBatchReport';
 import { useCollection } from '../../../hooks/useCollection';
+import Badge from '../../shared/Badge';
 
 export default function PaymentHistoryView({ showNotification, categories = [] }) {
   // Cargar lista de alumnos para el buscador (Lazy)
@@ -243,33 +244,46 @@ export default function PaymentHistoryView({ showNotification, categories = [] }
       {/* Filtros adicionales cuando hay un alumno seleccionado */}
       {selectedStudent && (
         <>
-          <div className="bg-white dark:bg-zinc-900 rounded-lg shadow border border-zinc-200 dark:border-zinc-800 p-4">
-            {/* Headers Filtros... igual que antes */}
-            <div className="flex items-center justify-between mb-3">
+          <div className={`${THEME_CLASSES.bg.surface} p-5 rounded-2xl shadow-sm border ${THEME_CLASSES.border.primary}`}>
+            <div className="flex items-center justify-between mb-4 pb-4 border-b dark:border-zinc-800">
               <div className="flex items-center gap-2">
-                <Search className="h-5 w-5 text-zinc-500" />
-                <h3 className="font-bold text-zinc-800 dark:text-white">Filtros</h3>
+                <Search className="h-4 w-4 text-red-500" />
+                <h3 className={`font-bold text-sm uppercase tracking-wider ${THEME_CLASSES.text.secondary}`}>Filtros de Historial</h3>
               </div>
-              <button onClick={clearFilters} className="text-xs text-red-600 font-bold flex items-center gap-1"><Trash2 className="h-3 w-3" /> Limpiar</button>
+              <button
+                onClick={clearFilters}
+                className="text-[10px] uppercase tracking-widest text-red-600 hover:text-red-700 font-black flex items-center gap-1.5 transition-all bg-red-50 dark:bg-red-950/30 px-3 py-1.5 rounded-lg"
+              >
+                <Trash2 className="h-3 w-3" /> Limpiar
+              </button>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-              <select className="p-2 rounded border dark:bg-zinc-800 dark:text-white text-sm" value={filterMonth} onChange={e => setFilterMonth(e.target.value)}>
-                <option value="">Todos los meses</option>
-                {MONTHS.map(m => <option key={m} value={m}>{m}</option>)}
-              </select>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="space-y-1.5">
+                <label className={`text-[10px] font-black uppercase tracking-widest ${THEME_CLASSES.text.tertiary} ml-1`}>Mes</label>
+                <select className={THEME_CLASSES.input} value={filterMonth} onChange={e => setFilterMonth(e.target.value)}>
+                  <option value="">Todos los meses</option>
+                  {MONTHS.map(m => <option key={m} value={m}>{m}</option>)}
+                </select>
+              </div>
 
-              <select className="p-2 rounded border dark:bg-zinc-800 dark:text-white text-sm" value={filterYear} onChange={e => setFilterYear(e.target.value)}>
-                <option value="">Todos los años</option>
-                {availableYears.map(y => <option key={y} value={y}>{y}</option>)}
-              </select>
+              <div className="space-y-1.5">
+                <label className={`text-[10px] font-black uppercase tracking-widest ${THEME_CLASSES.text.tertiary} ml-1`}>Año</label>
+                <select className={THEME_CLASSES.input} value={filterYear} onChange={e => setFilterYear(e.target.value)}>
+                  <option value="">Todos los años</option>
+                  {availableYears.map(y => <option key={y} value={y}>{y}</option>)}
+                </select>
+              </div>
 
-              <select className="p-2 rounded border dark:bg-zinc-800 dark:text-white text-sm" value={filterStatus} onChange={e => setFilterStatus(e.target.value)}>
-                <option value="">Todos los estados</option>
-                <option value="Pagado">Pagado</option>
-                <option value="Vencido">Vencido</option>
-                <option value="Pendiente">Pendiente</option>
-              </select>
+              <div className="space-y-1.5">
+                <label className={`text-[10px] font-black uppercase tracking-widest ${THEME_CLASSES.text.tertiary} ml-1`}>Estado</label>
+                <select className={THEME_CLASSES.input} value={filterStatus} onChange={e => setFilterStatus(e.target.value)}>
+                  <option value="">Todos los estados</option>
+                  <option value="Pagado">Pagado</option>
+                  <option value="Vencido">Vencido</option>
+                  <option value="Pendiente">Pendiente</option>
+                </select>
+              </div>
             </div>
           </div>
 
@@ -320,13 +334,34 @@ export default function PaymentHistoryView({ showNotification, categories = [] }
               columns={[
                 { header: 'Fecha Registro', field: 'createdAt', render: r => r.createdAt?.seconds ? new Date(r.createdAt.seconds * 1000).toLocaleDateString() : 'Hoy' },
                 { header: 'Fecha Pago', field: 'paymentDate', render: r => r.paymentDate?.seconds ? new Date(r.paymentDate.seconds * 1000).toLocaleDateString() : 'Hoy' },
+                { header: 'Categoría', field: 'category', render: r => <Badge variant="info">{r.category || selectedStudent?.category || '-'}</Badge> },
                 { header: 'Concepto', field: 'month', render: r => `${r.month} ${r.year}` },
-                { header: 'Monto', field: 'amount', render: r => `S/. ${r.amount}` },
-                { header: 'Estado', field: 'status', render: r => <span className="font-bold">{r.status}</span> }
+                { header: 'Monto', field: 'amount', render: r => `S/. ${parseFloat(r.amount || 0).toFixed(2)}` },
+                {
+                  header: 'Estado',
+                  field: 'status',
+                  render: r => {
+                    let variant = 'neutral';
+                    if (r.status === 'Pagado') variant = 'success';
+                    if (r.status === 'Vencido') variant = 'error';
+                    if (r.status === 'Pendiente') variant = 'warning';
+                    if (r.status === 'Pago Parcial') variant = 'info';
+
+                    return <Badge variant={variant}>{r.status}</Badge>;
+                  }
+                }
               ]}
             />
           ) : (
-            <div className="bg-zinc-50 p-6 text-center rounded border">No se encontraron pagos.</div>
+            <div className={`${THEME_CLASSES.bg.surface} rounded-2xl border ${THEME_CLASSES.border.primary} p-12 text-center shadow-inner mt-4`}>
+              <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-blue-50 dark:bg-blue-950/30 mb-6 group-hover:scale-110 transition-transform">
+                <History className="h-10 w-10 text-blue-600" />
+              </div>
+              <h3 className={`text-lg font-black uppercase tracking-tight ${THEME_CLASSES.text.primary} mb-2`}>Sin registros</h3>
+              <p className={`${THEME_CLASSES.text.secondary} font-medium max-w-xs mx-auto`}>
+                No se encontraron pagos registrados para este alumno en los filtros seleccionados.
+              </p>
+            </div>
           )}
         </>
       )}

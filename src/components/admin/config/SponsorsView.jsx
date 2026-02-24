@@ -51,6 +51,8 @@ const DEFAULT_TIERS = [
   }
 ];
 
+import Badge from '../../shared/Badge';
+
 export default function SponsorsView({ showNotification }) {
   const [loading, setLoading] = useState(false);
   const [sponsors, setSponsors] = useState(DEFAULT_TIERS);
@@ -206,13 +208,12 @@ export default function SponsorsView({ showNotification }) {
                 <div className="flex justify-center">
                   <button
                     onClick={() => updateSponsor(idx, 'visible', !sponsor.visible)}
-                    className={`text-xs font-bold px-3 py-1 rounded-full flex items-center gap-1 transition-colors ${sponsor.visible
-                        ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400'
-                        : 'bg-zinc-100 text-zinc-500 dark:bg-zinc-700 dark:text-zinc-400'
-                      }`}
+                    className="transition-transform active:scale-95"
                   >
-                    <Eye className="h-3 w-3" />
-                    {sponsor.visible ? 'Visible al público' : 'Oculto al público'}
+                    <Badge variant={sponsor.visible ? 'success' : 'neutral'} className="flex items-center gap-1.5 px-4">
+                      <Eye className="h-3 w-3" />
+                      {sponsor.visible ? 'Visible al público' : 'Oculto al público'}
+                    </Badge>
                   </button>
                 </div>
 
